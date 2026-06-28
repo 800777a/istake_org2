@@ -1,0 +1,72 @@
+{
+  "entities": {
+    "Translation": {
+      "title": "Translation",
+      "description": "Multi-language translation strings.",
+      "type": "object",
+      "properties": {
+        "string_key": { "type": "string", "description": "The unique key for the translation (e.g., nav_home)" },
+        "en": { "type": "string", "description": "English translation" },
+        "zh-TW": { "type": "string", "description": "Traditional Chinese translation" },
+        "ja": { "type": "string", "description": "Japanese translation" },
+        "ko": { "type": "string", "description": "Korean translation" }
+      },
+      "required": ["string_key"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "User comments on events.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "event_id": { "type": "string" },
+        "author_name": { "type": "string" },
+        "content": { "type": "string" },
+        "is_admin_reply": { "type": "boolean" },
+        "parent_id": { "type": "string" },
+        "is_spam": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "event_id", "author_name", "content", "created_at"]
+    },
+    "GlobalSettings": {
+      "title": "Global Settings",
+      "description": "System wide configuration.",
+      "type": "object",
+      "properties": {
+        "stake_name": { "type": "string" },
+        "temple_name": { "type": "string" },
+        "units": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Feedback": {
+      "title": "Feedback",
+      "description": "User feedback survey.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reg_id": { "type": "string" },
+        "rating_transport": { "type": "integer" },
+        "created_at": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/translations/{string_key}": {
+      "schema": "Translation",
+      "description": "Global translations collection"
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Event comments collection"
+    },
+    "/settings/{docId}": {
+      "schema": "GlobalSettings",
+      "description": "Global settings"
+    },
+    "/feedback/{fbId}": {
+      "schema": "Feedback",
+      "description": "User feedback"
+    }
+  }
+}

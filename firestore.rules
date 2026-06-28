@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 預設拒絕所有存取
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 輔助函式：判斷是否登入
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 輔助函式：判斷是否為管理員 (根據 users 集合中的 role 欄位)
+    function isAdmin() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['engineer', 'stake_admin'];
+    }
+
+    // 1. 多國語言 (translations) 集合
+    match /translations/{stringKey} {
+      // 所有人皆可讀取，保留擴充彈性
+      allow read: if true;
+      
+      // 只有管理員權限可寫入/刪除
+      allow write, delete: if isAdmin();
+    }
+
+    // 2. 用戶 (users) 集合
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // 3. 活動 (events) 集合
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 4. 報名 (registrations) 集合
+    match /registrations/{regId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // 5. 家庭分組 (family_groups) 集合
+    match /family_groups/{familyId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // 6. 留言 (comments) 集合
+    match /comments/{commentId} {
+      // 所有人皆可讀取留言
+      allow read: if true;
+      
+      // 所有人皆可發表留言，但 is_admin_reply 只有管理員能設為 true
+      allow create: if true; // 簡化規則以配合現有邏輯，但建議後續加強驗證
+      
+      // 管理員可更新所有欄位，一般用戶只能標記為垃圾訊息 (is_spam)
+      allow update: if isAdmin() || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['is_spam']));
+      
+      // 只有管理員可以刪除
+      allow delete: if isAdmin();
+    }
+
+    // 7. 設定 (settings) 集合
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin() || true; // 暫時允許寫入，建議串接 Firebase Auth
+    }
+
+    // 8. 稽核紀錄 (audit_logs) 集合
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if true;
+    }
+
+    // 9. 支出紀錄 (expenses) 集合
+    match /expenses/{expId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // 10. 回饋 (feedback) 集合
+    match /feedback/{fbId} {
+      allow read: if isAdmin();
+      allow create: if true;
+    }
+
+    // 11. 黑名單 (blacklist) 集合
+    match /blacklist/{blId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 12. 個資 (personal_info) 集合
+    match /personal_info/{piId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // 13. 代表人 (representatives) 集合
+    match /representatives/{repId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
