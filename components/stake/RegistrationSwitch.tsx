@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { Power, ShieldAlert, Clock } from 'lucide-react';
 import { EventData } from '../../types';
 
@@ -27,12 +27,12 @@ const RegistrationSwitch: React.FC<RegistrationSwitchProps> = ({
     paymentDeadlineDays = 0,
     onPaymentDeadlineChange
 }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     return (
         <div className="bg-white p-6 rounded-2xl border-2 border-purple-100 space-y-6 shadow-inner">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-end gap-6">
                 <div className="flex items-center gap-3">
-                    <label className="text-sm font-black text-purple-900 w-24">{t('stake.reg_switch.label.reg_system', '報名系統')}:</label>
+                    <label className="text-sm font-black text-purple-900">{t('stake.reg_switch.label.reg_system', '報名系統')}:</label>
                     <button 
                         onClick={() => onToggle(!isRegOpen)}
                         className={`flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-black transition-all w-full md:w-auto shadow-md border-2 ${isRegOpen ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'}`}
@@ -48,7 +48,7 @@ const RegistrationSwitch: React.FC<RegistrationSwitchProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <label className="text-sm font-black text-indigo-900 w-24">{t('stake.reg_switch.label.cancellation', '撤銷報名')}:</label>
+                    <label className="text-sm font-black text-indigo-900">{t('stake.reg_switch.label.cancellation', '撤銷報名')}:</label>
                     <button 
                         onClick={() => onStopCancellationToggle?.(!stopCancellation)}
                         className={`flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-black transition-all w-full md:w-auto shadow-md border-2 ${stopCancellation ? 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'}`}

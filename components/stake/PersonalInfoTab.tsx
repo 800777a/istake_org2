@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { PersonalInfo, Registration, EventData, OrdinanceItem } from '../../types';
 import * as sheetService from '../../services/sheetService';
-import { Trash2, Search, PlusCircle, X, ChevronDown, ChevronUp, ArrowUpDown, Edit2 } from 'lucide-react';
+import { Trash2, Search, PlusCircle, X, ChevronDown, ChevronUp, ArrowUpDown, Edit2, Users, Contact, List, LayoutDashboard, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
 import { getGenderFromId, calculateAge } from '../../utils/validation';
 import { motion, AnimatePresence } from 'motion/react';
+import { RainbowCard } from './fee-config/RainbowCard';
 
 interface PersonalInfoTabProps {
     units: string[];
@@ -13,22 +14,59 @@ interface PersonalInfoTabProps {
     currentEvent?: EventData | null;
 }
 
-const rainbowColors = [
-    { header: 'bg-red-100 border-red-200 text-red-900', rowHover: 'hover:bg-red-50', sticky: 'bg-red-50/90', divide: 'divide-red-200', bg: 'bg-red-50', border: 'border-red-200' },
-    { header: 'bg-orange-100 border-orange-200 text-orange-900', rowHover: 'hover:bg-orange-50', sticky: 'bg-orange-50/90', divide: 'divide-orange-200', bg: 'bg-orange-50', border: 'border-orange-200' },
-    { header: 'bg-yellow-100 border-yellow-200 text-yellow-900', rowHover: 'hover:bg-yellow-50', sticky: 'bg-yellow-50/90', divide: 'divide-yellow-200', bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    { header: 'bg-green-100 border-green-200 text-green-900', rowHover: 'hover:bg-green-50', sticky: 'bg-green-50/90', divide: 'divide-green-200', bg: 'bg-green-50', border: 'border-green-200' },
-    { header: 'bg-blue-100 border-blue-200 text-blue-900', rowHover: 'hover:bg-blue-50', sticky: 'bg-blue-50/90', divide: 'divide-blue-200', bg: 'bg-blue-50', border: 'border-blue-200' },
-    { header: 'bg-indigo-100 border-indigo-200 text-indigo-900', rowHover: 'hover:bg-indigo-50', sticky: 'bg-indigo-50/90', divide: 'divide-indigo-200', bg: 'bg-indigo-50', border: 'border-indigo-200' },
-    { header: 'bg-purple-100 border-purple-200 text-purple-900', rowHover: 'hover:bg-purple-50', sticky: 'bg-purple-50/90', divide: 'divide-purple-200', bg: 'bg-purple-50', border: 'border-purple-200' },
-];
+// Enterprise Light/High-Contrast Theme definitions
+const THEME = {
+    canvas: 'bg-[#F0F4F8]',
+    card: 'bg-white rounded-[8px] shadow-sm border border-slate-200 overflow-hidden',
+    header: 'bg-indigo-900 text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
+    tableText: 'text-[11px] md:text-xs lg:text-sm text-slate-900',
+    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    input: 'w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
+};
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations, currentEvent }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [infos, setInfos] = useState<PersonalInfo[]>([]);
     const [searchUnit, setSearchUnit] = useState('');
     const [searchName, setSearchName] = useState('');
     
+    // View mode and RWD
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [remountKey, setRemountKey] = useState(0);
+    const wrapperRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
+
+    // 捲動控制函數
+    const scrollTable = (unit: string, direction: 'left' | 'right') => {
+        const wrapper = wrapperRefs.current[unit];
+        if (wrapper) {
+            const scrollAmount = 200;
+            wrapper.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('orientationchange', handleResize);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    // Auto-switch to card view on very small screens (portrait mobile)
+    useEffect(() => {
+        const checkMobile = () => {
+            if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+                setViewMode('card');
+            }
+        };
+        checkMobile();
+    }, []);
+
     // Form state/Modal state
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -196,15 +234,15 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
     );
 
     return (
-        <div className="p-6 animate-fade-in relative pb-24">
+        <div key={remountKey} className={`space-y-6 animate-fade-in pb-20 ${THEME.canvas} min-h-screen`}>
             <AnimatePresence>
                 {message.text && (
                     <motion.div 
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className={`fixed top-4 right-4 z-[100] p-4 rounded-xl shadow-2xl border-2 font-bold flex items-center ${
-                            message.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+                        className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-2xl border font-bold flex items-center ${
+                            message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
                         }`}
                     >
                         {message.type === 'success' ? '✅ ' : '❌ '}{message.text}
@@ -212,145 +250,269 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <h2 className="text-3xl font-black flex items-center tracking-tight text-gray-900 border-l-8 border-indigo-600 pl-4">
-                    {t('stake.personal_info.tab_title', '成員名單')}
-                </h2>
-                <button 
-                    onClick={() => { resetForm(); setIsFormOpen(true); }} 
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-2xl shadow-xl shadow-indigo-100 font-black hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center"
-                >
-                    <PlusCircle className="w-5 h-5 mr-2" /> {t('stake.personal_info.add_member_btn', '新增成員')}
-                </button>
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl mb-8 shadow-sm border-2 border-gray-100">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                         <label className="block text-xs font-black text-gray-400 mb-2 tracking-widest uppercase">{t('stake.personal_info.search_by_unit', '依單位搜尋')}</label>
-                         <select 
-                            value={searchUnit} 
-                            onChange={e => setSearchUnit(e.target.value)} 
-                            className="w-full border-2 border-gray-100 focus:border-indigo-500 rounded-2xl p-3.5 text-sm font-bold bg-gray-50/50 transition-all outline-none"
-                        >
-                             <option value="">{t('stake.personal_info.all_units', '全部單位')}</option>
-                             {units.map(u => <option key={u} value={u}>{u}</option>)}
-                         </select>
-                    </div>
-                    <div>
-                         <label className="block text-xs font-black text-gray-400 mb-2 tracking-widest uppercase">{t('stake.personal_info.search_by_name', '依姓名搜尋')}</label>
-                         <div className="relative">
-                            <input 
-                                type="text" 
-                                placeholder={t('stake.personal_info.search_placeholder', "輸入搜尋關鍵字...")}
-                                value={searchName} 
-                                onChange={e => setSearchName(e.target.value)} 
-                                className="w-full border-2 border-gray-100 focus:border-indigo-500 rounded-2xl p-3.5 pl-11 text-sm font-bold bg-gray-50/50 transition-all outline-none" 
-                            />
-                            <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                         </div>
-                    </div>
+            {/* Level 1: Page Title Header (Indigo 900) */}
+            <div className="bg-indigo-900 text-white p-4 rounded-[12px] shadow-lg flex items-center justify-between overflow-hidden">
+                <div className="flex items-center gap-3">
+                    <Contact className="w-6 h-6 text-indigo-300" />
+                    <h2 className="text-sm md:text-xl font-black tracking-tight font-title">
+                        {t('stake.personal_info.tab_title', '成員名單')}
+                    </h2>
                 </div>
             </div>
 
-            <div className="space-y-8">
+            {/* Level 2: Two-Column Action Row */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1 md:px-0">
+                {/* Left Column: Add Member Button */}
+                <div className="flex-1 md:max-w-xs">
+                    <button 
+                        onClick={() => { resetForm(); setIsFormOpen(true); }} 
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-[12px] font-black shadow-md transition-all flex items-center justify-center gap-2 h-12 px-6 text-sm md:text-base active:scale-[0.98]"
+                    >
+                        <UserPlus size={20} />
+                        <span>{t('stake.personal_info.add_member_btn', '新增成員')}</span>
+                    </button>
+                </div>
+
+                {/* Right Column: View Mode Selectors in a single block */}
+                <div className="flex bg-white/80 backdrop-blur-sm p-1.5 rounded-xl border border-indigo-100 shadow-sm self-end md:self-auto">
+                    <button 
+                        onClick={() => setViewMode('table')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-xs font-black ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
+                    >
+                        <List size={16} />
+                        <span>{t('common.view_mode.table', '表格')}</span>
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('card')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-xs font-black ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
+                    >
+                        <LayoutDashboard size={16} />
+                        <span>{t('common.view_mode.card', '卡片')}</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Level 3: Search Filters (Orange Theme - Rainbow Depth 1) */}
+            <div className="px-1 md:px-0">
+                <RainbowCard
+                    title={t('stake.personal_info.search_filters', '篩選成員條件')}
+                    icon={<Search size={18} />}
+                    colorIndex={1}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('stake.personal_info.search_by_unit', '依單位搜尋')}</label>
+                            <select 
+                                value={searchUnit} 
+                                onChange={e => setSearchUnit(e.target.value)} 
+                                className={THEME.input}
+                            >
+                                <option value="">{tString('stake.personal_info.all_units', '全部單位')}</option>
+                                {(units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('stake.personal_info.search_by_name', '依姓名搜尋')}</label>
+                            <div className="relative">
+                                <input 
+                                    type="text" 
+                                    placeholder={t('stake.personal_info.search_placeholder', "輸入搜尋關鍵字...")}
+                                    value={searchName} 
+                                    onChange={e => setSearchName(e.target.value)} 
+                                    className={`${THEME.input} pl-9`} 
+                                />
+                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            </div>
+                        </div>
+                    </div>
+                </RainbowCard>
+            </div>
+
+            <div className="space-y-6">
                 {sortedUnits.length === 0 ? (
-                    <div className="bg-white rounded-3xl shadow-sm border-2 border-gray-100 overflow-hidden text-center p-20 font-bold text-gray-300">
-                        <Search className="w-16 h-16 mx-auto mb-4 opacity-10" />
-                        {t('stake.personal_info.no_results', '目前沒有符合的資料')}
+                    <div className={THEME.card + " p-12 text-center"}>
+                        <Search className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                        <h4 className="text-sm font-bold text-slate-900">{t('stake.personal_info.no_results', '目前沒有符合的資料')}</h4>
                     </div>
                 ) : (
                     sortedUnits.map((unit, uIdx) => {
-                        const style = rainbowColors[uIdx % rainbowColors.length];
-                        const isCollapsed = collapsedUnits[unit];
+                        const isCollapsed = collapsedUnits[unit] ?? false;
                         return (
-                            <div key={unit} className={`bg-white rounded-3xl shadow-sm border-2 ${style.border} overflow-hidden animate-fade-in`}>
-                                <div 
-                                    onClick={() => toggleUnitCollapse(unit)}
-                                    className={`${style.header} p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-all`}
-                                >
-                                    <h3 className="font-black text-sm tracking-widest uppercase flex items-center">
-                                        <div className={`p-1 rounded-md bg-white/20 mr-2 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}>
-                                            <ChevronDown className="w-4 h-4" />
-                                        </div>
-                                        {unit} ({groupedByUnit[unit].length})
-                                    </h3>
-                                    <div className="text-[10px] font-black opacity-40 uppercase tracking-tighter">
-                                        {isCollapsed ? t('common.click_to_expand', '點擊展開') : t('common.click_to_collapse', '點擊收合')}
-                                    </div>
-                                </div>
-                                
-                                <AnimatePresence initial={false}>
-                                    {!isCollapsed && (
-                                        <motion.div 
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="overflow-x-auto custom-scrollbar">
-                                                <table className="w-full text-sm border-collapse min-w-[900px]">
-                                                    <thead className={`${style.bg} border-b-2 ${style.border}`}>
+                            <RainbowCard
+                                key={unit}
+                                title={unit}
+                                icon={<Users size={18} />}
+                                colorIndex={(uIdx + 2) % 7}
+                                isExpanded={!isCollapsed}
+                                onToggle={() => toggleUnitCollapse(unit)}
+                                noPadding={viewMode === 'table'} // 表格模式下移除外層 Padding，數據極大化
+                                extra={
+                                    <span className="text-[10px] font-black text-slate-500 bg-white/60 px-3 py-1 rounded-full border border-slate-200 uppercase tracking-widest">
+                                        {groupedByUnit[unit].length} {t('common.unit.members', '位成員')}
+                                    </span>
+                                }
+                            >
+                                <div className="space-y-0">
+                                    {viewMode === 'table' ? (
+                                        <div className="space-y-0">
+                                            {/* Shell-Zero Mobile Scroll Hint (Level 2 Rainbow Depth) */}
+                                            <div className="flex items-center justify-between px-3 py-2 bg-white/50 border-b border-slate-100 md:hidden">
+                                                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                                    <ArrowUpDown size={12} className="animate-bounce-v" />
+                                                    <span>{t('common.scroll_hint', '左右滑動查看資料')}</span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={() => scrollTable(unit, 'left')}
+                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm active:scale-90"
+                                                    >
+                                                        <ChevronLeft size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => scrollTable(unit, 'right')}
+                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm active:scale-90"
+                                                    >
+                                                        <ChevronRight size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div 
+                                                ref={el => wrapperRefs.current[unit] = el}
+                                                className="dense-table-wrapper p-1 md:p-1" // 最小套殼 4px (p-1)
+                                            >
+                                                <table className="dense-table font-body">
+                                                    <thead className="bg-slate-50/80 border-b border-slate-200">
                                                         <tr>
-                                                            <th className="p-4 text-left font-black text-gray-400 uppercase tracking-wider w-[15%]">
-                                                                <div className="flex items-center">{t('stake.personal_info.col_unit', '單位')} <SortIcon column="unit" /></div>
+                                                            <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600 uppercase tracking-widest">
+                                                                <div className="flex items-center gap-1">
+                                                                    {t('stake.personal_info.col_name', '姓名')}
+                                                                    <SortIcon column="name" />
+                                                                </div>
                                                             </th>
-                                                            <th className={`p-4 text-left font-black text-gray-400 uppercase tracking-wider sticky left-0 ${style.bg} z-20 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)] w-[15%]`}>
-                                                                <div className="flex items-center">{t('stake.personal_info.col_name', '姓名')} <SortIcon column="name" /></div>
+                                                            <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600 uppercase tracking-widest">
+                                                                <div className="flex items-center gap-1">
+                                                                    {t('stake.personal_info.col_birth', '西元生日')}
+                                                                    <SortIcon column="birth_date" />
+                                                                </div>
                                                             </th>
-                                                            <th className="p-4 text-left font-black text-gray-400 uppercase tracking-wider w-[15%]">
-                                                                <div className="flex items-center">{t('stake.personal_info.col_birth', '西元生日')} <SortIcon column="birth_date" /></div>
+                                                            <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600 uppercase tracking-widest">
+                                                                <div className="flex items-center gap-1">
+                                                                    {t('stake.personal_info.col_identity', '身分證/居留證')}
+                                                                    <SortIcon column="identity_id" />
+                                                                </div>
                                                             </th>
-                                                            <th className="p-4 text-left font-black text-gray-400 uppercase tracking-wider w-[20%]">
-                                                                <div className="flex items-center">{t('stake.personal_info.col_identity', '身分證/居留證')} <SortIcon column="identity_id" /></div>
+                                                            <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600 uppercase tracking-widest">
+                                                                <div className="flex items-center gap-1">
+                                                                    {t('stake.personal_info.col_guardian', '監護人')}
+                                                                    <SortIcon column="guardian" />
+                                                                </div>
                                                             </th>
-                                                            <th className="p-4 text-left font-black text-gray-400 uppercase tracking-wider w-[20%]">
-                                                                <div className="flex items-center">{t('stake.personal_info.col_guardian', '監護人')} <SortIcon column="guardian" /></div>
+                                                            <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600 uppercase tracking-widest">
+                                                                <div className="flex items-center gap-1">
+                                                                    {t('stake.personal_info.col_service', '服務資格')}
+                                                                    <SortIcon column="service_qualification" />
+                                                                </div>
                                                             </th>
-                                                            <th className="p-4 text-left font-black text-gray-400 uppercase tracking-wider w-[20%]">
-                                                                <div className="flex items-center">{t('stake.personal_info.col_service', '服務資格')} <SortIcon column="service_qualification" /></div>
+                                                            <th className="px-4 py-3 text-center font-black text-[11px] md:text-xs text-slate-600 w-24 uppercase tracking-widest">
+                                                                {t('stake.personal_info.col_actions', '操作')}
                                                             </th>
-                                                            <th className="p-4 text-right font-black text-gray-400 uppercase tracking-wider w-[15%]">{t('stake.personal_info.col_actions', '操作')}</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-gray-100">
-                                                        {groupedByUnit[unit].map(info => (
-                                                            <tr key={info.id} className={`${style.rowHover} transition-colors group`}>
-                                                                <td className="p-4 font-bold text-gray-500">{info.unit}</td>
-                                                                <td className={`p-4 font-black text-gray-900 sticky left-0 ${style.bg} group-hover:bg-white z-10 shadow-[4px_0_10px_-4px_rgba(0,0,0,0.1)] transition-colors`}>{info.name}</td>
-                                                                <td className="p-4 font-bold text-gray-600 tabular-nums">{info.birth_date}</td>
-                                                                <td className="p-4 font-black text-indigo-600 font-mono tracking-tighter tabular-nums">{info.identity_id}</td>
-                                                                <td className="p-4 font-bold text-gray-600">{info.guardian || '-'}</td>
-                                                                <td className="p-4">
-                                                                    <span className="px-3 py-1 bg-white/50 border-2 border-indigo-50 text-indigo-900 rounded-full text-[11px] font-black uppercase whitespace-nowrap">
-                                                                        {info.service_qualification || t('common.none', '無')}
-                                                                    </span>
+                                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                                        {groupedByUnit[unit].map((info, idx) => (
+                                                            <tr key={`${info.id}-${unit}-${idx}`} className="hover:bg-indigo-50/30 transition-colors group">
+                                                                <td className="px-4 py-2.5 font-black text-slate-900 text-[11px] md:text-xs lg:text-sm">{info.name}</td>
+                                                                <td className="px-4 py-2.5 text-slate-600 text-[11px] md:text-xs lg:text-sm tabular-nums">{info.birth_date}</td>
+                                                                <td className="px-4 py-2.5 text-slate-600 text-[11px] md:text-xs lg:text-sm font-mono tracking-tight">{info.identity_id}</td>
+                                                                <td className="px-4 py-2.5 text-slate-600 text-[11px] md:text-xs lg:text-sm">{info.guardian || '-'}</td>
+                                                                <td className="px-4 py-2.5">
+                                                                    {info.service_qualification ? (
+                                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black border border-indigo-100 bg-indigo-50 text-indigo-700 uppercase tracking-tighter">
+                                                                            {info.service_qualification}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-slate-400 text-xs">-</span>
+                                                                    )}
                                                                 </td>
-                                                                <td className="p-4 text-right space-x-2">
-                                                                    <button 
-                                                                        onClick={() => handleEdit(info)} 
-                                                                        className="text-indigo-400 p-2.5 hover:bg-indigo-100 hover:text-indigo-600 rounded-2xl transition-all"
-                                                                        title={t('common.edit', "編輯")}
-                                                                    >
-                                                                        <Edit2 className="w-5 h-5" />
-                                                                    </button>
-                                                                    <button 
-                                                                        onClick={() => setDeleteId(info.id)} 
-                                                                        className="text-red-300 p-2.5 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all" 
-                                                                        title={t('common.delete', "刪除")}
-                                                                    >
-                                                                        <Trash2 className="w-5 h-5" />
-                                                                    </button>
+                                                                <td className="px-4 py-2.5 text-center">
+                                                                    <div className="flex items-center justify-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <button 
+                                                                            onClick={() => handleEdit(info)} 
+                                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100 bg-white shadow-sm active:scale-90"
+                                                                            title={tString('common.edit', "編輯")}
+                                                                        >
+                                                                            <Edit2 size={14} />
+                                                                        </button>
+                                                                        <button 
+                                                                            onClick={() => setDeleteId(info.id)} 
+                                                                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm active:scale-90" 
+                                                                            title={tString('common.delete', "刪除")}
+                                                                        >
+                                                                            <Trash2 size={14} />
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
                                                 </table>
                                             </div>
-                                        </motion.div>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1 md:p-4 font-body">
+                                            {groupedByUnit[unit].map((info, idx) => (
+                                                <div key={`${info.id}-${unit}-${idx}`} className="bg-white border border-slate-100 rounded-lg p-3 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-black text-slate-900">{info.name}</span>
+                                                            <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-tight">{unit}</span>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <button 
+                                                                onClick={() => handleEdit(info)} 
+                                                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg border border-indigo-100 shadow-sm transition-all"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => setDeleteId(info.id)} 
+                                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 shadow-sm transition-all"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-2">
+                                                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded">
+                                                            <span className="text-[10px] text-slate-400 font-bold">{t('stake.personal_info.col_birth', '西元生日')}</span>
+                                                            <span className="text-[11px] font-black text-slate-700">{info.birth_date}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded">
+                                                            <span className="text-[10px] text-slate-400 font-bold">ID</span>
+                                                            <span className="text-[11px] font-black text-slate-700 font-mono tracking-tight">{info.identity_id}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded">
+                                                            <span className="text-[10px] text-slate-400 font-bold">{t('stake.personal_info.col_guardian', '監護人')}</span>
+                                                            <span className="text-[11px] font-black text-slate-700">{info.guardian || '-'}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded">
+                                                            <span className="text-[10px] text-slate-400 font-bold">{t('stake.personal_info.col_service', '服務資格')}</span>
+                                                            {info.service_qualification ? (
+                                                                <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                                    {info.service_qualification}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-[11px] font-black text-slate-400">-</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
-                                </AnimatePresence>
-                            </div>
+                                </div>
+                            </RainbowCard>
                         );
                     })
                 )}
@@ -386,8 +548,8 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none" 
                                                 required
                                             >
-                                                <option value="" disabled>{t('stake.personal_info.select_unit_placeholder', '請選擇單位')}</option>
-                                                {units.map(u => <option key={u} value={u}>{u}</option>)}
+                                                <option value="" disabled>{tString('stake.personal_info.select_unit_placeholder', '請選擇單位')}</option>
+                                                {(units || []).map(u => <option key={u} value={u}>{u}</option>)}
                                             </select>
                                         </div>
                                         <div>

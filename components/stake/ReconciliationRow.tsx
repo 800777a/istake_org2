@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { Registration, PaymentMethod, TripType } from '../../types';
 
 // Theme Definition (Shared interface)
@@ -21,7 +21,6 @@ interface ReconciliationRowProps {
     familyLast5: string;
     onTogglePaid: (r: Registration) => void;
     isLocked: boolean;
-    theme: ColorTheme;
 }
 
 const ReconciliationRow: React.FC<ReconciliationRowProps> = ({ 
@@ -30,51 +29,39 @@ const ReconciliationRow: React.FC<ReconciliationRowProps> = ({
     familyTotal, 
     familyLast5, 
     onTogglePaid, 
-    isLocked, 
-    theme 
+    isLocked 
 }) => {
-    const { t } = useTranslation();
+    const { t } = useI18n();
     
     // Helper for Payment Method Badge
     const getMethodBadge = () => {
         if (reg.amount_due === 0) {
-            // Amount is 0 -> User does not need to pay -> "免付"
-            return <span className="px-2 py-1 rounded text-[10px] bg-gray-100 text-gray-500 font-bold border border-gray-200 whitespace-nowrap">{t('common.status.free', '免付')}</span>;
+            return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-100 text-slate-500 font-black border-2 border-slate-200 whitespace-nowrap">{t('common.status.free', '免付費項目')}</span>;
         }
         switch (reg.payment_method) {
             case PaymentMethod.CASH:
-                return <span className="px-2 py-1 rounded text-[10px] bg-yellow-100 text-yellow-800 font-bold border border-yellow-200 whitespace-nowrap">{t('common.payment.cash', '現金')}</span>;
+                return <span className="px-3 py-1 rounded-lg text-[10px] bg-amber-100 text-amber-900 font-black border-2 border-amber-200 whitespace-nowrap shadow-sm shadow-amber-100/50">{t('common.payment.cash', '現場收現')}</span>;
             case PaymentMethod.TRANSFER:
-                return <span className="px-2 py-1 rounded text-[10px] bg-blue-100 text-blue-800 font-bold border border-blue-200 whitespace-nowrap">{t('common.payment.transfer', '轉帳')}</span>;
+                return <span className="px-3 py-1 rounded-lg text-[10px] bg-sky-100 text-sky-900 font-black border-2 border-sky-200 whitespace-nowrap shadow-sm shadow-sky-100/50">{t('common.payment.transfer', '銀行轉帳')}</span>;
             case PaymentMethod.EXTENDED:
-                return <span className="px-2 py-1 rounded text-[10px] bg-gray-200 text-gray-700 font-bold border border-gray-300 whitespace-nowrap">{t('common.payment.extended', '延用')}</span>;
+                return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-100 text-slate-700 font-black border-2 border-slate-300 whitespace-nowrap uppercase tracking-widest">{t('common.payment.extended', '舊案延用')}</span>;
+            case PaymentMethod.EXEMPT:
+                return <span className="px-3 py-1 rounded-lg text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 whitespace-nowrap shadow-sm shadow-rose-100/50">{t('common.payment.exempt', '特別免收')}</span>;
             default:
                 if (reg.trip_type === TripType.RETAINED) return null;
-                return <span className="px-2 py-1 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap">{reg.payment_method}</span>;
+                return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-50 text-slate-600 border-2 border-slate-200 whitespace-nowrap font-black uppercase">{reg.payment_method}</span>;
         }
-    };
-
-    // Helper for Trip Badge
-    const getTripBadge = () => {
-        if (reg.trip_type === TripType.RETAINED) {
-            return <span className="px-2 py-1 rounded text-[10px] bg-purple-100 text-purple-900 font-bold border border-purple-300 whitespace-nowrap">{t('common.trip.retained', '留用')}</span>;
-        }
-        if (reg.trip_type === TripType.SELF_MANAGED) {
-            return <span className="px-2 py-1 rounded text-[10px] bg-blue-50 text-blue-800 border-blue-200 whitespace-nowrap">{t('common.trip.self_managed', '自理')}</span>;
-        }
-        return <span className="px-2 py-1 rounded text-[10px] bg-green-50 text-green-800 border-green-200 whitespace-nowrap">{t('common.status.success', '成功')}</span>;
     };
 
     // Helper for Status Badge
     const getStatusBadge = () => {
-        if (reg.amount_due === 0 || reg.payment_method === PaymentMethod.EXTENDED) {
-            // Amount is 0 or Extended -> Organizer does not need to receive -> "免收"
-            return <span className="px-2 py-1 rounded text-[10px] bg-gray-100 text-gray-500 font-bold border border-gray-200 whitespace-nowrap">{t('common.status.waived', '免收')}</span>;
+        if (reg.amount_due === 0 || reg.payment_method === PaymentMethod.EXTENDED || reg.payment_method === PaymentMethod.EXEMPT) {
+            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-slate-100 text-slate-400 font-black border-2 border-slate-200 whitespace-nowrap opacity-50 uppercase tracking-widest">{t('common.status.waived', '免收')}</span>;
         }
         if (reg.is_paid) {
-            return <span className="px-2 py-1 rounded text-[10px] bg-green-100 text-green-800 font-bold border border-green-200 hover:bg-green-200 transition-colors whitespace-nowrap">{t('common.status.paid', '已收')}</span>;
+            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-emerald-100 text-emerald-900 font-black border-2 border-emerald-300 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-500 transition-all whitespace-nowrap shadow-lg shadow-emerald-900/5 uppercase tracking-widest">{t('common.status.paid', '確認已收')}</span>;
         } else {
-            return <span className="px-2 py-1 rounded text-[10px] bg-red-100 text-red-800 font-bold border border-red-200 hover:bg-red-200 transition-colors whitespace-nowrap">{t('common.status.unpaid', '未收')}</span>;
+            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-500 transition-all whitespace-nowrap shadow-lg shadow-rose-900/5 uppercase tracking-widest">{t('common.status.unpaid', '尚未入帳')}</span>;
         }
     };
 
@@ -82,31 +69,37 @@ const ReconciliationRow: React.FC<ReconciliationRowProps> = ({
     const transferAmountDisplay = reg.is_paid ? familyTotal : 0;
 
     return (
-        <tr id={`row-${reg.reg_id}`} className={`${theme.rowHover} transition-colors bg-white border-b ${theme.border}`}>
-            <td className="p-3 font-medium text-gray-600 sticky left-0 bg-white z-10 border-r border-gray-100 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] whitespace-nowrap">
+        <tr id={`row-${reg.reg_id}`} className="hover:bg-slate-50 transition-all bg-white border-b-2 border-slate-50 group">
+            <td className="px-8 py-6 font-black text-slate-900 sticky left-0 bg-white z-10 border-r-2 border-slate-50 group-hover:bg-slate-50 whitespace-nowrap transition-all text-sm tracking-tight">
                 {primaryContactName}
             </td>
             
             {/* Payment Method Column */}
-            <td className="p-3 text-center">
+            <td className="px-6 py-6 text-center">
                 {getMethodBadge()}
             </td>
 
-            <td className={`p-3 font-mono text-gray-800 text-right font-bold opacity-70`}>${familyTotal.toLocaleString()}</td>
+            <td className="px-6 py-6 font-mono text-slate-900 text-right font-black text-base">
+                ${familyTotal.toLocaleString()}
+            </td>
             
             {/* Status Column (Toggle Button) */}
-            <td className="p-3 text-center border-l border-gray-100">
+            <td className="px-6 py-6 text-center border-x-2 border-slate-50">
                 <button 
                     onClick={() => onTogglePaid(reg)}
                     disabled={isLocked || reg.amount_due === 0}
-                    className={`focus:outline-none ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`focus:outline-none transition-all active:scale-90 ${isLocked ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
                 >
                     {getStatusBadge()}
                 </button>
             </td>
 
-            <td className={`p-3 font-mono text-gray-800 text-right opacity-70`}>${transferAmountDisplay.toLocaleString()}</td>
-            <td className={`p-3 font-mono text-gray-900 font-bold opacity-70`}>{familyLast5 || '-'}</td>
+            <td className="px-6 py-6 font-mono text-slate-400 text-right font-bold">
+                ${transferAmountDisplay.toLocaleString()}
+            </td>
+            <td className="px-8 py-6 font-mono text-slate-900 font-black uppercase tracking-widest text-sm">
+                {familyLast5 || <span className="text-slate-200">-----</span>}
+            </td>
         </tr>
     );
 };

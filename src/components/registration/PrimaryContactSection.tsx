@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { UserCircle } from 'lucide-react';
 
 interface PrimaryContactSectionProps {
@@ -43,7 +43,7 @@ const PrimaryContactSection: React.FC<PrimaryContactSectionProps> = ({
     setMembers,
     personalInfoList
 }) => {
-    const { t } = useTranslation();
+    const { t, tString, tAttr, isEditMode, setActiveKey } = useI18n();
 
     const handleUnitChange = (val: string) => {
         setPrimaryUnit(val);
@@ -128,27 +128,33 @@ const PrimaryContactSection: React.FC<PrimaryContactSectionProps> = ({
                         onChange={e => handleUnitChange(e.target.value)} 
                         className="w-full border rounded p-2 text-xs bg-white text-black"
                     >
-                        <option value="" disabled>{t('stake.registration.form.select_unit_hint')}</option>
+                        <option value="" disabled>{tString('stake.registration.form.select_unit_hint')}</option>
                         {units.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-red-900 mb-1">{t('stake.registration.form.name_label')}</label>
-                    <input type="text" value={primaryName} onBlur={() => setIsPrimaryNameFinished(true)} onChange={e => handleNameChange(e.target.value)} className="w-full border rounded p-2 text-xs bg-white text-black" placeholder={t('stake.registration.form.real_name_placeholder')} />
+                    <label className="block text-xs font-bold text-red-900 mb-1">
+                        {t('stake.registration.form.name_label')}
+                        {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.real_name_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                    </label>
+                    <input type="text" value={primaryName} onBlur={() => setIsPrimaryNameFinished(true)} onChange={e => handleNameChange(e.target.value)} className="w-full border rounded p-2 text-xs bg-white text-black" placeholder={tAttr('stake.registration.form.real_name_placeholder')} />
                 </div>
                 
                 {(!isRepresentativeMatched && isPrimaryNameFinished && primaryName.trim() !== '') && (
                     <div>
-                        <label className="block text-xs font-bold text-red-900 mb-1">{t('stake.registration.form.phone_label')}</label>
+                        <label className="block text-xs font-bold text-red-900 mb-1">
+                            {t('stake.registration.form.phone_label')}
+                            {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.phone_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                        </label>
                         <input 
                             type="tel" 
                             maxLength={13}
                             value={primaryContactPhone} 
                             onChange={e => setPrimaryContactPhone(e.target.value.replace(/[^0-9\s()\-]/g, ''))}
                             className="w-full border rounded p-2 text-xs bg-white text-black" 
-                            placeholder={t('stake.registration.form.phone_placeholder')} 
+                            placeholder={tAttr('stake.registration.form.phone_placeholder')} 
                         />
                     </div>
                 )}
@@ -156,8 +162,11 @@ const PrimaryContactSection: React.FC<PrimaryContactSectionProps> = ({
 
             {(!isRepresentativeMatched && isPrimaryNameFinished && primaryName.trim() !== '') && (
                 <div>
-                    <label className="block text-xs font-bold text-red-900 mb-1">{t('stake.registration.form.password_setup_label')}</label>
-                    <input type="text" value={primaryPassword} onChange={e => setPrimaryPassword(e.target.value)} className="w-full border rounded p-2 text-xs bg-white text-black" placeholder={t('stake.registration.form.password_placeholder')} />
+                    <label className="block text-xs font-bold text-red-900 mb-1">
+                        {t('stake.registration.form.password_setup_label')}
+                        {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.password_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                    </label>
+                    <input type="text" value={primaryPassword} onChange={e => setPrimaryPassword(e.target.value)} className="w-full border rounded p-2 text-xs bg-white text-black" placeholder={tAttr('stake.registration.form.password_placeholder')} />
                 </div>
             )}
         </div>

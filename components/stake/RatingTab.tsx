@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ChevronUp, ChevronDown, CheckCircle2, AlertTriangle, Download, Upload } from 'lucide-react';
 import { EventData, GlobalSettings, BusRatingRecord, Registration } from '../../types';
@@ -22,7 +22,7 @@ interface ConfirmConfig {
 }
 
 const RatingTab: React.FC<RatingTabProps> = ({ currentEvent, registrations, settings, onUpdateSettings }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
     const [confirmConfig, setConfirmConfig] = useState<ConfirmConfig>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
@@ -61,15 +61,54 @@ const RatingTab: React.FC<RatingTabProps> = ({ currentEvent, registrations, sett
                 if (points >= 1 && points <= 3) delta = -1;
                 else if (points >= 7 && points <= 9) delta = 1;
 
+                const d1Points = (record.d1Metrics || []).filter((m, i) => m === true && i <= 4).length;
+                const v1Points = (record.d1Metrics || []).filter((m, i) => m === true && i > 4).length;
+
                 const updatedDrivers = (settings.busDrivers || []).map(dri => {
-                    if (dri.name === record.driver1Name || (record.driver2Name && dri.name === record.driver2Name)) {
+                    if (dri.name === record.driver1Name) {
                         return {
                             ...dri,
-                            serviceCount: dri.serviceCount + 1,
-                            avgRating: Math.max(0, dri.avgRating + delta)
+                            serviceCount: (dri.serviceCount || 0) + 1,
+                            totalRating: (dri.totalRating || 0) + d1Points,
+                            avgRating: Number((((dri.totalRating || 0) + d1Points) / ((dri.serviceCount || 0) + 1)).toFixed(1))
+                        };
+                    }
+                    if (record.driver2Name && dri.name === record.driver2Name) {
+                        const d2Points = (record.d2Metrics || []).filter((m, i) => m === true && i <= 4).length;
+                        return {
+                            ...dri,
+                            serviceCount: (dri.serviceCount || 0) + 1,
+                            totalRating: (dri.totalRating || 0) + d2Points,
+                            avgRating: Number((((dri.totalRating || 0) + d2Points) / ((dri.serviceCount || 0) + 1)).toFixed(1))
                         };
                     }
                     return dri;
+                });
+
+                const updatedVehicles = (settings.busVehicles || []).map(veh => {
+                    if (veh.plate === record.plate) {
+                        return {
+                            ...veh,
+                            serviceCount: (veh.serviceCount || 0) + 1,
+                            totalRating: (veh.totalRating || 0) + v1Points,
+                            avgRating: Number((((veh.totalRating || 0) + v1Points) / ((veh.serviceCount || 0) + 1)).toFixed(1))
+                        };
+                    }
+                    return veh;
+                });
+
+                const updatedCompanies = (settings.busCompanies || []).map(comp => {
+                    const companyDrivers = updatedDrivers.filter(d => d.companyId === comp.id);
+                    if (companyDrivers.length > 0) {
+                        const totalSvc = companyDrivers.reduce((sum, d) => sum + (d.serviceCount || 0), 0);
+                        const avgR = companyDrivers.reduce((sum, d) => sum + (d.avgRating || 0), 0) / companyDrivers.length;
+                        return {
+                            ...comp,
+                            serviceCount: totalSvc,
+                            avgRating: Number(avgR.toFixed(1))
+                        };
+                    }
+                    return comp;
                 });
 
                 const updatedRatings = (settings.busRatings || []).map(r => 
@@ -79,6 +118,8 @@ const RatingTab: React.FC<RatingTabProps> = ({ currentEvent, registrations, sett
                 onUpdateSettings({
                     ...settings,
                     busDrivers: updatedDrivers,
+                    busVehicles: updatedVehicles,
+                    busCompanies: updatedCompanies,
                     busRatings: updatedRatings
                 });
                 setConfirmConfig((prev: ConfirmConfig) => ({ ...prev, isOpen: false }));

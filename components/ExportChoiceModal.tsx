@@ -6,11 +6,13 @@ import { X, ShieldAlert } from 'lucide-react';
 interface ExportChoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (mask: boolean, toEditor: boolean) => void;
+  onConfirm: (mask: boolean, toEditor: boolean, scope?: 'all' | 'unpaid') => void;
+  showScopeSelector?: boolean;
 }
 
-const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({ isOpen, onClose, onConfirm }) => {
+const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({ isOpen, onClose, onConfirm, showScopeSelector = false }) => {
   const [destination, setDestination] = React.useState<'download' | 'editor'>('download');
+  const [scope, setScope] = React.useState<'all' | 'unpaid'>('all');
 
   return (
     <AnimatePresence>
@@ -49,6 +51,26 @@ const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({ isOpen, onClose, 
 
             {/* Content */}
             <div className="p-8">
+              {showScopeSelector && (
+                <div className="mb-6">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3 ml-1">名單範圍 / Scope</label>
+                  <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-2xl">
+                    <button 
+                      onClick={() => setScope('all')}
+                      className={`py-2.5 rounded-xl text-xs font-black transition-all ${scope === 'all' ? 'bg-white shadow-sm text-green-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                      全部名單
+                    </button>
+                    <button 
+                      onClick={() => setScope('unpaid')}
+                      className={`py-2.5 rounded-xl text-xs font-black transition-all ${scope === 'unpaid' ? 'bg-white shadow-sm text-red-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                      未收名單
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="mb-6">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3 ml-1">輸出目的地 / Destination</label>
                 <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-2xl">
@@ -75,13 +97,13 @@ const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({ isOpen, onClose, 
 
               <div className="flex flex-col gap-3">
                 <button 
-                  onClick={() => onConfirm(true, destination === 'editor')}
+                  onClick={() => onConfirm(true, destination === 'editor', scope)}
                   className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-blue-100 transition-all active:scale-95 flex items-center justify-center"
                 >
                   要遮蔽 / Masked
                 </button>
                 <button 
-                  onClick={() => onConfirm(false, destination === 'editor')}
+                  onClick={() => onConfirm(false, destination === 'editor', scope)}
                   className="w-full py-4 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl font-black text-sm hover:border-blue-200 hover:bg-blue-50 transition-all active:scale-95 flex items-center justify-center"
                 >
                   不遮蔽 / Normal

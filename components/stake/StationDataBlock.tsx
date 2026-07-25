@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { GlobalSettings, Station, EventData } from '../../types';
 import { updateSettings, saveSettings } from '../../services/sheetService';
 import { 
@@ -18,7 +18,7 @@ interface StationDataBlockProps {
 }
 
 const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, onUpdateSettings }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [isExpanded, setIsExpanded] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingStation, setEditingStation] = useState<Station | null>(null);
@@ -208,25 +208,56 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                             <div>
                                 <h3 className="text-sm font-black text-indigo-900">{t('station.list_title', '站點列表')}</h3>
                             </div>
-                            <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenAdd();
-                                }}
-                                className="bg-indigo-600 text-white p-2 px-6 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition-all text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
-                            >
-                                <Plus className="w-4 h-4" /> {t('station.button.add', '新增站點')}
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        const beforeCount = (settings.stations || []).length;
+                                        const seen = new Set();
+                                        const unique = (settings.stations || []).filter(s => {
+                                            // Identification key based on area, place and address
+                                            const key = `${(s.area || '').trim()}-${(s.place || '').trim()}-${(s.address || '').trim()}`;
+                                            if (seen.has(key)) return false;
+                                            seen.add(key);
+                                            return true;
+                                        });
+
+                                        if (unique.length < beforeCount) {
+                                            const updatedSettings = { ...settings, stations: unique };
+                                            localStorage.setItem('STAKE_STATIONS_CACHE', JSON.stringify(unique));
+                                            await saveSettings(updatedSettings);
+                                            onUpdateSettings(updatedSettings);
+                                            setMsg(`已成功刪除 ${beforeCount - unique.length} 筆重複記錄`);
+                                            setTimeout(() => setMsg(null), 3000);
+                                        } else {
+                                            setMsg("未發現重複記錄");
+                                            setTimeout(() => setMsg(null), 3000);
+                                        }
+                                    }}
+                                    className="text-[10px] bg-red-50 text-red-600 px-3 py-2 rounded-xl border border-red-100 hover:bg-red-100 font-bold transition-colors flex items-center gap-1 active:scale-95"
+                                >
+                                    <RefreshCw className="w-3 h-3" /> {t('station.button.cleanup_duplicates', '清理重複')}
+                                </button>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenAdd();
+                                    }}
+                                    className="bg-indigo-600 text-white p-2 px-6 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition-all text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
+                                >
+                                    <Plus className="w-4 h-4" /> {t('station.button.add', '新增站點')}
+                                </button>
+                            </div>
                         </div>
                         <div className="overflow-x-auto overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-indigo-200">
                             <table className="w-full text-left border-collapse table-auto">
                                 <thead className="sticky top-0 bg-indigo-50/95 backdrop-blur-md z-30">
                                     <tr className="border-b-2 border-indigo-100 text-gray-500 text-[10px] font-black uppercase tracking-wider">
                                         <th onClick={() => handleSort('area')} className="p-3 pl-6 cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap sticky left-0 bg-indigo-50/95 z-40 border-r border-indigo-100/50">
-                                            <div className="flex items-center">{t('station.col.area', '地名')} {getSortIcon('area')}</div>
+                                            <div className="flex items-center">{t('station.col.area', '地點')} {getSortIcon('area')}</div>
                                         </th>
                                         <th onClick={() => handleSort('place')} className="p-3 cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap">
-                                            <div className="flex items-center">{t('station.col.place', '地點')} {getSortIcon('place')}</div>
+                                            <div className="flex items-center">{t('station.col.place', '地名')} {getSortIcon('place')}</div>
                                         </th>
                                         <th onClick={() => handleSort('address')} className="p-3 cursor-pointer hover:text-indigo-600 transition-colors">
                                             <div className="flex items-center">{t('station.col.address', '地址')} {getSortIcon('address')}</div>
@@ -314,22 +345,22 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-black text-gray-500 ml-1 uppercase tracking-wider">{t('station.form.area_label', '地名 (如: 嘉義)')}</label>
+                                            <label className="text-xs font-black text-gray-500 ml-1 uppercase tracking-wider">{t('station.form.area_label', '地點 (如: 嘉義)')}</label>
                                             <input 
                                                 type="text"
                                                 value={formData.area}
                                                 onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                                                placeholder={t('station.form.area_placeholder', '區域或主要地名')}
+                                                placeholder={tString('station.form.area_placeholder', '地點簡稱')}
                                                 className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-black text-gray-500 ml-1 uppercase tracking-wider">{t('station.form.place_label', '地點名稱 (如: 教堂)')}</label>
+                                            <label className="text-xs font-black text-gray-500 ml-1 uppercase tracking-wider">{t('station.form.place_label', '地名 (如: 教堂)')}</label>
                                             <input 
                                                 type="text"
                                                 value={formData.place}
                                                 onChange={(e) => setFormData({ ...formData, place: e.target.value })}
-                                                placeholder={t('station.form.place_placeholder', '具體站點名稱')}
+                                                placeholder={tString('station.form.place_placeholder', '完整地名資料')}
                                                 className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
                                             />
                                         </div>
@@ -340,7 +371,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                             type="text"
                                             value={formData.address}
                                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                            placeholder={t('station.form.address_placeholder', '請輸入完整街道地址')}
+                                            placeholder={tString('station.form.address_placeholder', '請輸入完整街道地址')}
                                             className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
                                         />
                                     </div>
@@ -349,7 +380,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                         <textarea 
                                             value={formData.mapUrl}
                                             onChange={(e) => setFormData({ ...formData, mapUrl: e.target.value })}
-                                            placeholder={t('station.form.map_url_placeholder', '貼上分享連結 (https://maps.app.goo.gl/...)')}
+                                            placeholder={tString('station.form.map_url_placeholder', '貼上分享連結 (https://maps.app.goo.gl/...)')}
                                             rows={2}
                                             className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900 resize-none"
                                         />

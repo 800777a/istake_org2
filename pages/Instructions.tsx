@@ -1,22 +1,24 @@
-
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { subscribeToSettings, subscribeToEvents } from '../services/sheetService';
 import { GlobalSettings, EventData, BillingEngineConfig } from '../types';
-import { ArrowLeft, BookOpen, AlertCircle, CalendarCheck, Shirt, Bus, CreditCard, Info, Home, MapPin, Train, FileText, List, ArrowRight, Book, MessageSquare, Target, Users, ClipboardCheck, Clock, UserCheck, Calendar, Edit } from 'lucide-react';
+import { ArrowLeft, BookOpen, AlertCircle, CalendarCheck, Shirt, Bus, CreditCard, Info, Home, MapPin, Train, FileText, List, ArrowRight, Book, MessageSquare, Target, Users, ClipboardCheck, Clock, UserCheck, Calendar, Edit, ExternalLink, ShieldCheck } from 'lucide-react';
 import { CalculatorOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import { FeeExplanationSection } from '../components/stake/fee-config/FeeExplanationSection';
 import { FeeCalculationModal } from '../components/stake/fee-config/FeeCalculationModal';
 import { Modal, Button } from 'antd';
 import { motion, AnimatePresence } from 'motion/react';
+import MarkdownDocViewer from '../src/components/MarkdownDocViewer';
+
+type TabType = 'eventRules' | 'general' | 'housing' | 'driving' | 'transit' | 'handbook' | 'privacy' | 'terms';
 
 interface InstructionsProps {
     onBack: () => void;
     onGoRegister?: () => void;
     onGoFeedback?: () => void;
+    activeTab?: TabType;
+    onTabChange?: (tab: TabType) => void;
 }
-
-type TabType = 'eventRules' | 'general' | 'housing' | 'driving' | 'transit' | 'handbook';
 
 // Standardized Section Header: text-lg on mobile, text-xl on desktop
 const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType, title: string }) => (
@@ -37,44 +39,94 @@ const BulletPoint = ({ children }: React.PropsWithChildren<{}>) => (
 );
 
 // Handbook Data
-const getHandbookSections = (t: any) => [
-    {
-        title: t('stake.instructions.handbook_data.section25_1.title', "25.1 成員和領袖參與聖殿和家譜事工"),
-        content: t('stake.instructions.handbook_data.section25_1.content', "教會成員有此特權和責任，要協助使自己的家人永遠結合在一起。他們要作好準備，在接受聖殿教儀時訂立聖約，並且努力遵守所立的聖約。\n教會成員受到鼓勵，要找出尚未接受聖殿教儀的已逝親人，然後代替這些親人執行教儀（見教義和聖約128：18）。已逝者在靈的世界中，可以選擇接受或拒絕為他們執行的教儀。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section25_1_1.title', "25.1.1 聖殿出席的個人責任"),
-        content: t('stake.instructions.handbook_data.section25_1_1.content', "成員要自行決定去聖殿崇拜的時間和頻率。領袖不可為成員的聖殿出席情況設定配額或回報機制。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section26_4_2.title', "26.4.2 新受洗成員的聖殿推薦書"),
-        content: t('stake.instructions.handbook_data.section26_4_2.content', "主教要與適齡的新成員面談，讓他們取得聖殿推薦書，可以代理死者接受洗禮和證實。他要在該成員接受證實後不久，通常在一個星期內，進行這項面談（見26.4.1）。對於弟兄來說，這項面談可以作為接受亞倫聖職面談的一部分。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section27_0.title', "27.0 導言"),
-        content: t('stake.instructions.handbook_data.section27_0.content', "聖殿是主的屋宇，指引我們歸向救主耶穌基督。我們在聖殿裡參與神神教儀，並與天父立下聖約，使我們與祂和救主緊密相連。這些聖約和教儀幫助我們準備好回到天父身邊，並印證在一起成為永恆家庭。\n在聖殿的各項聖約和教儀中，「都顯示了神性的能力」（教義和聖約約84：20）。\n聖殿的聖約和教儀是神聖的。與聖殿聖約有關的象徵，不應該在聖殿以外的地方討論。我們也不該討論我們在聖殿內承諾不會透露的神聖資料。然而，我們可以討論聖殿聖約和教儀的基本目的和教義，以及我們在聖殿裡所享有的靈性感覺。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section27_1_7.title', "27.1.7 在成員接受聖殿教儀後與他們見面"),
-        content: t('stake.instructions.handbook_data.section27_1_7.content', "成員在接受聖殿教儀後，往往會有些疑問。接受過恩道門的家人、主教、支會其他領袖、弟兄施助者和姊妹施助者，可以和成員見面，討論他們的聖殿經驗。\n協助解答問題的資源，可在temples.ChurchofJesusChrist.org取得。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section27_2_1_1.title', "27.2.1.1 新受洗的成員"),
-        content: t('stake.instructions.handbook_data.section27_2_1_1.content', "配稱的成年新成員，要在他們接受證實的日期至少滿一年後，才可以接受個人恩道門。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section27_2_3_3.title', "27.2.3.3 接受恩道門成員的伴隨者"),
-        content: t('stake.instructions.handbook_data.section27_2_3_3.content', "接受個人恩道門的成員，可以邀請一位相同性別且已接受恩道門的成員擔任伴隨者，在恩道門場次裡給予協助。伴隨者必須持有有效的聖殿推薦書。必要時，聖殿可以提供伴隨者。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section20_5_10.title', "20.5.10 聖殿之旅"),
-        content: t('stake.instructions.handbook_data.section20_5_10.content', "支會或支聯會可以規劃在指定的聖殿地區內進行聖殿之旅。\n教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿之旅，這類行程需獲得支聯會會長團的核准。需要過夜的聖殿之旅也需獲得支聯會會長團的核准。\n聖殿之旅必須遵守20.7.7裡的旅行政策。需過夜的聖殿之旅也必須遵守20.5.5裡的政策。")
-    },
-    {
-        title: t('stake.instructions.handbook_data.section20_7_7.title', "20.7.7 旅行"),
-        content: t('stake.instructions.handbook_data.section20_7_7.content', "教會活動的交通旅行應由主教或支聯會會長核准，這類交通旅行不應對成員造成過多負擔。\n參與者不應為參加活動作長途旅行（超過幾個小時），任何例外情形都須取得區域會長團的核准；若區域會長團核准這樣的旅行，則成員不應自付旅費（見20.6）。\n對於旅行的做法和應用本節內指導方針的方式，同一個區域或參加同一個協調議會的各單位應當一致。支聯會會長們可以在協調議會會議中討論對於旅行的做法，並達成共識。\n領袖要為需要長途旅行的活動填寫活動計畫書。\n教會的青少年活動若需要長途旅行或過夜，父母或監護人必須提供書面同意才能讓子女參與（見20.7.4）。必須有負責可靠的成人隨同督導（見20.7.1）。\n可行的話，教會團體應搭乘商業運輸工具進行長途旅行，該運輸工具應有執照，並已投保責任險。\n教會團體搭乘私人車輛旅行時，每輛車都必須處於安全的運作狀態。每位乘客都應繫上安全帶。每位駕駛員都應當持有駕照，而且是負責可靠的成人。所有的車輛與駕駛員都應投保合理額度的汽車責任保險。應訂立計畫，確保駕駛員保持清醒和警覺。要盡可能地做到，一位成人不應單獨與一位青少年在車上，除非該名青少年是其子女。\n教會組織不可擁有或購置汽車或巴士作為團體旅行之用。\n除非是夫妻或彼此皆為單身，否則一男一女不應單獨結伴同行，參加教會活動、聚會或從事指派工作。\n如需更多資料，見ChurchofJesusChrist.org上的「常見問題——我該怎麼辦？」。")
-    }
-];
+const getHandbookSections = (t: any, tString: any) => {
+    const sections = [
+        {
+            title: t('stake.instructions.handbook_data.section14_2_1_3.title', "14.2.1.3 活動"),
+            content: tString('stake.instructions.handbook_data.section14_2_1_3.content', "在支會或支聯會領袖的指導下，年輕單身成人可以策劃與參與特別為他們舉辦的活動。這些活動可以在支會或支聯會層級舉辦。範例可包括：聖殿旅行團，家譜事工。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_2_6.title', "20.2.6 活動的經費來源"),
+            content: tString('stake.instructions.handbook_data.section20_2_6.content', "大部分的活動應當簡單且花費少或沒有花費。任何支出都必須事先獲得主教團或支聯會會長團的核准。\n成員參加活動通常不應付費。有關活動經費來源的政策和指導方針，見20.6。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_5_7.title', "20.5.7 活動中的祈禱和祈禱會"),
+            content: tString('stake.instructions.handbook_data.section20_5_7.content', "所有的活動都應該以祈禱開始，適當的話，也以祈禱結束。可以包括一首聖詩、一個靈修，或一位領袖或參與者的演講。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_6_1.title', "20.6.1 以支會或支聯會經費支付的活動"),
+            content: tString('stake.instructions.handbook_data.section20_6_1.content', "支會或支聯會的經費應當用來支付所有的活動，可能的例外情形列於20.6.2。\n成員不應自付材料、用品、租金或入場費，或是長途交通費。在不會造成負擔的情況下，成員可以提供食物。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_7_4.title', "20.7.4 父母同意"),
+            content: tString('stake.instructions.handbook_data.section20_7_4.content', "未經父母或監護人許可，兒童和青少年不得參加教會活動。若教會活動需要過夜、長途旅行，或有高於一般的風險，則必須取得書面同意。有些活動可能需要更多的規劃以降低風險。安全始終都應該是重要的考量因素，見20.7.6.1。\n父母或監護人要簽署同意書及醫療授權書，以表示同意。帶領活動的人應取得每位參與者所提供的簽名同意書。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section25_1.title', "25.1 成員和領袖參與聖殿和家譜事工"),
+            content: tString('stake.instructions.handbook_data.section25_1.content', "教會成員有此特權和責任，要協助使自己的家人永遠結合在一起。他們要作好準備，在接受聖殿教儀時訂立聖約，並且努力遵守所立的聖約。\n教會成員受到鼓勵，要找出尚未接受聖殿教儀的已逝親人，然後代替這些親人執行教儀（見教義和聖約128：18）。已逝者在靈的世界中，可以選擇接受或拒絕為他們執行的教儀。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section25_1_1.title', "25.1.1 聖殿出席的個人責任"),
+            content: tString('stake.instructions.handbook_data.section25_1_1.content', "成員要自行決定去聖殿崇拜的時間和頻率。領袖不可為成員的聖殿出席情況設定配額或回報機制。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section25_1_2.title', "25.1.2 支會和支聯會聖殿旅行團"),
+            content: tString('stake.instructions.handbook_data.section25_1_2.content', "教會的每個單位都有指定的聖殿地區。教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿旅行團。\n所有支會和支聯會的聖殿旅行團都應與聖殿預約教儀時間。每座聖殿的聯絡資訊，見temples.ChurchofJesusChrist.org")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section25_5.title', "25.5 推薦和召喚聖殿工作人員"),
+            content: tString('stake.instructions.handbook_data.section25_5.content', "聖殿工作人員協助執行教儀，或支援聖殿的運作，例如在辦公室、洗衣房、與會者住宿或庭院維護等方面的服務。被召喚擔任聖殿工作人員的成員，是擔任不支薪的義工。\n\n25.5.1 推薦聖殿工作人員\n以下方法能找出有潛力擔任聖殿工作人員的人：\n主教或支會其他領袖找出的成員\n找主教表明願意服務的成員\n由聖殿會長、女監護或聖殿其他領袖推薦的成員\n準備去傳教或剛結束傳教返鄉的成員（見第24章）\n有潛力擔任聖殿工作人員者的姓名，要用「推薦聖殿工作人員」工具來提交。主教、支聯會會長和聖殿會長團都可以使用此項工具。提交姓名的流程概述如下。\n當聖殿會長團成員發現一位有潛力擔任聖殿工作人員的人，他們要用「推薦聖殿工作人員」工具，將此人的姓名提交給主教。\n當主教發現一位有潛力擔任聖殿工作人員的人，或從聖殿會長那裡收到推薦資料時，就要與該成員討論這個服務機會。他要審閱擔任聖殿工作人員的條件（見25.5.2）。如果主教和該成員都覺得這是個適合的機會，主教就要用「推薦聖殿工作人員」工具，填妥並提交推薦資料。該成員應當要了解，將推薦資料提交出去，並不保證會被召喚或被指派擔任聖殿工作人員。\n接下來，由支聯會會長審閱推薦資料。如果支聯會會長核准此項推薦，就要用「推薦聖殿工作人員」工具，將推薦資料提交給聖殿會長審閱。\n被召喚擔任聖殿工作人員的成員，通常會承諾每週於固定時間在聖殿裡服務。領袖應避免發出會妨礙成員到聖殿服務的其他召喚。\n「推薦聖殿工作人員」工具也會讓主教和支聯會會長看到一份清單，上面列出他們的支會或支聯會中，目前擔任聖殿工作人員的所有成員。\n\n25.5.2 擔任聖殿工作人員的條件\n成員若要被推薦擔任聖殿工作人員，必須符合以下資格：\n居住在即將服務的聖殿之聖殿地區內。\n接受過恩道門，遵行聖殿聖約，並持有有效的聖殿推薦書。\n對耶穌基督的復興福音有堅強的見證。\n體能上可以在聖殿中執行受指派的工作. 為與會者服務或主理教儀的工作人員，必須在體能上可以勝任而無需協助。\n在教會和社區值得受人敬重。\n與人合作融洽。\n可靠、健康。\n其教籍紀錄目前沒有附註。\n此外，主教應確保下列事項：\n如果一個人的教會成員身分受到正式限制，在這些限制被移除至少五年後，此人才可被推薦擔任聖殿工作人員。（見32.11.3和32.16.1。）\n如果未接受恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在重新加入教會至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9、32.16.1和32.16.2。）\n如果接受過恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在接受恢復祝福至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9和32.17.2。）\n\n25.5.3 召喚和按手選派聖殿工作人員\n聖殿會長收到推薦某人擔任聖殿工作人員的推薦資料後，由聖殿會長團的一員或他指定的一人與此人面談。主持面談的人受到聖靈啟發時，就要召喚那些能夠服務的人擔任聖殿工作人員，並按手選派他們。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section26_4_2.title', "26.4.2 新受洗成員的聖殿推薦書"),
+            content: tString('stake.instructions.handbook_data.section26_4_2.content', "主教要與適齡的新成員面談，讓他們取得聖殿推薦書，可以代理死者接受洗禮和證實。他要在該成員接受證實後不久，通常在一個星期內，進行這項面談（見26.4.1）。對於弟兄來說，這項面談可以作為接受亞倫聖職面談的一部分。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section27_0.title', "27.0 導言"),
+            content: tString('stake.instructions.handbook_data.section27_0.content', "聖殿是主的屋宇，指引我們歸向救主耶穌基督。我們在聖殿裡參與神神教儀，並與天父立下聖約，使我們與祂和救主緊密相連。這些聖約和教儀幫助我們準備好回到天父身邊，並印證在一起成為永恆家庭。\n在聖殿的各項聖約和教儀中，「都顯示了神性的能力」（教義和聖約約84：20）。\n聖殿的聖約和教儀是神聖的。與聖殿聖約有關的象徵，不應該在聖殿以外的地方討論。我們也不該討論我們在聖殿內承諾不會透露的神聖資料。然而，我們可以討論聖殿聖約和教儀的基本目的和教義，以及我們在聖殿裡所享有的靈性感覺。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section27_1_7.title', "27.1.7 在成員接受聖殿教儀後與他們見面"),
+            content: tString('stake.instructions.handbook_data.section27_1_7.content', "成員在接受聖殿教儀後，往往會有些疑問。接受過恩道門的家人、主教、支會其他領袖、弟兄施助者和姊妹施助者，可以和成員見面，討論他們的聖殿經驗。\n協助解答問題的資源，可在temples.ChurchofJesusChrist.org取得。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section27_2_1_1.title', "27.2.1.1 新受洗的成員"),
+            content: tString('stake.instructions.handbook_data.section27_2_1_1.content', "配稱的成年新成員，要在他們接受證實的日期至少滿一年後，才可以接受個人恩道門。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section27_2_3_3.title', "27.2.3.3 接受恩道門成員的伴隨者"),
+            content: tString('stake.instructions.handbook_data.section27_2_3_3.content', "接受個人恩道門的成員，可以邀請一位相同性別且已接受恩道門的成員擔任伴隨者，在恩道門場次裡給予協助。伴隨者必須持有有效的聖殿推薦書。必要時，聖殿可以提供伴隨者。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_5_10.title', "20.5.10 聖殿旅行團"),
+            content: tString('stake.instructions.handbook_data.section20_5_10.content', "支會或支聯會可以規劃在指定的聖殿地區內進行聖殿旅行團。\n教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿旅行團，這類行程需獲得支聯會會長團的核准。需要過夜的聖殿旅行團也需獲得支聯會會長團的核准。\n聖殿旅行團必須遵守20.7.7裡的旅行政策。需過夜的聖殿旅行團也必須遵守20.5.5裡的政策。")
+        },
+        {
+            title: t('stake.instructions.handbook_data.section20_7_7.title', "20.7.7 旅行"),
+            content: tString('stake.instructions.handbook_data.section20_7_7.content', "教會活動的交通旅行應由主教或支聯會會長核准，這類交通旅行不應對成員造成過多負擔。\n參與者不應為參加活動作長途旅行（超過幾個小時），任何例外情形都須取得區域會長團的核准；若區域會長團核准這樣的旅行，則成員不應自付旅費（見20.6）。\n對於旅行的做法和應用本節內指導方針的方式，同一個區域或參加同一個協調議會的各單位應當一致。支聯會會長們可以在協調議會會議中討論對於旅行的做法，並達成共識。\n領袖要為需要長途旅行的活動填寫活動計畫書。\n教會的青少年活動若需要長途旅行或過夜，父母或監護人必須提供書面同意才能讓子女參與（見20.7.4）。必須有負責可靠的成人隨同督導（見20.7.1）。\n可行的話，教會團體應搭乘商業運輸工具進行長途旅行，該運輸工具應有執照，並已投保責任險。\n教會團體搭乘私人車輛旅行時，每輛車都必須處於安全的運作狀態。每位乘客都應繫上安全帶。每位駕駛員都應當持有駕照，而且是負責可靠的成人。所有的車輛與駕駛員都應投保合理額度的汽車責任保險。應訂立計畫，確保駕駛員保持清醒和警覺。要盡可能地做到，一位成人不應單獨與一位青少年在車上，除非該名青少年是其子女。\n教會組織不可擁有或購置汽車或巴士作為團體旅行之用。\n除非是夫妻或彼此皆為單身，否則一男一女不應單獨結伴同行，參加教會活動、聚會或從事指派工作。\n如需更多資料，見ChurchofJesusChrist.org上的「常見問題——我該怎麼辦？」。")
+        }
+    ];
+
+    // Numeric sorting logic based on the title prefix (e.g., "14.2.1.3")
+    return sections.sort((a, b) => {
+        const aTitle = String(a.title);
+        const bTitle = String(b.title);
+        const aMatch = aTitle.match(/^[\d.]+/);
+        const bMatch = bTitle.match(/^[\d.]+/);
+        
+        if (aMatch && bMatch) {
+            const aParts = aMatch[0].split('.').map(Number);
+            const bParts = bMatch[0].split('.').map(Number);
+            
+            for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+                const aVal = aParts[i] || 0;
+                const bVal = bParts[i] || 0;
+                if (aVal !== bVal) return aVal - bVal;
+            }
+        }
+        return aTitle.localeCompare(bTitle);
+    });
+};
 
 interface HandbookSection {
     title: string;
@@ -87,12 +139,14 @@ interface RuleSection {
     content: React.ReactNode;
 }
 
-const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoFeedback }) => {
-    const { t } = useTranslation();
+const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoFeedback, activeTab: propsActiveTab, onTabChange }) => {
+    const { t, tString } = useI18n();
 
     const [settings, setSettings] = useState<GlobalSettings | null>(null);
     const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
-    const [activeTab, setActiveTab] = useState<TabType>('eventRules');
+    const [internalActiveTab, setInternalActiveTab] = useState<TabType>('eventRules');
+    const activeTab = propsActiveTab || internalActiveTab;
+    const setActiveTab = onTabChange || setInternalActiveTab;
     const [sandboxVisible, setSandboxVisible] = useState(false);
     const [billingConfig, setBillingConfig] = useState<BillingEngineConfig | null>(null);
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -131,13 +185,13 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
     };
 
     const rainbowColors = [
-        { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', accent: 'bg-red-100' },
-        { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', accent: 'bg-orange-100' },
-        { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', accent: 'bg-yellow-100' },
-        { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', accent: 'bg-green-100' },
-        { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-100' },
-        { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', accent: 'bg-indigo-100' },
-        { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', accent: 'bg-purple-100' },
+        { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', accent: 'bg-red-100', hover: 'hover:bg-red-100' },
+        { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', accent: 'bg-orange-100', hover: 'hover:bg-orange-100' },
+        { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', accent: 'bg-yellow-100', hover: 'hover:bg-yellow-100' },
+        { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', accent: 'bg-green-100', hover: 'hover:bg-green-100' },
+        { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', accent: 'bg-blue-100', hover: 'hover:bg-blue-100' },
+        { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', accent: 'bg-indigo-100', hover: 'hover:bg-indigo-100' },
+        { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', accent: 'bg-purple-100', hover: 'hover:bg-purple-100' },
     ];
 
     const ruleSections: RuleSection[] = [
@@ -150,13 +204,13 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                         <p className="font-bold mb-1">1. 讓新成員儘快到聖殿</p>
                         <ul className="list-disc pl-5 space-y-1">
                             <li>支聯會：新成員免車資，伴隨者半價。</li>
-                            <li>支分會：協助新成員儘速取得聖殿推薦書，並報名聖殿之旅。</li>
+                            <li>支分會：協助新成員儘速取得聖殿推薦書，並報名聖殿旅行團。</li>
                         </ul>
                     </div>
                     <div>
                         <p className="font-bold mb-1">2. 提升聖殿外的服務品質</p>
                         <ul className="list-disc pl-5 space-y-1">
-                            <li>支聯會：改進聖殿之旅報名方式及搭車服務品質。</li>
+                            <li>支聯會：改進聖殿旅行團報名方式及搭車服務品質。</li>
                             <li>支分會：提升聖殿推薦書持有率及成員自帶家檔的比例。</li>
                         </ul>
                     </div>
@@ -175,7 +229,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
             icon: Users,
             content: (
                 <ul className="space-y-2">
-                    <li><span className="font-bold">督導人：</span>支聯會會長團諮理（督導整體聖殿之旅）。</li>
+                    <li><span className="font-bold">督導人：</span>支聯會會長團諮理（督導整體聖殿旅行團）。</li>
                     <li><span className="font-bold">主辦人：</span>支聯會聖殿與家譜顧問（負責活動執行）。</li>
                     <li><span className="font-bold">領隊人：</span>關心司機狀況、報路、代墊司機餐費、代繳遊覽車停車費。</li>
                     <li><span className="font-bold">服務人：</span>擔任聖殿教儀的服務工作人員。</li>
@@ -341,6 +395,20 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
             colorClass: 'bg-indigo-100 text-indigo-900 border-indigo-400 hover:bg-indigo-200',
             activeClass: 'bg-indigo-300 text-indigo-900 border-indigo-400 shadow-md ring-indigo-300'
         },
+        { 
+            id: 'privacy', 
+            label: t('stake.instructions.tabs.privacy', '隱私權利'), 
+            icon: ShieldCheck, 
+            colorClass: 'bg-slate-100 text-slate-900 border-slate-400 hover:bg-slate-200',
+            activeClass: 'bg-slate-300 text-slate-900 border-slate-400 shadow-md ring-slate-300'
+        },
+        { 
+            id: 'terms', 
+            label: t('stake.instructions.tabs.terms', '服務條款'), 
+            icon: FileText, 
+            colorClass: 'bg-gray-100 text-gray-900 border-gray-400 hover:bg-gray-200',
+            activeClass: 'bg-gray-300 text-gray-900 border-gray-400 shadow-md ring-gray-300'
+        },
     ];
 
     return (
@@ -353,27 +421,38 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                 <div className="flex flex-row justify-between items-center gap-2 mb-2">
                     <div className="flex items-center">
                         <Info className="w-6 h-6 mr-2 text-amber-600" />
-                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">{t('stake.instructions.title', '說明')}</h2>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                            {activeTab === 'eventRules' ? '活動辦法' : 
+                             activeTab === 'general' ? '報名須知' : 
+                             activeTab === 'housing' ? '副殿住宿' : 
+                             activeTab === 'driving' ? '開車前往' : 
+                             activeTab === 'transit' ? '大眾運輸' : 
+                             activeTab === 'handbook' ? '手冊擷選' : 
+                             activeTab === 'privacy' ? '隱私權利' : 
+                             activeTab === 'terms' ? '服務條款' : 
+                             t('stake.instructions.title', '說明')}
+                        </h2>
                     </div>
-                    <span className="text-sm md:text-base font-medium text-gray-500 truncate">{t('stake.instructions.event_date_label', '活動日期：')}{activeEvent?.event_date || t('stake.instructions.loading', '載入中...')}</span>
                 </div>
 
                 {/* Tab Navigation - Responsive Grid: Mobile 2, Tablet 3, Desktop 6 */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id)}
-                            className={`
-                                py-3 px-2 md:px-4 rounded-lg font-bold text-center transition-all flex items-center justify-center border text-sm touch-manipulation shadow-sm
-                                ${activeTab === tab.id ? `${tab.activeClass} scale-[1.02]` : `${tab.colorClass}`}
-                            `}
-                        >
-                            <tab.icon className="w-4 h-4 mr-1 md:mr-2 flex-shrink-0" />
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+                {!propsActiveTab && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => handleTabChange(tab.id)}
+                                className={`
+                                    py-3 px-2 md:px-4 rounded-lg font-bold text-center transition-all flex items-center justify-center border text-sm touch-manipulation shadow-sm
+                                    ${activeTab === tab.id ? `${tab.activeClass} scale-[1.02]` : `${tab.colorClass}`}
+                                `}
+                            >
+                                <tab.icon className="w-4 h-4 mr-1 md:mr-2 flex-shrink-0" />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Content Sections */}
                 <div className="bg-white p-5 md:p-10 rounded-2xl shadow-sm border border-gray-100 min-h-[400px]">
@@ -385,7 +464,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                 className="flex items-center justify-between cursor-pointer select-none py-4 border-b-2 border-orange-100 mb-6"
                                 onClick={() => toggleSection('rules')}
                             >
-                                <SectionHeader icon={FileText} title={t('stake.instructions.eventRules.header', '辦法內容')} />
+                                <SectionHeader icon={FileText} title={tString('stake.instructions.eventRules.header', '辦法內容')} />
                                 <div className="text-orange-400">
                                     {collapsedSections['rules'] ? <DownOutlined className="text-lg" /> : <UpOutlined className="text-lg" />}
                                 </div>
@@ -402,7 +481,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                     >
                                         <div className="mb-12">
                                             <div className="text-center mb-8">
-                                                <h1 className="text-2xl md:text-3xl font-extrabold text-orange-900 mb-2">2026 嘉義支聯會 聖殿之旅 活動辦法</h1>
+                                                <h1 className="text-2xl md:text-3xl font-extrabold text-orange-900 mb-2">2026 嘉義支聯會 聖殿旅行團 活動辦法</h1>
                                                 <p className="text-orange-700 font-bold">實施日期：2026年7月1日起</p>
                                             </div>
 
@@ -439,7 +518,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                             )}
 
                                             <div className="mt-12 text-center space-y-2 border-t border-orange-100 pt-8">
-                                                <p className="text-orange-900 font-bold text-lg md:text-xl">祝福大家在聖殿之旅中獲得豐盛的祝福！</p>
+                                                <p className="text-orange-900 font-bold text-lg md:text-xl">祝福大家在聖殿旅行團中獲得豐盛的祝福！</p>
                                                 <p className="text-orange-600 text-sm">如有任何問題，請洽主辦人或督導人。</p>
                                             </div>
                                         </div>
@@ -465,7 +544,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {activeTab === 'general' && (
                         <div className="animate-fade-in">
                             {/* 1. Registration */}
-                            <SectionHeader icon={CalendarCheck} title={t('stake.instructions.general.registration.header', '如何報名')} />
+                            <SectionHeader icon={CalendarCheck} title={tString('stake.instructions.general.registration.header', '如何報名')} />
                             <ul className="mb-8">
                                 <BulletPoint>{t('stake.instructions.general.registration.point1', '請以「家庭」為單位進行報名，並推派一位家庭代表人負責填寫資料。')}</BulletPoint>
                                 <BulletPoint>{t('stake.instructions.general.registration.point2', '請務必確認所有報名成員的姓名、身分證字號及出生年月日正確無誤，以便辦理旅遊平安險。')}</BulletPoint>
@@ -474,7 +553,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             </ul>
 
                             {/* 2. Recommend */}
-                            <SectionHeader icon={BookOpen} title={t('stake.instructions.general.recommend.header', '聖殿推薦書')} />
+                            <SectionHeader icon={BookOpen} title={tString('stake.instructions.general.recommend.header', '聖殿推薦書')} />
                             <ul className="mb-8">
                                 <BulletPoint>
                                     <span className="font-bold text-slate-900">{t('stake.instructions.general.recommend.adult_label', '成人成員：')}</span>{t('stake.instructions.general.recommend.adult_desc', '需持有有效的聖殿推薦書。請提前檢查推薦書是否過期，若已過期，請儘早與主教/分會會長面談。')}
@@ -486,15 +565,15 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             </ul>
 
                             {/* 3. Clothing */}
-                            <SectionHeader icon={Shirt} title={t('stake.instructions.general.clothing.header', '服裝與儀容')} />
+                            <SectionHeader icon={Shirt} title={tString('stake.instructions.general.clothing.header', '服裝與儀容')} />
                             <ul className="mb-8">
                                 <BulletPoint>{t('stake.instructions.general.clothing.point1', '前往聖殿時，請穿著安息日服裝（弟兄穿著白襯衫、領帶；姊妹穿著裙裝或端莊褲裝）。')}</BulletPoint>
                                 <BulletPoint>{t('stake.instructions.general.clothing.point2', '參與洗禮教儀者，請自備一套換洗衣物（內衣褲），聖殿提供連身洗禮服。')}</BulletPoint>
-                                <BulletPoint>{t('stake.instructions.general.clothing.point3', '參與恩道門或印證教儀者，請攜帶完整的聖殿服裝。若需租借，請確認聖殿服裝租借處的開放狀況。')}</BulletPoint>
+                                <BulletPoint>{t('stake.instructions.general.clothing.point3', '參與恩道門或印證教儀者，請攜帶完整的聖殿服裝。若租借，請確認聖殿服裝租借處的開放狀況。')}</BulletPoint>
                             </ul>
 
                             {/* 4. Transportation */}
-                            <SectionHeader icon={Bus} title={t('stake.instructions.general.transport.header', '交通與集合')} />
+                            <SectionHeader icon={Bus} title={tString('stake.instructions.general.transport.header', '交通與集合')} />
                             <ul className="mb-8">
                                 <BulletPoint>{t('stake.instructions.general.transport.point1', '請依照各車次公告的集合時間準時抵達上車地點，逾時不候。')}</BulletPoint>
                                 <BulletPoint>{t('stake.instructions.general.transport.point2', '各車設有領車人員，請配合領車人員的引導與點名。')}</BulletPoint>
@@ -503,7 +582,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             </ul>
 
                             {/* 5. Fees */}
-                            <SectionHeader icon={CreditCard} title={t('stake.instructions.general.fees.header', '費用與繳費')} />
+                            <SectionHeader icon={CreditCard} title={tString('stake.instructions.general.fees.header', '費用與繳費')} />
                             <ul className="mb-0">
                                 <BulletPoint>{t('stake.instructions.general.fees.point1', '請依據您的身分（成人、青少年、兒童等）繳交相應的報名費。')}</BulletPoint>
                                 <BulletPoint>
@@ -534,24 +613,65 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                 <h3 className="font-bold text-indigo-900 flex items-center mb-2">
                                     <Book className="w-5 h-5 mr-2" /> {t('stake.instructions.handbook_data.header_title', '總指導手冊')}
                                 </h3>
-                                <p className="text-indigo-800 text-sm">{t('stake.instructions.handbook_data.header_desc', '以下內容擷取自《總指導手冊：在耶穌基督後期聖徒教會裡服務》，供成員與領袖參考。')}</p>
+                                <p className="text-indigo-800 text-sm">
+                                    {t('stake.instructions.handbook_data.header_desc', '以下內容擷取自《總指導手冊：在耶穌基督後期聖徒教會裡服務》，供成員與領袖參考。')}
+                                </p>
+                                <div className="mt-4 pt-4 border-t border-indigo-100">
+                                    <a 
+                                        href="https://www.churchofjesuschrist.org/study/manual/general-handbook?lang=zho" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-indigo-700 hover:text-indigo-900 font-bold bg-white px-4 py-2 rounded-lg border border-indigo-200 shadow-sm transition-all hover:shadow-md"
+                                    >
+                                        <ExternalLink className="w-4 h-4 mr-2" />
+                                        {t('stake.instructions.handbook_data.source_url_label', '查詢原文出處內容')}
+                                    </a>
+                                </div>
                             </div>
 
-                            <div className="space-y-6">
-                                {getHandbookSections(t).map((section: HandbookSection, idx: number) => (
-                                    <div key={idx} className="bg-white p-5 rounded-xl border border-indigo-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <h4 className="font-bold text-lg text-indigo-900 mb-3 border-b border-indigo-50 pb-2">
-                                            {section.title}
-                                        </h4>
-                                        <div className="text-gray-700 leading-relaxed text-sm md:text-base">
-                                            {section.content.split('\n').map((paragraph: string, pIdx: number) => (
-                                                <p key={pIdx} className="indent-[2em] mb-2 text-justify last:mb-0">
-                                                    {paragraph}
-                                                </p>
-                                            ))}
+                            <div className="space-y-4">
+                                {getHandbookSections(t, tString).map((section: HandbookSection, idx: number) => {
+                                    const sectionId = `handbook_${idx}`;
+                                    const isCollapsed = collapsedSections[sectionId] ?? false;
+                                    const color = rainbowColors[idx % rainbowColors.length];
+                                    
+                                    return (
+                                        <div key={idx} className={`${color.bg} rounded-xl border ${color.border} shadow-sm overflow-hidden`}>
+                                            <div 
+                                                className={`flex items-center justify-between p-4 cursor-pointer select-none ${color.hover} transition-colors`}
+                                                onClick={() => toggleSection(sectionId)}
+                                            >
+                                                <h4 className={`font-bold text-lg ${color.text} flex-1`}>
+                                                    {section.title}
+                                                </h4>
+                                                <div className={color.text}>
+                                                    {isCollapsed ? <DownOutlined className="text-lg" /> : <UpOutlined className="text-lg" />}
+                                                </div>
+                                            </div>
+                                            
+                                            <AnimatePresence>
+                                                {!isCollapsed && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                    >
+                                                        <div className="p-5 bg-white/50 border-t border-inherit">
+                                                            <div className={`${color.text} leading-relaxed text-sm md:text-base opacity-90 whitespace-pre-wrap`}>
+                                                                {String(section.content).split('\n').map((paragraph: string, pIdx: number) => (
+                                                                    <p key={pIdx} className="mb-2 last:mb-0">
+                                                                        {paragraph}
+                                                                    </p>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                             
                             <div className="text-center text-xs text-gray-400 mt-8">
@@ -563,7 +683,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {/* TAB 4: Housing - Updated Colors: Light Yellow / Dark Yellow */}
                     {activeTab === 'housing' && (
                         <div className="animate-fade-in">
-                            <SectionHeader icon={Home} title={t('stake.instructions.housing.header', '副殿住宿規定')} />
+                            <SectionHeader icon={Home} title={tString('stake.instructions.housing.header', '副殿住宿規定')} />
                             <div className="bg-yellow-50 p-4 md:p-6 rounded-xl border border-yellow-200 mb-6 text-yellow-900 leading-relaxed text-sm md:text-base">
                                 <h4 className="font-bold text-base md:text-lg mb-4 text-center">{t('stake.instructions.housing.subheader', '台灣台北聖殿與會者住房住宿規定')}<br/><span className="text-xs md:text-sm font-normal">{t('stake.instructions.housing.effective_date', '(2023年9月1日起開始實施)')}</span></h4>
                                 
@@ -631,7 +751,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {/* TAB 5: Driving - Updated Colors: Light Green / Dark Green */}
                     {activeTab === 'driving' && (
                         <div className="animate-fade-in">
-                            <SectionHeader icon={MapPin} title={t('stake.instructions.driving.header', '路線停車')} />
+                            <SectionHeader icon={MapPin} title={tString('stake.instructions.driving.header', '路線停車')} />
                             
                             <div className="space-y-6">
                                 <div className="bg-green-50 p-4 md:p-6 rounded-xl border border-green-200">
@@ -711,7 +831,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {/* TAB 6: Transit */}
                     {activeTab === 'transit' && (
                         <div className="animate-fade-in">
-                            <SectionHeader icon={Train} title={t('stake.instructions.transit.header', '轉乘指南')} />
+                            <SectionHeader icon={Train} title={tString('stake.instructions.transit.header', '轉乘指南')} />
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-blue-50 p-4 md:p-6 rounded-xl border border-blue-100 text-blue-900 leading-relaxed">
@@ -797,25 +917,44 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                         </div>
                     )}
 
+                    {/* TAB 4: Privacy Policy */}
+                    {activeTab === 'privacy' && (
+                        <div className="animate-fade-in">
+                            <MarkdownDocViewer 
+                                titleKey="privacy_title" 
+                                docIdKey="privacy_doc_id"
+                                defaultDocId="privacy"
+                            />
+                        </div>
+                    )}
+
+                    {/* TAB 5: Terms of Service */}
+                    {activeTab === 'terms' && (
+                        <div className="animate-fade-in">
+                            <MarkdownDocViewer 
+                                titleKey="terms_title" 
+                                docIdKey="terms_doc_id"
+                                defaultDocId="terms"
+                            />
+                        </div>
+                    )}
+
                 </div>
 
                 {/* Footer Actions */}
-                <div className="mt-8 mb-4 border-t pt-4">
-                    <div className="flex flex-row gap-2 md:gap-4 justify-between items-center">
-                        <button 
-                            onClick={onBack}
-                            className="flex-1 py-3 bg-green-100 text-green-700 font-bold rounded-lg shadow-sm hover:bg-green-200 transition-colors text-xs md:text-sm flex items-center justify-center touch-manipulation"
-                        >
-                            <Home className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden md:inline">{t('stake.instructions.footer.btn_home', '回到')}</span>{t('stake.instructions.footer.btn_home', '首頁')}
-                        </button>
-
-                        <button 
-                            onClick={onGoRegister}
-                            className="flex-1 py-3 bg-blue-100 text-blue-700 font-bold rounded-lg shadow-sm hover:bg-blue-200 transition-colors text-xs md:text-sm flex items-center justify-center touch-manipulation"
-                        >
-                            <ArrowRight className="w-4 h-4 mr-1 md:mr-2" /> <span className="hidden md:inline">{t('stake.instructions.footer.btn_register', '開始')}</span>{t('stake.instructions.footer.btn_register', '報名')}
-                        </button>
+                {/* Subtle Call to Action - Modern Style */}
+                <div className="mt-8 flex flex-col md:flex-row gap-6 items-center justify-center border-t border-slate-100 pt-12 pb-8">
+                    <div className="text-center md:text-left">
+                        <p className="text-slate-900 font-bold text-lg">準備好出發了嗎？</p>
+                        <p className="text-slate-500 text-sm">點擊按鈕開始報名本次聖殿旅行團</p>
                     </div>
+                    <button 
+                        onClick={onGoRegister}
+                        className="w-full md:w-auto h-12 px-10 bg-indigo-600 text-white font-bold rounded-lg shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 group active:scale-95"
+                    >
+                        <span>立即前往報名</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
                 </div>
 
                 <Modal

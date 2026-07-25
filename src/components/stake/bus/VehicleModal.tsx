@@ -1,9 +1,10 @@
 
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
+import { useI18n } from '../../../contexts/LanguageContext';
 import { X, Save } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BusVehicle, BusCompany } from '../../../../types';
+import ConfirmationModal from '../../ConfirmationModal';
 
 interface VehicleModalProps {
     isOpen: boolean;
@@ -14,7 +15,8 @@ interface VehicleModalProps {
 }
 
 const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, editingVehicle, companies }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [data, setData] = React.useState({ plate: '', companyId: '', companyName: '', seats: 42, year: '', color: '' });
 
     React.useEffect(() => {
@@ -68,7 +70,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
                                     setData({...data, companyId: id, companyName: name});
                                 }}
                             >
-                                <option value="">{t('bus.placeholder.selectCompany')}</option>
+                                <option value="">{tString('bus.placeholder.selectCompany')}</option>
                                 {companies.map(c => (
                                     <option key={c.id} value={`${c.id}|${c.name1}`}>{c.name1}</option>
                                 ))}
@@ -90,13 +92,22 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
                         </div>
                     </div>
                     <button 
-                        onClick={() => onSave(data)}
+                        onClick={() => setShowSaveConfirm(true)}
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingVehicle ? t('bus.button.updateVehicle') : t('bus.button.saveVehicle')}
                     </button>
                 </div>
             </motion.div>
+            <ConfirmationModal
+                isOpen={showSaveConfirm}
+                onClose={() => setShowSaveConfirm(false)}
+                onConfirm={() => onSave(data)}
+                title={t('common.notice', '通知')}
+                message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+                confirmText={t('common.confirm', '確定')}
+                type="info"
+            />
         </div>
     );
 };

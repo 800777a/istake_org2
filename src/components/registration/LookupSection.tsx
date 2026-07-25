@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Clock } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 
@@ -32,7 +32,7 @@ const LookupSection: React.FC<LookupSectionProps> = ({
     handleBackToRegister,
     settings
 }) => {
-    const { t } = useTranslation();
+    const { t, tString, tAttr, isEditMode, setActiveKey } = useI18n();
     if (mode !== 'lookup') return null;
 
     const lookupTheme = {
@@ -48,7 +48,7 @@ const LookupSection: React.FC<LookupSectionProps> = ({
         <div className={`${lookupTheme.bg} p-6 rounded-lg border ${lookupTheme.border} min-h-[400px]`}>
             <div className="flex items-center justify-between mb-4">
                 <h3 className={`text-base font-bold ${lookupTheme.text}`}>
-                    {lookupIntent === 'delete' ? t('stake.registration.form.lookup_delete_title') : t('stake.registration.form.lookup_edit_title')}
+                    {lookupIntent === 'delete' ? '刪除' : '編輯'}
                 </h3>
                 <button onClick={handleBackToRegister} className={`${lookupTheme.text} text-xs underline hover:opacity-80`}>{t('stake.registration.form.back_to_form')}</button>
             </div>
@@ -70,28 +70,34 @@ const LookupSection: React.FC<LookupSectionProps> = ({
                             className={`w-full border p-2 rounded-lg text-xs bg-white text-black shadow-sm focus:ring-2 outline-none ${lookupTheme.border} ${lookupTheme.ring}`}
                             required
                         >
-                            <option value="" disabled>{t('stake.registration.form.select_unit_hint')}</option>
-                            {settings.units.map((u: string) => <option key={u} value={u}>{t(u)}</option>)}
+                            <option value="" disabled>{tString('stake.registration.form.select_unit_hint')}</option>
+                            {(settings.units || []).map((u: string) => <option key={u} value={u}>{tString(u)}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className={`block text-xs font-bold ${lookupTheme.label} mb-1`}>{t('stake.registration.form.name_label')}</label>
+                        <label className={`block text-xs font-bold ${lookupTheme.label} mb-1`}>
+                            {t('stake.registration.form.name_label')}
+                            {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.primary_name_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                        </label>
                         <input 
                             type="text" 
                             value={lookupName} 
                             onChange={e => setLookupName(e.target.value)} 
-                            placeholder={t('stake.registration.form.primary_name_placeholder')} 
+                            placeholder={tAttr('stake.registration.form.primary_name_placeholder')} 
                             className={`w-full border p-2 rounded-lg text-xs bg-white text-black shadow-sm focus:ring-2 outline-none ${lookupTheme.border} ${lookupTheme.ring}`}
                             required
                         />
                     </div>
                     <div>
-                        <label className={`block text-xs font-bold ${lookupTheme.label} mb-1`}>{t('common.password')}</label>
+                        <label className={`block text-xs font-bold ${lookupTheme.label} mb-1`}>
+                            {t('common.password')}
+                            {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.primary_password_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                        </label>
                         <input 
                             type="text" 
                             value={lookupPassword} 
                             onChange={e => setLookupPassword(e.target.value)} 
-                            placeholder={t('stake.registration.form.primary_password_placeholder')} 
+                            placeholder={tAttr('stake.registration.form.primary_password_placeholder')} 
                             className={`w-full border p-2 rounded-lg text-xs bg-white text-black shadow-sm focus:ring-2 outline-none ${lookupTheme.border} ${lookupTheme.ring}`}
                             required 
                         />

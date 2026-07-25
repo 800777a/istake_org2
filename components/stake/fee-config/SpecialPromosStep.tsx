@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Table, Space, Button, Popconfirm, Tag, Switch, Modal, Input, InputNumber, Select, Typography } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, ArrowRightOutlined, GiftOutlined } from '@ant-design/icons';
+import { Edit2, Trash2, Plus, Gift, ArrowRight } from 'lucide-react';
 import { BillingEngineConfig, SpecialPromoRule } from '../../../types';
-import { RainbowCard } from './RainbowCard';
+import { RainbowCard, rainbowStyles } from './RainbowCard';
 
 const { Text } = Typography;
 
@@ -12,16 +12,18 @@ interface SpecialPromosStepProps {
   onConfigChange: (config: BillingEngineConfig) => void;
   isExpanded: boolean;
   onToggle: () => void;
+  colorIndex?: number;
 }
 
 export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({ 
   billingConfig, 
   onConfigChange, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  colorIndex = 4
 }) => {
-  const { t } = useTranslation();
-  const data = [...billingConfig.specialPromos]
+  const { t, tString } = useI18n();
+  const data = [...(billingConfig.specialPromos || [])]
     .map(p => ({ ...p, key: p.id }))
     .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
@@ -76,7 +78,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
               placeholder={t('stake.fee_config.select_unit_placeholder', "選擇單位")}
               onChange={v => selectedUnits = v} 
               className="w-full border-amber-200"
-              options={billingConfig.units.map(u => ({ value: u.shortName, label: u.shortName }))}
+              options={(billingConfig.units || []).map(u => ({ value: u.shortName, label: u.shortName }))}
             />
           </div>
           <div>
@@ -87,13 +89,13 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
               placeholder={t('stake.fee_config.select_identity_placeholder', "選擇身分")}
               onChange={v => selectedIdentities = v} 
               className="w-full border-amber-200"
-              options={billingConfig.identityPricings.map(p => ({ value: p.identity, label: p.identity }))}
+              options={(billingConfig.identityPricings || []).map(p => ({ value: p.identity, label: p.identity }))}
             />
           </div>
         </div>
       ),
       onOk: () => {
-        const newList = [...billingConfig.specialPromos];
+        const newList = [...(billingConfig.specialPromos || [])];
         const idx = newList.findIndex(p => p.id === id);
         if (idx > -1) {
           newList[idx] = {
@@ -116,7 +118,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
     let value = 100;
     let selectedUnits: string[] = [];
     let selectedIdentities: string[] = [];
-    const maxSort = billingConfig.specialPromos.reduce((max, p) => Math.max(max, p.sortOrder || 0), 0);
+    const maxSort = (billingConfig.specialPromos || []).reduce((max, p) => Math.max(max, p.sortOrder || 0), 0);
     let sort = maxSort + 1;
     
     Modal.confirm({
@@ -161,7 +163,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
               placeholder={t('stake.fee_config.apply_units', "套用單位")}
               onChange={v => selectedUnits = v} 
               className="w-full border-amber-200"
-              options={billingConfig.units.map(u => ({ value: u.shortName, label: u.shortName }))}
+              options={(billingConfig.units || []).map(u => ({ value: u.shortName, label: u.shortName }))}
             />
           </div>
           <div>
@@ -171,7 +173,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
               placeholder={t('stake.fee_config.apply_identities', "套用身分")}
               onChange={v => selectedIdentities = v} 
               className="w-full border-amber-200"
-              options={billingConfig.identityPricings.map(p => ({ value: p.identity, label: p.identity }))}
+              options={(billingConfig.identityPricings || []).map(p => ({ value: p.identity, label: p.identity }))}
             />
           </div>
         </div>
@@ -187,10 +189,12 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
           price: { method: method as any, value },
           sortOrder: sort
         };
-        onConfigChange({ ...billingConfig, specialPromos: [...billingConfig.specialPromos, newPromo] });
+        onConfigChange({ ...billingConfig, specialPromos: [...(billingConfig.specialPromos || []), newPromo] });
       }
     });
   };
+
+  const style = rainbowStyles[colorIndex % rainbowStyles.length];
 
   const columns = [
     {
@@ -203,7 +207,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
           size="small" 
           value={val} 
           onChange={v => {
-            const newList = [...billingConfig.specialPromos];
+            const newList = [...(billingConfig.specialPromos || [])];
             const idx = newList.findIndex(p => p.id === record.id);
             if (idx > -1) {
               newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
@@ -229,7 +233,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
         <Space wrap>
           {record.units && record.units.length > 0 && <Tag color="blue">{t('stake.fee_config.unit_label', '單位')}: {record.units.join(',')}</Tag>}
           {record.identities && record.identities.length > 0 && <Tag color="green">{t('stake.fee_config.identity_label', '身份')}: {record.identities.join(',')}</Tag>}
-          <ArrowRightOutlined />
+          <ArrowRight className="w-4 h-4 text-slate-400" />
           <Tag color="orange">
             {record.price.method === 'percent' 
               ? `${record.price.value}%` 
@@ -246,7 +250,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
       key: 'enabled',
       render: (val: boolean, record: SpecialPromoRule) => (
         <Switch checked={val} onChange={(checked) => {
-           const newList = [...billingConfig.specialPromos];
+           const newList = [...(billingConfig.specialPromos || [])];
            const idx = newList.findIndex(p => p.id === record.id);
            if (idx > -1) {
              newList[idx] = { ...record, enabled: checked };
@@ -260,17 +264,17 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
       key: 'action',
       render: (_: any, record: SpecialPromoRule) => (
         <Space>
-          <Button size="small" icon={<EditOutlined />} onClick={() => editPromo(record.id, record)} />
+          <Button size="small" icon={<Edit2 className="w-3 h-3" />} onClick={() => editPromo(record.id, record)} />
           <Popconfirm 
             title={t('stake.fee_config.delete_promo_confirm', "確定刪除此優惠？")}
             onConfirm={() => {
-              const newList = billingConfig.specialPromos.filter(p => p.id !== record.id);
+              const newList = (billingConfig.specialPromos || []).filter(p => p.id !== record.id);
               onConfigChange({ ...billingConfig, specialPromos: newList });
             }}
             okText={t('common.confirm', "確認")}
             cancelText={t('common.cancel', "取消")}
           >
-            <Button size="small" danger icon={<DeleteOutlined />} />
+            <Button size="small" danger icon={<Trash2 className="w-3 h-3" />} />
           </Popconfirm>
         </Space>
       )
@@ -279,14 +283,24 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
 
   return (
     <RainbowCard
-      title={t('stake.fee_config.step4_title', '第4步：優惠設定 (Promos)')}
-      icon={<GiftOutlined />}
-      colorIndex={4}
+      title={tString('stake.fee_config.step4_title', '第4步：優惠設定 (Promos)')}
+      icon={<Gift size={20} />}
+      colorIndex={colorIndex}
       isExpanded={isExpanded}
       onToggle={onToggle}
-      extra={[
-        <Button key="add" icon={<PlusOutlined />} onClick={addPromo}>{t('stake.fee_config.add_promo_title', '新增優惠')}</Button>
-      ]}
+      extra={
+        <button 
+          onClick={addPromo}
+          className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+          style={{ 
+            backgroundColor: style.bg,
+            color: style.text,
+            border: `1px solid ${style.border}`
+          }}
+        >
+          <Plus size={16} /> {t('stake.fee_config.add_promo_title', '新增優惠')}
+        </button>
+      }
     >
       <Table 
         dataSource={data} 

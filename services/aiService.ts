@@ -83,7 +83,7 @@ export const analyzeImageContent = async (base64Image: string): Promise<string> 
       contents: {
         parts: [
             { inlineData: { mimeType, data } },
-            { text: "請分析這張照片，並為其撰寫一段約 20-30 字的溫馨短語，適合用於教會聖殿之旅活動的相簿說明。請包含 2-3 個相關的 hashtag (如 #聖殿 #家庭)。請用繁體中文，語氣正向、充滿靈性。" }
+            { text: "請分析這張照片，並為其撰寫一段約 20-30 字的溫馨短語，適合用於教會聖殿旅行團活動的相簿說明。請包含 2-3 個相關的 hashtag (如 #聖殿 #家庭)。請用繁體中文，語氣正向、充滿靈性。" }
         ]
       }
     });

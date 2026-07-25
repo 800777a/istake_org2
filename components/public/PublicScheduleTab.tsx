@@ -1,36 +1,28 @@
-
 import React, { useMemo, useState } from 'react';
 import { EventData, RoadSignItem } from '../../types';
 import { getWeatherForecast } from '../../services/sheetService';
 import { Clock, MapPin, Map as MapIcon, Briefcase, CheckSquare, Sun, CloudRain, Shirt, Umbrella, ChevronDown, ChevronUp, Bus } from 'lucide-react';
 
-const BUS_THEMES = [
-    { bg: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-900', header: 'bg-orange-100', row: 'bg-orange-50', accent: 'border-orange-300' },
-    { bg: 'bg-yellow-50', border: 'border-yellow-500', text: 'text-yellow-900', header: 'bg-yellow-100', row: 'bg-yellow-50', accent: 'border-yellow-300' },
-    { bg: 'bg-green-50', border: 'border-green-500', text: 'text-green-900', header: 'bg-green-100', row: 'bg-green-50', accent: 'border-green-300' },
-    { bg: 'bg-cyan-50', border: 'border-cyan-500', text: 'text-cyan-900', header: 'bg-cyan-100', row: 'bg-cyan-50', accent: 'border-cyan-300' },
-    { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-900', header: 'bg-blue-100', row: 'bg-blue-50', accent: 'border-blue-300' },
-    { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-900', header: 'bg-indigo-100', row: 'bg-indigo-50', accent: 'border-indigo-300' },
-    { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-900', header: 'bg-purple-100', row: 'bg-purple-50', accent: 'border-purple-300' },
-];
-
-const SIGN_THEMES = [
-    { bg: 'bg-blue-50', border: 'border-blue-500', text: 'text-blue-900', header: 'bg-blue-100', row: 'bg-blue-50', accent: 'border-blue-300' },
-    { bg: 'bg-indigo-50', border: 'border-indigo-500', text: 'text-indigo-900', header: 'bg-indigo-100', row: 'bg-indigo-50', accent: 'border-indigo-300' },
-    { bg: 'bg-purple-50', border: 'border-purple-500', text: 'text-purple-900', header: 'bg-purple-100', row: 'bg-purple-50', accent: 'border-purple-300' },
-    { bg: 'bg-pink-50', border: 'border-pink-500', text: 'text-pink-900', header: 'bg-pink-100', row: 'bg-pink-50', accent: 'border-pink-300' },
-    { bg: 'bg-red-50', border: 'border-red-500', text: 'text-red-900', header: 'bg-red-100', row: 'bg-red-50', accent: 'border-red-300' },
-    { bg: 'bg-orange-50', border: 'border-orange-500', text: 'text-orange-900', header: 'bg-orange-100', row: 'bg-orange-50', accent: 'border-orange-300' },
-    { bg: 'bg-green-50', border: 'border-green-500', text: 'text-green-900', header: 'bg-green-100', row: 'bg-green-50', accent: 'border-green-300' },
-];
-
 interface PublicScheduleTabProps {
     activeEvent: EventData;
 }
 
+// Refined rainbow themes following strict system instructions (Light bg + Dark text & borders)
+const rainbowThemes = [
+    { border: 'border-red-200', title: 'bg-red-200', header: 'bg-red-100', content: 'bg-red-50', accent: 'text-red-800' },
+    { border: 'border-orange-200', title: 'bg-orange-200', header: 'bg-orange-100', content: 'bg-orange-50', accent: 'text-orange-800' },
+    { border: 'border-amber-200', title: 'bg-amber-200', header: 'bg-amber-100', content: 'bg-amber-50', accent: 'text-amber-900' },
+    { border: 'border-emerald-200', title: 'bg-emerald-200', header: 'bg-emerald-100', content: 'bg-emerald-50', accent: 'text-emerald-800' },
+    { border: 'border-blue-200', title: 'bg-blue-200', header: 'bg-blue-100', content: 'bg-blue-50', accent: 'text-blue-800' },
+    { border: 'border-indigo-200', title: 'bg-indigo-200', header: 'bg-indigo-100', content: 'bg-indigo-50', accent: 'text-indigo-800' },
+    { border: 'border-purple-200', title: 'bg-purple-200', header: 'bg-purple-100', content: 'bg-purple-50', accent: 'text-purple-800' },
+];
+
 const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) => {
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-        temple: false
+        temple: false,
+        tips: false,
+        globalSigns: false
     });
 
     const toggleCollapse = (id: string) => {
@@ -38,33 +30,30 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
     };
     
     // Helper to render Road Sign Table 
-    const renderRoadSignTable = (type: 'outbound' | 'return', items: RoadSignItem[], theme: any = { border: 'border-green-500', text: 'text-green-900', header: 'bg-green-100' }) => {
+    const renderRoadSignTable = (type: 'outbound' | 'return', items: RoadSignItem[], theme: any) => {
         if (!items || items.length === 0) return null;
         return (
-            <div className={`border ${theme.border} rounded-lg overflow-hidden bg-white shadow-sm mb-4`}>
-                <div className={`p-2 font-bold text-sm ${theme.text} border-b ${theme.border} ${theme.header} flex justify-between items-center`}>
-                    <span>{type === 'outbound' ? '去程' : '回程'}</span>
+            <div className={`rounded-lg overflow-hidden shadow-sm border ${theme.border} bg-white/60 backdrop-blur-sm h-full`}>
+                <div className={`px-4 py-2 font-bold text-[10px] md:text-xs uppercase tracking-widest border-b ${theme.accent} ${theme.border} bg-white/40`}>
+                    {type === 'outbound' ? '去程 (OUTBOUND)' : '回程 (RETURN)'}
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left border-collapse whitespace-nowrap">
-                        <thead className={`${theme.text} border-b ${theme.border} ${theme.bg}`}>
-                            <tr>
-                                <th className={`p-2 w-10 border ${theme.border} text-center sticky left-0 z-20 ${theme.bg}`}>編號</th>
-                                <th className={`p-2 border ${theme.border} min-w-[200px]`}>進度</th>
+                <div className="overflow-x-auto w-full min-w-0 custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[300px]">
+                        <thead>
+                            <tr className={`text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-wider border-b bg-white/20 ${theme.accent} ${theme.border}`}>
+                                <th className={`px-1 py-1 w-12 text-center border-r ${theme.border}`}>#</th>
+                                <th className="px-1 py-1">行車指示內容 (INSTRUCTIONS)</th>
                             </tr>
                         </thead>
-                        <tbody className={`divide-y ${theme.border.replace('border-', 'divide-')}`}>
-                            {(Array.isArray(items) ? items : []).map((sign, sIdx) => {
+                        <tbody className={`divide-y ${theme.border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
+                            {(Array.isArray(items) ? items : []).map((sign: RoadSignItem, sIdx: number) => {
                                 const isChecked = !!sign.checked;
-                                const rowBg = isChecked ? 'bg-gray-100 text-gray-400' : 'bg-yellow-50 text-black';
-                                const textClass = isChecked ? 'text-gray-400 line-through' : 'text-black';
-
                                 return (
-                                    <tr key={sIdx} className={`hover:opacity-80 transition-colors ${rowBg}`}>
-                                        <td className={`p-2 border ${theme.border} text-center w-10 sticky left-0 z-10 ${rowBg} ${textClass}`}>
+                                    <tr key={sIdx} className={`${isChecked ? 'opacity-50 grayscale' : ''} hover:bg-white/40 transition-colors`}>
+                                        <td className={`px-1 py-1 text-center font-bold border-r bg-white/20 ${theme.border} ${theme.accent}`}>
                                             {sIdx + 1}
                                         </td>
-                                        <td className={`p-2 border ${theme.border} whitespace-normal text-xs ${textClass}`}>
+                                        <td className={`px-1 py-1 font-medium leading-relaxed ${isChecked ? 'line-through' : 'text-slate-800'}`}>
                                             {sign.instruction}
                                         </td>
                                     </tr>
@@ -101,46 +90,55 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
     };
 
     return (
-        <div className="space-y-6 animate-fade-in pb-8">
-            {/* Temple Schedule - Red Theme */}
+        <div className="space-y-4 md:space-y-8 animate-fade-in pb-12 w-full max-w-full min-w-0 overflow-hidden px-2.5 md:px-0">
+            {/* Temple Schedule - Using rainbowTheme[0] (Red) */}
             {activeEvent.templeConfig?.isPublished && activeEvent.templeConfig.items && activeEvent.templeConfig.items.length > 0 && (
-                <div className="bg-red-50 rounded-xl shadow-sm border border-red-500 overflow-hidden">
-                    <div className="p-4 bg-red-100 border-b border-red-500 flex justify-between items-center">
-                        <div className="flex flex-row items-center mb-0">
-                            <button onClick={() => toggleCollapse('temple')} className="mr-2 text-red-900">
-                                {collapsedSections['temple'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                            </button>
-                            <h3 className="font-bold text-red-900 text-base text-left flex items-center">
-                                <Clock className="w-5 h-5 mr-2 text-red-900" /> 
-                                {activeEvent.templeConfig.title || '教儀安排'}
-                            </h3>
-                            {!collapsedSections['temple'] && (
-                                <div className="text-xs text-red-900 font-bold ml-4">
-                                    {activeEvent.templeConfig.startTime || ''} ~ {activeEvent.templeConfig.endTime || ''}
-                                </div>
-                            )}
+                <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[0].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+                    <div 
+                        className={`w-full px-5 py-3.5 ${rainbowThemes[0].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[0].border}`}
+                        onClick={() => toggleCollapse('temple')}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[0].accent}`}>
+                                <Clock size={18}/>
+                            </div>
+                            <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight">
+                                {activeEvent.templeConfig.title || '教儀行程安排'}
+                                {!collapsedSections['temple'] && (
+                                    <span className="ml-3 text-[10px] md:text-xs opacity-60 font-bold text-slate-500">
+                                        {activeEvent.templeConfig.startTime || ''} - {activeEvent.templeConfig.endTime || ''}
+                                    </span>
+                                )}
+                            </h4>
+                        </div>
+                        <div className="text-slate-600">
+                            {collapsedSections.temple ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
                         </div>
                     </div>
+
                     {!collapsedSections['temple'] && (
-                        <div className="overflow-x-auto scrollbar-hide">
-                            <table className="w-full text-sm text-center min-w-[600px] border-collapse">
-                                <thead className="border-b border-red-500 text-red-900 font-bold bg-red-50">
-                                    <tr>
-                                        <th className="p-3 sticky left-0 z-20 bg-red-50 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] whitespace-nowrap">場次</th>
-                                        <th className="p-3">開始</th>
-                                        <th className="p-3">結束</th>
-                                        <th className="p-3 w-16">需時</th>
-                                        <th className="p-3 w-1/3">備註</th>
+                        <div className={`overflow-x-auto w-full min-w-0 custom-scrollbar pb-6 md:pb-0 ${rainbowThemes[0].content} p-1 md:p-3 lg:p-4 xl:p-6`}>
+                            <div className="md:hidden text-right mb-1 text-[10px] font-black text-slate-400 select-none animate-pulse">
+                                👈 左右滑動查看完整資訊 👉
+                            </div>
+                            <table className="w-full text-center border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr className={`border-b ${rainbowThemes[0].header} ${rainbowThemes[0].accent} ${rainbowThemes[0].border} text-[10px] md:text-xs lg:text-sm`}>
+                                        <th className={`px-1 py-1 text-left w-24 sticky left-0 z-20 ${rainbowThemes[0].header} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r ${rainbowThemes[0].border} font-bold uppercase`}>場次</th>
+                                        <th className="px-1 py-1 font-bold uppercase">開始時間</th>
+                                        <th className="px-1 py-1 font-bold uppercase">結束時間</th>
+                                        <th className="px-1 py-1 w-20 font-bold uppercase">預計需時</th>
+                                        <th className="px-1 py-1 text-left font-bold uppercase">備註說明</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-red-200">
+                                <tbody className={`divide-y ${rainbowThemes[0].border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
                                     {(Array.isArray(activeEvent.templeConfig.items) ? activeEvent.templeConfig.items : []).map((item, idx) => (
-                                        <tr key={idx} className="bg-white hover:bg-red-50 transition-colors">
-                                            <td className="p-3 sticky left-0 z-10 bg-white font-bold text-red-900 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] whitespace-nowrap text-sm">{item.stopCode || '-'}</td>
-                                            <td className="p-3 font-medium text-sm">{item.arrivalTime}</td>
-                                            <td className="p-3 font-medium text-sm">{item.departureTime}</td>
-                                            <td className="p-3 font-medium text-sm">{item.stay ? `${item.stay}分` : '-'}</td>
-                                            <td className="p-3 text-left text-gray-600 font-medium text-sm">{item.address}</td>
+                                        <tr key={idx} className="hover:bg-white/40 transition-colors group">
+                                            <td className={`px-1 py-1 sticky left-0 z-10 ${rainbowThemes[0].content} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r font-black ${rainbowThemes[0].accent} ${rainbowThemes[0].border}`}>{item.stopCode || '-'}</td>
+                                            <td className="px-1 py-1 font-medium text-slate-700">{item.arrivalTime}</td>
+                                            <td className="px-1 py-1 font-medium text-slate-700">{item.departureTime}</td>
+                                            <td className="px-1 py-1 font-medium text-slate-700">{item.stay ? `${item.stay} min` : '-'}</td>
+                                            <td className="px-1 py-1 text-left text-slate-600 leading-relaxed">{item.address}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -150,10 +148,10 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
                 </div>
             )}
 
-            {/* Bus Routes & Road Signs - Rainbow Themes */}
+            {/* Bus Routes & Road Signs */}
             {(activeEvent.busConfigs || []).length > 0 && (
-                <div className="space-y-6">
-                    {(activeEvent.busConfigs || []).map((busConfig, idx) => {
+                <div className="space-y-8">
+                    {(activeEvent.busConfigs || []).map((busConfig: any, idx: number) => {
                         const busName = busConfig.name;
                         const route = (activeEvent.busRoutes?.[busName] as any) || { outbound: [], returnTrip: [] };
                         const showOutbound = route.isOutboundPublished;
@@ -161,108 +159,112 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
                         
                         if (!showOutbound && !showReturn) return null;
 
-                        const busTheme = BUS_THEMES[idx % BUS_THEMES.length];
-                        const signTheme = SIGN_THEMES[idx % SIGN_THEMES.length];
+                        const themeIdx = (idx + 1) % 7;
+                        const theme = rainbowThemes[themeIdx];
                         const isBusCollapsed = collapsedSections[`bus-${busName}`];
                         const isSignCollapsed = collapsedSections[`sign-${busName}`];
 
                         return (
-                            <div key={busName} className="space-y-4">
+                            <div key={busName} className="space-y-4 md:space-y-6">
                                 {/* 行程安排 */}
-                                <div className={`${busTheme.bg} rounded-xl shadow-sm border ${busTheme.border} overflow-hidden`}>
-                                    <div className={`p-4 ${busTheme.header} border-b ${busTheme.border} flex flex-col gap-2`}>
-                                        <h3 className={`font-bold ${busTheme.text} text-base text-left flex items-center`}>
-                                            <button onClick={() => toggleCollapse(`bus-${busName}`)} className="mr-1">
-                                                {isBusCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                                            </button>
-                                            <Bus className="w-5 h-5 mr-2" /> 
-                                            行程安排 {busName}
-                                        </h3>
-                                        {(busConfig.company || busConfig.licensePlate || busConfig.driverName1) && (
-                                            <div className={`text-xs font-bold ${busTheme.text} opacity-90 pl-11 flex flex-wrap gap-x-4 gap-y-1`}>
-                                                {busConfig.company && <span>公司: {busConfig.company}</span>}
-                                                {busConfig.licensePlate && <span>車號: {busConfig.licensePlate}</span>}
-                                                {busConfig.driverName1 && <span>司機1: {busConfig.driverName1} ({busConfig.driverPhone1})</span>}
-                                                {busConfig.driverName2 && <span>司機2: {busConfig.driverName2} ({busConfig.driverPhone2})</span>}
+                                <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+                                    <div 
+                                        className={`w-full px-5 py-3.5 ${theme.title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${theme.border}`}
+                                        onClick={() => toggleCollapse(`bus-${busName}`)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${theme.accent}`}>
+                                                <Bus size={18}/>
                                             </div>
-                                        )}
+                                            <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">車次行程：{busName}</h4>
+                                        </div>
+                                        <div className="text-slate-600">
+                                            {isBusCollapsed ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                                        </div>
                                     </div>
                                     
                                     {!isBusCollapsed && (
-                                        <div className="p-4 flex flex-col gap-6">
+                                        <div className={`p-1 md:p-3 lg:p-4 xl:p-6 space-y-4 md:space-y-6 ${theme.content}`}>
+                                            {/* Bus Info Below Title - Right Aligned */}
+                                            {(busConfig.company || busConfig.licensePlate || busConfig.driverName1) && (
+                                                <div className="w-full flex justify-end gap-3 text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                                                    {busConfig.company && <span className="bg-white/40 px-2 py-0.5 rounded border border-slate-200">🏢 {busConfig.company}</span>}
+                                                    {busConfig.licensePlate && <span className="bg-white/40 px-2 py-0.5 rounded border border-slate-200">🚌 {busConfig.licensePlate}</span>}
+                                                    {busConfig.driverName1 && <span className="bg-white/40 px-2 py-0.5 rounded border border-slate-200">👤 {busConfig.driverName1}</span>}
+                                                </div>
+                                            )}
+
                                             {/* Outbound */}
                                             {showOutbound && route.outbound && route.outbound.length > 0 && (
-                                                <div>
-                                                                <h4 className={`font-bold text-sm ${busTheme.text} mb-2 border-b ${busTheme.accent} pb-1`}>
-                                                                    去程: {route.outboundTitle || '前往聖殿'}
-                                                                    <span className="text-xs font-normal ml-2 opacity-80">
-                                                                        ({route.outboundStartTime || ''} ~ {route.outboundEndTime || ''})
-                                                                    </span>
-                                                                </h4>
-                                                                <div className="overflow-x-auto">
-                                                                    <table className="w-full text-sm text-center border-collapse table-fixed min-w-[800px]">
-                                                                        <thead className={`${busTheme.text} border-b ${busTheme.accent} ${busTheme.header}`}>
-                                                                            <tr>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-14`}>站號</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-20`}>到達</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-20`}>離開</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} min-w-[200px]`}>地點</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} min-w-[300px]`}>地址</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody className={`divide-y ${busTheme.border.replace('border-', 'divide-')}`}>
-                                                                            {(Array.isArray(route.outbound) ? route.outbound : []).map((item: any, iIdx: number) => {
-                                                                                const rowBg = iIdx % 2 !== 0 ? busTheme.row : 'bg-white';
-                                                                                return (
-                                                                                <tr key={iIdx} className={`${rowBg} hover:opacity-80`}>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.stopCode || '-'}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.arrivalTime}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.departureTime}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} ${busTheme.text} text-left min-w-[200px] ${rowBg}`}>{item.location}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} ${busTheme.text} text-left text-sm min-w-[300px] ${rowBg}`}>{item.address}</td>
-                                                                                </tr>
-                                                                            )})}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
+                                                <div className="space-y-3">
+                                                    <h5 className={`font-black text-xs md:text-sm ${theme.accent} flex items-center gap-2 border-b-2 ${theme.border} pb-1`}>
+                                                        <MapPin size={14}/> 去程：{route.outboundTitle || '前往聖殿'}
+                                                        <span className="font-bold opacity-60 ml-auto text-[10px] md:text-xs text-slate-500">{route.outboundStartTime || ''} - {route.outboundEndTime || ''}</span>
+                                                    </h5>
+                                                    <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-6 md:pb-0 rounded-none md:rounded-lg border-none md:border border-white/40">
+                                                        <div className="md:hidden text-right mb-1 text-[10px] font-black text-slate-400 select-none animate-pulse">
+                                                            👈 左右滑動查看完整資訊 👉
+                                                        </div>
+                                                        <table className="w-full text-center border-collapse min-w-[600px]">
+                                                            <thead>
+                                                                <tr className={`text-[10px] md:text-xs lg:text-sm font-bold ${theme.header} ${theme.accent}`}>
+                                                                    <th className={`px-1 py-1 w-16 sticky left-0 z-20 ${theme.header} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r ${theme.border} font-bold`}>站號</th>
+                                                                    <th className={`px-1 py-1 w-24 border-r ${theme.border}`}>到達</th>
+                                                                    <th className={`px-1 py-1 w-24 border-r ${theme.border}`}>離開</th>
+                                                                    <th className={`px-1 py-1 text-left border-r ${theme.border}`}>站點地點</th>
+                                                                    <th className="px-1 py-1 text-left">詳細地址</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className={`divide-y ${theme.border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
+                                                                {(Array.isArray(route.outbound) ? route.outbound : []).map((item: any, iIdx: number) => (
+                                                                    <tr key={iIdx} className="hover:bg-white/40 transition-colors">
+                                                                        <td className={`px-1 py-1 sticky left-0 z-10 ${theme.content} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r font-black ${theme.accent} ${theme.border}`}>{item.stopCode || '-'}</td>
+                                                                        <td className="px-1 py-1 font-bold text-slate-700">{item.arrivalTime}</td>
+                                                                        <td className="px-1 py-1 font-bold text-slate-700">{item.departureTime}</td>
+                                                                        <td className="px-1 py-1 text-left font-bold text-slate-900">{item.location}</td>
+                                                                        <td className="px-1 py-1 text-left text-slate-500 font-medium">{item.address}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             )}
 
                                             {/* Return */}
                                             {showReturn && route.returnTrip && route.returnTrip.length > 0 && (
-                                                <div>
-                                                                <h4 className={`font-bold text-sm ${busTheme.text} mb-2 border-b ${busTheme.accent} pb-1`}>
-                                                                    回程: {route.returnTitle || '返回教堂'}
-                                                                    <span className="text-xs font-normal ml-2 opacity-80">
-                                                                        ({route.returnStartTime || ''} ~ {route.returnEndTime || ''})
-                                                                    </span>
-                                                                </h4>
-                                                                <div className="overflow-x-auto">
-                                                                    <table className="w-full text-sm text-center border-collapse table-fixed min-w-[800px]">
-                                                                        <thead className={`${busTheme.text} border-b ${busTheme.accent} ${busTheme.header}`}>
-                                                                            <tr>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-14`}>站號</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-20`}>到達</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} w-20`}>離開</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} min-w-[200px]`}>地點</th>
-                                                                                <th className={`p-2 border ${busTheme.accent} min-w-[300px]`}>地址</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody className={`divide-y ${busTheme.border.replace('border-', 'divide-')}`}>
-                                                                            {(Array.isArray(route.returnTrip) ? route.returnTrip : []).map((item: any, iIdx: number) => {
-                                                                                const rowBg = iIdx % 2 !== 0 ? busTheme.row : 'bg-white';
-                                                                                return (
-                                                                                <tr key={iIdx} className={`${rowBg} hover:opacity-80`}>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.stopCode || '-'}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.arrivalTime}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} font-bold ${busTheme.text} ${rowBg}`}>{item.departureTime}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} ${busTheme.text} text-left min-w-[200px] ${rowBg}`}>{item.location}</td>
-                                                                                    <td className={`p-2 border ${busTheme.accent} ${busTheme.text} text-left text-sm min-w-[300px] ${rowBg}`}>{item.address}</td>
-                                                                                </tr>
-                                                                            )})}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
+                                                <div className="space-y-3">
+                                                    <h5 className={`font-black text-xs md:text-sm ${theme.accent} flex items-center gap-2 border-b-2 ${theme.border} pb-1`}>
+                                                        <MapPin size={14}/> 回程：{route.returnTitle || '返回教堂'}
+                                                        <span className="font-bold opacity-60 ml-auto text-[10px] md:text-xs text-slate-500">{route.returnStartTime || ''} - {route.returnEndTime || ''}</span>
+                                                    </h5>
+                                                    <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-6 md:pb-0 rounded-none md:rounded-lg border-none md:border border-white/40">
+                                                        <div className="md:hidden text-right mb-1 text-[10px] font-black text-slate-400 select-none animate-pulse">
+                                                            👈 左右滑動查看完整資訊 👉
+                                                        </div>
+                                                        <table className="w-full text-center border-collapse min-w-[600px]">
+                                                            <thead>
+                                                                <tr className={`text-[10px] md:text-xs lg:text-sm font-bold ${theme.header} ${theme.accent}`}>
+                                                                    <th className={`px-1 py-1 w-16 sticky left-0 z-20 ${theme.header} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r ${theme.border} font-bold`}>站號</th>
+                                                                    <th className={`px-1 py-1 w-24 border-r ${theme.border}`}>到達</th>
+                                                                    <th className={`px-1 py-1 w-24 border-r ${theme.border}`}>離開</th>
+                                                                    <th className={`px-1 py-1 text-left border-r ${theme.border}`}>站點地點</th>
+                                                                    <th className="px-1 py-1 text-left">詳細地址</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className={`divide-y ${theme.border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
+                                                                {(Array.isArray(route.returnTrip) ? route.returnTrip : []).map((item: any, iIdx: number) => (
+                                                                    <tr key={iIdx} className="hover:bg-white/40 transition-colors">
+                                                                        <td className={`px-1 py-1 sticky left-0 z-10 ${theme.content} shadow-[2px_0_5px_0_rgba(0,0,0,0.05)] border-r font-black ${theme.accent} ${theme.border}`}>{item.stopCode || '-'}</td>
+                                                                        <td className="px-1 py-1 font-bold text-slate-700">{item.arrivalTime}</td>
+                                                                        <td className="px-1 py-1 font-bold text-slate-700">{item.departureTime}</td>
+                                                                        <td className="px-1 py-1 text-left font-bold text-slate-900">{item.location}</td>
+                                                                        <td className="px-1 py-1 text-left text-slate-500 font-medium">{item.address}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -271,19 +273,25 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
 
                                 {/* 路標提醒 (Per Bus) */}
                                 {((route.isOutboundRoadSignsPublished && route.outboundRoadSigns?.length > 0) || (route.isReturnRoadSignsPublished && route.returnRoadSigns?.length > 0)) && (
-                                    <div className={`${signTheme.bg} rounded-xl shadow-sm border ${signTheme.border} overflow-hidden`}>
-                                        <div className={`p-4 ${signTheme.header} border-b ${signTheme.border} flex justify-between items-center`}>
-                                            <h3 className={`font-bold ${signTheme.text} text-base text-left flex items-center`}>
-                                                <button onClick={() => toggleCollapse(`sign-${busName}`)} className="mr-2">
-                                                    {isSignCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                                                </button>
-                                                <MapIcon className="w-5 h-5 mr-2" /> 路標提醒 {busName}
-                                            </h3>
+                                    <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+                                        <div 
+                                            className={`w-full px-5 py-3.5 ${theme.title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${theme.border}`}
+                                            onClick={() => toggleCollapse(`sign-${busName}`)}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${theme.accent}`}>
+                                                    <MapIcon size={18}/>
+                                                </div>
+                                                <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">行車路標指引：{busName}</h4>
+                                            </div>
+                                            <div className="text-slate-600">
+                                                {isSignCollapsed ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                                            </div>
                                         </div>
                                         {!isSignCollapsed && (
-                                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                {route.isOutboundRoadSignsPublished && renderRoadSignTable('outbound', route.outboundRoadSigns, signTheme)}
-                                                {route.isReturnRoadSignsPublished && renderRoadSignTable('return', route.returnRoadSigns, signTheme)}
+                                            <div className={`p-1 md:p-3 lg:p-4 xl:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 ${theme.content}`}>
+                                                {route.isOutboundRoadSignsPublished && renderRoadSignTable('outbound', route.outboundRoadSigns, theme)}
+                                                {route.isReturnRoadSignsPublished && renderRoadSignTable('return', route.returnRoadSigns, theme)}
                                             </div>
                                         )}
                                     </div>
@@ -294,90 +302,119 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
                 </div>
             )}
 
-            {/* Global Road Signs Display - Green Theme with Split Logic */}
+            {/* Global Road Signs */}
             {showRoadSigns && (
-                <div className="bg-green-50 rounded-xl shadow-sm border border-green-500 overflow-hidden">
-                    <div className="p-4 bg-green-100 border-b border-green-500 flex justify-between items-center">
-                        <h3 className="font-bold text-green-900 text-base text-left flex items-center">
-                            <button onClick={() => toggleCollapse('globalSigns')} className="mr-2 text-green-900">
-                                {collapsedSections['globalSigns'] ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                            </button>
-                            <MapIcon className="w-5 h-5 mr-2 text-green-700" /> 路標提醒 (全體)
-                        </h3>
+                <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[3].border} overflow-hidden bg-white transition-all duration-300`}>
+                    <div 
+                        className={`w-full px-5 py-3.5 ${rainbowThemes[3].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[3].border}`}
+                        onClick={() => toggleCollapse('globalSigns')}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[3].accent}`}>
+                                <MapIcon size={18}/>
+                            </div>
+                            <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">共通行程路標指引 (ALL BUSES)</h4>
+                        </div>
+                        <div className="text-slate-600">
+                            {collapsedSections.globalSigns ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                        </div>
                     </div>
                     {!collapsedSections['globalSigns'] && (
-                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className={`p-1 md:p-3 lg:p-4 xl:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 ${rainbowThemes[3].content}`}>
                             {isOutboundPublished && globalRoadSigns!.outboundItems && globalRoadSigns!.outboundItems.length > 0 && (
-                                <div className="mb-4">
-                                    {renderRoadSignTable('outbound', globalRoadSigns!.outboundItems)}
-                                </div>
+                                renderRoadSignTable('outbound', globalRoadSigns!.outboundItems, rainbowThemes[3])
                             )}
                             {isReturnPublished && ((globalRoadSigns!.returnItems && globalRoadSigns!.returnItems.length > 0) || (globalRoadSigns!.items && globalRoadSigns!.items.length > 0 && !globalRoadSigns!.outboundItems)) ? (
-                                <div>
-                                    {renderRoadSignTable('return', globalRoadSigns!.returnItems || globalRoadSigns!.items)}
-                                </div>
+                                renderRoadSignTable('return', globalRoadSigns!.returnItems || globalRoadSigns!.items, rainbowThemes[3])
                             ) : null}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Travel Tips Section - Cyan/Sky Theme */}
-            <div className="bg-cyan-50 rounded-xl shadow-sm border border-cyan-500 overflow-hidden">
-                <div className="p-4 bg-cyan-100 border-b border-cyan-500">
-                    <h3 className="font-bold text-cyan-900 text-base text-left flex items-center">
-                        <Briefcase className="w-5 h-5 mr-2 text-cyan-700" /> 旅行叮嚀
-                    </h3>
-                </div>
-                <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    {/* 1. Reminder */}
-                    <div className="bg-white p-4 rounded-lg border border-cyan-200 shadow-sm flex items-start">
-                        <div className="bg-cyan-100 p-2 rounded-full mr-4 shrink-0">
-                            <CheckSquare className="w-6 h-6 text-cyan-700" />
+            {/* Travel Tips Section */}
+            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[4].border} overflow-hidden bg-white transition-all duration-300`}>
+                <div 
+                    className={`w-full px-5 py-3.5 ${rainbowThemes[4].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[4].border}`}
+                    onClick={() => toggleCollapse('tips')}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[4].accent}`}>
+                            <Briefcase size={18}/>
                         </div>
-                        <div>
-                            <h4 className="font-bold text-cyan-900 mb-1">必備物品檢查</h4>
-                            <ul className="text-sm text-gray-700 space-y-1 list-disc pl-4">
-                                <li className="font-bold text-red-600">有效聖殿推薦書 (最重要!)</li>
-                                <li>個人身分證 / 健保卡</li>
-                                <li>聖殿服裝 (若有參與教儀)</li>
-                                <li>個人常備藥品</li>
-                            </ul>
+                        <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">聖殿旅行團必備叮嚀 (TRAVEL TIPS)</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {collapsedSections.tips ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                    </div>
+                </div>
+
+                {!collapsedSections['tips'] && (
+                    <div className={`p-1 md:p-3 lg:p-4 xl:p-6 ${rainbowThemes[4].content}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+                            {/* 1. Reminder Card */}
+                            <div className="bg-white p-4 md:p-6 rounded-lg border border-blue-200 shadow-sm flex items-start gap-4">
+                                <div className="bg-blue-100 p-2 md:p-3 rounded-full text-blue-700 shadow-inner">
+                                    <CheckSquare size={20} className="md:w-6 md:h-6" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h5 className="font-black text-blue-900 text-[10px] md:text-xs uppercase tracking-wider">必備物品檢查清單</h5>
+                                    <ul className="text-xs text-slate-700 space-y-2">
+                                        <li className="flex items-center gap-2 font-black text-rose-600">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                                            有效聖殿推薦書 (REQUIRED)
+                                        </li>
+                                        <li className="flex items-center gap-2 font-bold">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                            個人身分證明文件 (ID CARD)
+                                        </li>
+                                        <li className="flex items-center gap-2 font-bold">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                            全套聖殿/安息日服裝
+                                        </li>
+                                        <li className="flex items-center gap-2 font-bold">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                            個人常備藥品與飲用水
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* 2. Weather Card */}
+                            <div className="bg-white p-4 md:p-6 rounded-lg border border-amber-200 shadow-sm">
+                                <div className="flex items-center justify-between mb-4 border-b border-amber-100 pb-2">
+                                    <h5 className="font-black text-amber-900 text-[10px] md:text-xs uppercase tracking-wider flex items-center gap-2">
+                                        {weather.condition === 'rainy' ? <CloudRain size={16} className="text-blue-500" /> : <Sun size={16} className="text-amber-500" />}
+                                        台北聖殿天氣預報
+                                    </h5>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Daan Dist, Taipei</span>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4 text-center mb-6">
+                                    <div className="bg-amber-50 p-2 md:p-3 rounded-lg border border-amber-100 shadow-inner">
+                                        <div className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">預估氣溫</div>
+                                        <div className="font-black text-lg md:text-2xl text-slate-800 tracking-tighter">{weather.temp_low}° - {weather.temp_high}°C</div>
+                                    </div>
+                                    <div className="bg-blue-50 p-2 md:p-3 rounded-lg border border-blue-100 shadow-inner">
+                                        <div className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">降雨機率</div>
+                                        <div className="font-black text-lg md:text-2xl text-blue-600 tracking-tighter">{weather.rainProb}%</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3 p-2 bg-amber-50/80 rounded-lg">
+                                        <Shirt size={14} className="text-amber-700 mt-0.5 shrink-0" />
+                                        <p className="text-xs font-bold text-slate-700 leading-relaxed">{getClothingAdvice()}</p>
+                                    </div>
+                                    <div className="flex items-start gap-3 p-2 bg-blue-50/80 rounded-lg">
+                                        <Umbrella size={14} className="text-blue-700 mt-0.5 shrink-0" />
+                                        <p className="text-xs font-bold text-slate-700 leading-relaxed">{getRainAdvice()}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    {/* 2. Weather & Clothing */}
-                    <div className="bg-white p-4 rounded-lg border border-cyan-200 shadow-sm">
-                        <div className="flex items-center mb-3 border-b border-cyan-100 pb-2">
-                            {weather.condition === 'rainy' ? <CloudRain className="w-5 h-5 text-blue-500 mr-2" /> : <Sun className="w-5 h-5 text-orange-500 mr-2" />}
-                            <h4 className="font-bold text-cyan-900">台北市大安區 (聖殿) 天氣預報</h4>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-center mb-4">
-                            <div className="bg-gray-50 p-2 rounded border border-gray-100">
-                                <div className="text-xs text-gray-500">氣溫</div>
-                                <div className="font-bold text-lg text-gray-800">{weather.temp_low}°C - {weather.temp_high}°C</div>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded border border-gray-100">
-                                <div className="text-xs text-gray-500">降雨機率</div>
-                                <div className="font-bold text-lg text-blue-600">{weather.rainProb}%</div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-start">
-                                <Shirt className="w-4 h-4 text-cyan-600 mr-2 mt-0.5 shrink-0" />
-                                <p className="text-sm text-gray-700 text-justify">{getClothingAdvice()}</p>
-                            </div>
-                            <div className="flex items-start">
-                                <Umbrella className="w-4 h-4 text-blue-600 mr-2 mt-0.5 shrink-0" />
-                                <p className="text-sm text-gray-700 text-justify">{getRainAdvice()}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                )}
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Map, Plus, Trash2, ChevronUp, ChevronDown, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RoadSignItem, BusRoute } from '../../../types';
@@ -19,7 +19,7 @@ interface SignListCardProps {
 const SignListCard: React.FC<SignListCardProps> = ({
     busName, signs, isCollapsed, onToggleCollapse, onAddItem, onUpdateItem, onRemoveItem, theme
 }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
 
     const renderSignTable = (type: 'outbound' | 'return') => {
         const items = type === 'outbound' ? (signs.outboundRoadSigns || []) : (signs.returnRoadSigns || []);

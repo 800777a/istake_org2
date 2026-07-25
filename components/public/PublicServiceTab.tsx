@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { EventData, GlobalSettings, Volunteer, Registration, BusRatingRecord } from '../../types';
 import { updateEvent, updateSettings } from '../../services/sheetService';
-import { Badge, HeartHandshake, Plus, Star, CheckCircle2, User, AlertCircle, Lock } from 'lucide-react';
+import { Badge, HeartHandshake, Plus, Star, CheckCircle2, User, AlertCircle, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { maskName } from '../../utils/validation';
 
 import Toast, { ToastType } from '../Toast';
@@ -34,7 +34,28 @@ const METRIC_LABELS = [
     '車況良好', '車輛清潔', '車內氣味', '設備正常'
 ];
 
+// Refined rainbow themes following strict system instructions (Light bg + Dark text & borders)
+const rainbowThemes = [
+    { border: 'border-red-200', title: 'bg-red-200', header: 'bg-red-100', content: 'bg-red-50', accent: 'text-red-800' },
+    { border: 'border-orange-200', title: 'bg-orange-200', header: 'bg-orange-100', content: 'bg-orange-50', accent: 'text-orange-800' },
+    { border: 'border-amber-200', title: 'bg-amber-200', header: 'bg-amber-100', content: 'bg-amber-50', accent: 'text-amber-900' },
+    { border: 'border-emerald-200', title: 'bg-emerald-200', header: 'bg-emerald-100', content: 'bg-emerald-50', accent: 'text-emerald-800' },
+    { border: 'border-blue-200', title: 'bg-blue-200', header: 'bg-blue-100', content: 'bg-blue-50', accent: 'text-blue-800' },
+    { border: 'border-indigo-200', title: 'bg-indigo-200', header: 'bg-indigo-100', content: 'bg-indigo-50', accent: 'text-indigo-800' },
+    { border: 'border-purple-200', title: 'bg-purple-200', header: 'bg-purple-100', content: 'bg-purple-50', accent: 'text-purple-800' },
+];
+
 const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settings, registrations = [] }) => {
+    const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+        rating: false,
+        workers: false,
+        volunteers: false
+    });
+
+    const toggleCollapse = (id: string) => {
+        setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
     const [newVolunteer, setNewVolunteer] = useState<Volunteer>({ id: '', unit: '', name: '', roleKey: '' });
     const [ratingForm, setRatingForm] = useState<{
         activeRatingId: string | null;
@@ -112,268 +133,301 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
     const myRatings = (settings.busRatings || []).filter(r => r.eventId === activeEvent.event_id);
 
     return (
-        <div className="space-y-6 animate-fade-in pb-8">
-            {/* Service Rating Section */}
-            <div className="bg-indigo-50 p-4 md:p-6 rounded-lg shadow-sm border border-indigo-500">
-                <h3 className="text-base font-bold mb-4 flex items-center text-indigo-900">
-                    <Star className="w-5 h-5 mr-2 text-indigo-700"/> 服務評分
-                </h3>
-                
-                <div className="bg-white p-3 rounded-lg border border-indigo-200 text-xs mb-4">
-                    <h4 className="font-bold text-indigo-800 mb-1">計分規則說明</h4>
-                    <p className="text-gray-600">本功能用於評分本次活動的服務品質。每位司機配置 9 項評核，我們將定期彙整結果供車行參考。您的個資將受到去識別化保護。</p>
+        <div className="space-y-4 md:space-y-8 animate-fade-in pb-12 w-full max-w-full min-w-0 overflow-hidden px-2.5 md:px-0">
+            {/* Service Rating Section - Rainbow 0 (Red) */}
+            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[0].border} overflow-hidden bg-white transition-all duration-300`}>
+                <div 
+                    className={`w-full px-5 py-3.5 ${rainbowThemes[0].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[0].border}`}
+                    onClick={() => toggleCollapse('rating')}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[0].accent}`}>
+                            <Star size={18}/>
+                        </div>
+                        <h4 className="font-bold text-sm md:text-base lg:text-lg text-slate-900 tracking-tight uppercase">車次服務評分 (SERVICE RATING)</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {collapsedSections.rating ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                    </div>
                 </div>
 
-                <div className="space-y-4">
-                    {myRatings.length === 0 && <div className="text-center py-4 text-gray-400 text-xs">目前尚無評分項目 (待主辦發佈)</div>}
-                    {myRatings.map(record => {
-                        const isLocked = record.isSubmitted;
-                        const isActive = ratingForm.activeRatingId === record.id;
-                        
-                        return (
-                            <div 
-                                key={record.id} 
-                                className={`border rounded-xl transition-all duration-300 overflow-hidden ${isLocked ? 'bg-[#F5F5F5] border-gray-300 shadow-none' : 'bg-white border-indigo-200 shadow-sm'}`}
-                            >
-                                <div className={`px-4 py-3 flex justify-between items-center ${isLocked ? 'text-[#1A1A1A]' : 'text-indigo-900 font-bold'}`}>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm">{record.busId} ({record.plate})</span>
-                                            {isLocked && <span className="bg-gray-200 text-gray-600 px-2 py-0.5 rounded text-[10px] flex items-center">已送出 <Lock size={10} className="ml-1"/></span>}
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 font-normal">司機: {record.driver1Name} {record.driver2Name ? `/ ${record.driver2Name}` : ''}</div>
-                                    </div>
-                                    {!isLocked && (
-                                        <button 
-                                            onClick={() => setRatingForm({ ...ratingForm, activeRatingId: isActive ? null : record.id })}
-                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${isActive ? 'bg-red-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-                                        >
-                                            {isActive ? '取消' : '開始評分'}
-                                        </button>
-                                    )}
-                                </div>
+                {!collapsedSections['rating'] && (
+                    <div className={`p-1 md:p-6 space-y-4 md:space-y-6 ${rainbowThemes[0].content}`}>
+                        <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-red-200 text-xs text-slate-600 leading-relaxed shadow-inner">
+                            <h5 className={`font-black ${rainbowThemes[0].accent} mb-1 flex items-center gap-2 uppercase tracking-wider`}>
+                                <AlertCircle size={14}/> 計分規則說明
+                            </h5>
+                            <p>本功能用於評分本次活動的服務品質。每位司機配置 9 項評核，我們將定期彙整結果供車行參考。您的個資將受到去識別化保護。</p>
+                        </div>
 
-                                {/* Rating Content */}
-                                {isLocked && (
-                                    <div className="px-4 py-3 border-t border-gray-200 text-xs text-[#1A1A1A]">
-                                        <div className="italic bg-white/50 p-2 rounded mb-2">反應備註: {record.remarks || '無'}</div>
-                                        <div className="flex justify-between items-center text-[10px] text-gray-500">
-                                            <span>評分人: {record.raterUnit} {maskName(record.raterName)}</span>
-                                            <div className="flex gap-1">
-                                                {record.d1Metrics.filter(m => m).length}/{METRIC_LABELS.length} 及格
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {isActive && !isLocked && (
-                                    <div className="p-4 border-t border-indigo-100 bg-indigo-50/30 space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {/* Driver 1 */}
-                                            <div className="space-y-2">
-                                                <div className="font-bold text-xs text-indigo-800 border-b border-indigo-100 pb-1">司機1: {record.driver1Name}</div>
-                                                <div className="grid grid-cols-3 gap-y-2">
-                                                    {METRIC_LABELS.map((label, i) => (
-                                                        <label key={i} className="flex items-center gap-1 cursor-pointer">
-                                                            <input 
-                                                                type="checkbox" 
-                                                                className="rounded text-indigo-600 w-3 h-3"
-                                                                checked={ratingForm.d1Metrics[i]}
-                                                                onChange={e => {
-                                                                    const nm = [...ratingForm.d1Metrics];
-                                                                    nm[i] = e.target.checked;
-                                                                    setRatingForm({ ...ratingForm, d1Metrics: nm });
-                                                                }}
-                                                            />
-                                                            <span className="text-[10px]">{label}</span>
-                                                        </label>
-                                                    ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {myRatings.length === 0 && <div className="col-span-full text-center py-8 text-slate-400 text-xs font-bold uppercase">目前尚無評分項目</div>}
+                            {myRatings.map(record => {
+                                const isLocked = record.isSubmitted;
+                                const isActive = ratingForm.activeRatingId === record.id;
+                                
+                                return (
+                                    <div 
+                                        key={record.id} 
+                                        className={`rounded-lg border transition-all duration-300 overflow-hidden flex flex-col ${isLocked ? 'bg-slate-100 border-slate-200 opacity-80' : 'bg-white border-red-200 shadow-sm hover:shadow-md'}`}
+                                    >
+                                        <div className={`px-4 py-3 flex justify-between items-center border-b ${isLocked ? 'border-slate-200' : 'border-red-100'}`}>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-black text-xs md:text-sm text-slate-800">{record.busId} ({record.plate})</span>
+                                                    {isLocked && <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase flex items-center gap-1"><Lock size={10}/> 已送出</span>}
                                                 </div>
+                                                <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">司機: {record.driver1Name}</div>
                                             </div>
-                                            {/* Driver 2 */}
-                                            {record.driver2Name && (
-                                                <div className="space-y-2">
-                                                    <div className="font-bold text-xs text-indigo-800 border-b border-indigo-100 pb-1">司機2: {record.driver2Name}</div>
-                                                    <div className="grid grid-cols-3 gap-y-2">
-                                                        {METRIC_LABELS.map((label, i) => (
-                                                            <label key={i} className="flex items-center gap-1 cursor-pointer">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    className="rounded text-indigo-600 w-3 h-3"
-                                                                    checked={ratingForm.d2Metrics[i]}
-                                                                    onChange={e => {
-                                                                        const nm = [...ratingForm.d2Metrics];
-                                                                        nm[i] = e.target.checked;
-                                                                        setRatingForm({ ...ratingForm, d2Metrics: nm });
-                                                                    }}
-                                                                />
-                                                                <span className="text-[10px]">{label}</span>
-                                                            </label>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                            {!isLocked && (
+                                                <button 
+                                                    onClick={() => setRatingForm({ ...ratingForm, activeRatingId: isActive ? null : record.id })}
+                                                    className={`h-8 px-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-slate-200 text-slate-600' : 'bg-red-600 text-white hover:bg-red-700 shadow-sm'}`}
+                                                >
+                                                    {isActive ? '取消' : '開始評分'}
+                                                </button>
                                             )}
                                         </div>
 
-                                        <div className="space-y-3 pt-2 border-t border-indigo-100">
-                                            <div>
-                                                <label className="text-[10px] text-gray-500 block mb-1">反應備註</label>
-                                                <textarea 
-                                                    className="w-full border border-indigo-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-300 outline-none"
-                                                    rows={2}
-                                                    placeholder="請提供您的具體意見..."
-                                                    value={ratingForm.remarks}
-                                                    onChange={e => setRatingForm({ ...ratingForm, remarks: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="text-[10px] text-gray-500 block mb-1">評分人單位</label>
-                                                    <select 
-                                                        className="w-full border border-indigo-200 rounded-lg p-2 text-xs bg-white"
-                                                        value={ratingForm.raterUnit}
-                                                        onChange={e => setRatingForm({ ...ratingForm, raterUnit: e.target.value })}
-                                                    >
-                                                        <option value="">請選擇單位</option>
-                                                        {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <label className="text-[10px] text-gray-500 block mb-1">評分人姓名</label>
-                                                    <input 
-                                                        type="text" 
-                                                        className="w-full border border-indigo-200 rounded-lg p-2 text-xs"
-                                                        placeholder="必填"
-                                                        value={ratingForm.raterName}
-                                                        onChange={e => setRatingForm({ ...ratingForm, raterName: e.target.value })}
-                                                    />
+                                        {/* Rating Display (Locked) */}
+                                        {isLocked && (
+                                            <div className="p-3 text-[10px] text-slate-500 space-y-2">
+                                                <div className="bg-white/50 p-2 rounded italic text-slate-600 border border-slate-200">備註: {record.remarks || '無'}</div>
+                                                <div className="flex justify-between items-center font-bold">
+                                                    <span className="flex items-center gap-1"><User size={10}/> {record.raterUnit} {maskName(record.raterName)}</span>
+                                                    <span className="text-red-700">{record.d1Metrics.filter(m => m).length}/{METRIC_LABELS.length} 達成</span>
                                                 </div>
                                             </div>
-                                            <button 
-                                                onClick={() => handleRatingSubmit(record)}
-                                                className="w-full bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-bold shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <CheckCircle2 size={18}/> 送出評分
-                                            </button>
-                                        </div>
+                                        )}
+
+                                        {/* Rating Form (Active) */}
+                                        {isActive && !isLocked && (
+                                            <div className="p-4 bg-red-50/50 space-y-4 animate-slide-down">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <h6 className="text-[10px] font-black text-red-800 border-b border-red-200 pb-1 uppercase tracking-widest flex items-center justify-between">
+                                                            {record.driver1Name} (指標核取)
+                                                            <span className="text-red-600">{ratingForm.d1Metrics.filter(m => m).length}/{METRIC_LABELS.length}</span>
+                                                        </h6>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {METRIC_LABELS.map((label, i) => (
+                                                                <label key={i} className="flex items-center gap-2 cursor-pointer group p-1.5 rounded hover:bg-white transition-colors border border-transparent hover:border-red-100">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        className="rounded text-red-600 w-4 h-4 border-red-300 focus:ring-red-500"
+                                                                        checked={ratingForm.d1Metrics[i]}
+                                                                        onChange={e => {
+                                                                            const nm = [...ratingForm.d1Metrics];
+                                                                            nm[i] = e.target.checked;
+                                                                            setRatingForm({ ...ratingForm, d1Metrics: nm });
+                                                                        }}
+                                                                    />
+                                                                    <span className="text-[10px] font-bold text-slate-600 group-hover:text-slate-900">{label}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-3 pt-2 border-t border-red-200">
+                                                        <div className="space-y-1">
+                                                            <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">反應備註</label>
+                                                            <textarea 
+                                                                className="w-full border border-red-200 rounded-md p-2 text-xs focus:ring-2 focus:ring-red-300 outline-none bg-white min-h-[60px]"
+                                                                placeholder="請輸入具體意見或建議..."
+                                                                value={ratingForm.remarks}
+                                                                onChange={e => setRatingForm({ ...ratingForm, remarks: e.target.value })}
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-1 gap-2">
+                                                            <div className="space-y-1">
+                                                                <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">評分者單位</label>
+                                                                <select 
+                                                                    className="w-full border border-red-200 h-9 rounded-md px-2 text-xs bg-white font-bold text-slate-700"
+                                                                    value={ratingForm.raterUnit}
+                                                                    onChange={e => setRatingForm({ ...ratingForm, raterUnit: e.target.value })}
+                                                                >
+                                                                    <option value="">選擇單位</option>
+                                                                    {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                                                </select>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">評分者姓名</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="w-full border border-red-200 h-9 rounded-md px-2 text-xs font-bold text-slate-700"
+                                                                    placeholder="請輸入您的真實姓名"
+                                                                    value={ratingForm.raterName}
+                                                                    onChange={e => setRatingForm({ ...ratingForm, raterName: e.target.value })}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleRatingSubmit(record)}
+                                                            className="w-full h-8 md:h-10 lg:h-12 bg-red-800 text-white rounded-md text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-red-900 transition-all flex items-center justify-center gap-2"
+                                                        >
+                                                            <CheckCircle2 size={18}/> 送出評分
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Temple Workers */}
-            <div className="bg-yellow-50 p-4 md:p-6 rounded-lg shadow-sm border border-yellow-500">
-                <h3 className="text-base font-bold mb-4 flex items-center text-yellow-900">
-                    <Badge className="w-5 h-5 mr-2 text-yellow-700"/> 服務人員
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {TEMPLE_WORKER_ROLES.map((role: { key: string, label: string }) => {
-                        const existingData = activeEvent.temple_workers?.[role.key] || { name: '', unit: '' };
-                        const worker = typeof existingData === 'string' ? { name: existingData, unit: '' } : existingData;
-                        const hasWorker = !!worker.name;
-                        
-                        return (
-                            <div key={role.key} className="flex flex-col">
-                                <label className="text-xs font-bold text-gray-500 mb-1">{role.label}</label>
-                                <div className="flex gap-2">
-                                    <div className={`w-1/3 border rounded-lg p-2 text-xs font-bold h-[34px] flex items-center ${hasWorker ? 'bg-red-50 border-red-500 text-black' : 'bg-gray-100 border-gray-300 text-gray-700'}`}>
-                                        {worker.unit || '-'}
-                                    </div>
-                                    <div className={`w-2/3 border rounded-lg p-2 text-xs h-[34px] flex items-center ${hasWorker ? 'bg-red-50 border-red-500 text-black font-bold' : 'bg-gray-100 border-gray-300 text-gray-700'}`}>
-                                        {maskName(worker.name) || '待指派'}
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* Volunteers Section */}
-            <div className="bg-green-50 p-4 md:p-6 rounded-lg shadow-sm border border-green-500">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold flex items-center text-green-900">
-                        <HeartHandshake className="w-5 h-5 mr-2 text-green-700"/> 申請服務
-                    </h3>
-                </div>
-
-                {/* Add Form */}
-                <div className="flex flex-col md:flex-row gap-2 mb-4 bg-white p-3 rounded-lg border border-green-200 items-end">
-                    <div className="w-full md:flex-1">
-                        <label className="text-[10px] text-gray-500 block mb-1">單位</label>
-                        <select 
-                            className="w-full border rounded p-2 text-xs bg-white focus:ring-2 focus:ring-green-300 outline-none"
-                            value={newVolunteer.unit}
-                            onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
-                        >
-                            <option value="">請選擇</option>
-                            {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                    </div>
-                    <div className="w-full md:flex-1">
-                        <label className="text-[10px] text-gray-500 block mb-1">姓名</label>
-                        <input 
-                            type="text" 
-                            className="w-full border rounded p-2 text-xs focus:ring-2 focus:ring-green-300 outline-none"
-                            placeholder="輸入姓名"
-                            value={newVolunteer.name}
-                            onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})}
-                        />
-                    </div>
-                    <div className="w-full md:flex-[2]">
-                        <label className="text-[10px] text-gray-500 block mb-1">擔任</label>
-                        <select 
-                            className="w-full border rounded p-2 text-xs bg-white focus:ring-2 focus:ring-green-300 outline-none"
-                            value={newVolunteer.roleKey}
-                            onChange={e => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
-                        >
-                            <option value="">請選擇</option>
-                            {TEMPLE_WORKER_ROLES.map((role: { key: string, label: string }) => (
-                                <option key={role.key} value={role.key}>{role.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                    <button 
-                        onClick={handleAddVolunteer}
-                        disabled={!newVolunteer.name || !newVolunteer.unit || !newVolunteer.roleKey}
-                        className="w-full md:w-auto bg-green-600 text-white px-4 py-2 rounded text-xs hover:bg-green-700 disabled:opacity-50 font-bold h-[34px] flex items-center justify-center"
-                    >
-                        <Plus className="w-3 h-3 mr-1" /> 申請
-                    </button>
-                </div>
-
-                {/* Volunteer List (Read Only for Public) */}
-                <div className="overflow-x-auto bg-white rounded-lg border border-green-200">
-                    <table className="w-full text-xs text-left whitespace-nowrap">
-                        <thead className="bg-green-100 text-green-900 font-bold border-b border-green-200">
-                            <tr>
-                                <th className="p-2 pl-4 w-24">單位</th>
-                                <th className="p-2 w-32">姓名</th>
-                                <th className="p-2">擔任職務</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-green-100">
-                            {(activeEvent.volunteers || []).map((v: Volunteer) => {
-                                const roleLabel = TEMPLE_WORKER_ROLES.find((r: { key: string }) => r.key === v.roleKey)?.label || v.roleKey;
-                                return (
-                                    <tr key={v.id} className="hover:bg-green-50/50">
-                                        <td className="p-2 pl-4 text-green-800 font-bold">{v.unit}</td>
-                                        <td className="p-2 text-gray-800 font-medium">{maskName(v.name)}</td>
-                                        <td className="p-2 text-gray-600">{roleLabel}</td>
-                                    </tr>
                                 );
                             })}
-                            {(activeEvent.volunteers || []).length === 0 && (
-                                <tr>
-                                    <td colSpan={3} className="p-4 text-center text-gray-400">目前無志願工作資料</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Temple Workers - Rainbow 1 (Orange) */}
+            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[1].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+                <div 
+                    className={`w-full px-5 py-3.5 ${rainbowThemes[1].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[1].border}`}
+                    onClick={() => toggleCollapse('workers')}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[1].accent}`}>
+                            <Badge size={18}/>
+                        </div>
+                        <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">指定教儀/領車服務人員 (ASSIGNED STAFF)</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {collapsedSections.workers ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                    </div>
                 </div>
+
+                {!collapsedSections['workers'] && (
+                    <div className={`p-1 md:p-3 lg:p-4 xl:p-6 ${rainbowThemes[1].content}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                            {TEMPLE_WORKER_ROLES.map((role: { key: string, label: string }) => {
+                                const existingData = activeEvent.temple_workers?.[role.key] || { name: '', unit: '' };
+                                const worker = typeof existingData === 'string' ? { name: existingData, unit: '' } : existingData;
+                                const hasWorker = !!worker.name;
+                                
+                                return (
+                                    <div key={role.key} className="flex flex-col space-y-1 group">
+                                        <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{role.label}</label>
+                                        <div className="flex gap-1.5">
+                                            <div className={`w-24 border rounded-md h-9 md:h-10 flex items-center justify-center text-[10px] md:text-xs font-black shadow-sm transition-all ${hasWorker ? 'bg-orange-800 border-orange-900 text-white' : 'bg-slate-50 border-slate-200 text-slate-300'}`}>
+                                                {worker.unit || '-'}
+                                            </div>
+                                            <div className={`flex-1 border rounded-md h-9 md:h-10 px-3 flex items-center text-[10px] md:text-xs shadow-sm transition-all ${hasWorker ? 'bg-white border-orange-300 text-slate-900 font-black' : 'bg-slate-50 border-slate-200 text-slate-300 italic'}`}>
+                                                {maskName(worker.name) || '待指派...'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Volunteers Section - Rainbow 2 (Amber) */}
+            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[2].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+                <div 
+                    className={`w-full px-5 py-3.5 ${rainbowThemes[2].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[2].border}`}
+                    onClick={() => toggleCollapse('volunteers')}
+                >
+                    <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[2].accent}`}>
+                            <HeartHandshake size={18}/>
+                        </div>
+                        <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">主動申請服務 (VOLUNTEERS)</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {collapsedSections.volunteers ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
+                    </div>
+                </div>
+
+                {!collapsedSections['volunteers'] && (
+                    <div className={`p-1 md:p-3 lg:p-4 xl:p-6 space-y-6 ${rainbowThemes[2].content}`}>
+                        {/* Add Form Area - Right Aligned below title */}
+                        <div className="flex justify-end">
+                            <div className="w-full lg:w-3/4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded-xl border border-amber-200 shadow-sm space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的單位</label>
+                                        <select 
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
+                                            value={newVolunteer.unit}
+                                            onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
+                                        >
+                                            <option value="">請選擇單位</option>
+                                            {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的姓名</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold focus:ring-2 focus:ring-amber-300 outline-none"
+                                            placeholder="請輸入姓名"
+                                            value={newVolunteer.name}
+                                            onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">欲擔任職務</label>
+                                        <select 
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
+                                            value={newVolunteer.roleKey}
+                                            onChange={e => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
+                                        >
+                                            <option value="">請選擇職務</option>
+                                            {TEMPLE_WORKER_ROLES.map((role: { key: string, label: string }) => (
+                                                <option key={role.key} value={role.key}>{role.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end pt-2">
+                                    <button 
+                                        onClick={handleAddVolunteer}
+                                        disabled={!newVolunteer.name || !newVolunteer.unit || !newVolunteer.roleKey}
+                                        className="h-8 md:h-10 lg:h-12 px-8 bg-amber-600 text-white rounded-md text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-amber-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Plus size={18} /> 提交服務申請
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Volunteer List Table */}
+                        <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-6 md:pb-0 rounded-none md:rounded-lg border-none md:border border-amber-200 shadow-sm bg-white p-1">
+                            <div className="md:hidden text-right mb-1 text-[10px] font-black text-slate-400 select-none animate-pulse">
+                                👈 左右滑動查看完整資訊 👉
+                            </div>
+                            <table className="w-full text-left border-collapse min-w-[500px]">
+                                <thead className={`${rainbowThemes[2].header} ${rainbowThemes[2].accent} border-b ${rainbowThemes[2].border}`}>
+                                    <tr className="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest">
+                                        <th className="px-1 py-1 pl-3 w-1/4 border-r border-amber-100">所屬單位</th>
+                                        <th className="px-1 py-1 w-1/4 border-r border-amber-100">志願人員</th>
+                                        <th className="px-1 py-1">擔任職務標籤</th>
+                                    </tr>
+                                </thead>
+                                <tbody className={`divide-y ${rainbowThemes[2].border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
+                                    {(activeEvent.volunteers || []).length === 0 ? (
+                                        <tr>
+                                            <td colSpan={3} className="p-12 text-center text-slate-300 text-xs font-bold uppercase tracking-widest">目前尚無人員申請服務</td>
+                                        </tr>
+                                    ) : (
+                                        (activeEvent.volunteers || []).map((v: Volunteer) => {
+                                            const roleLabel = TEMPLE_WORKER_ROLES.find((r: { key: string }) => r.key === v.roleKey)?.label || v.roleKey;
+                                            return (
+                                                <tr key={v.id} className="hover:bg-amber-50/50 transition-colors group">
+                                                    <td className="px-1 py-1 pl-3 font-black text-amber-900 border-r border-amber-100">{v.unit}</td>
+                                                    <td className="px-1 py-1 text-slate-900 font-bold border-r border-amber-100">{maskName(v.name)}</td>
+                                                    <td className="px-1 py-1 text-slate-500 font-medium">{roleLabel}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </div>
             <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />
         </div>

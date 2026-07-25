@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Table, Space, Button, Popconfirm, Modal, Input, InputNumber, Select, Typography } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Edit2, Trash2, Plus, User, Car } from 'lucide-react';
 import { BillingEngineConfig, PricingValue } from '../../../types';
-import { RainbowCard } from './RainbowCard';
+import { RainbowCard, rainbowStyles } from './RainbowCard';
 
 const { Text } = Typography;
 
@@ -13,6 +13,7 @@ interface ModifierStepProps {
   onConfigChange: (config: BillingEngineConfig) => void;
   isExpanded: boolean;
   onToggle: () => void;
+  colorIndex?: number;
 }
 
 interface ModifierTableData {
@@ -28,31 +29,35 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
   billingConfig, 
   onConfigChange, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  colorIndex = 2
 }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const isIdentity = type === 'identity';
   const data: ModifierTableData[] = (isIdentity 
-    ? billingConfig.identityPricings.map(p => ({ key: p.identity, label: p.identity, price: p.price, priceRecord: p, sortOrder: p.sortOrder ?? 0 }))
-    : billingConfig.tripPricings.map(p => ({ key: p.trip, label: p.trip, price: p.price, priceRecord: p, sortOrder: p.sortOrder ?? 0 })))
+    ? (billingConfig.identityPricings || []).map((p, idx) => ({ key: `${p.identity}_${idx}`, label: p.identity, price: p.price, priceRecord: p, sortOrder: p.sortOrder ?? 0 }))
+    : (billingConfig.tripPricings || []).map((p, idx) => ({ key: `${p.trip}_${idx}`, label: p.trip, price: p.price, priceRecord: p, sortOrder: p.sortOrder ?? 0 })))
     .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-  const deleteModifier = (key: string) => {
+  const deleteModifier = (tableKey: string) => {
     if (isIdentity) {
-      const newList = billingConfig.identityPricings.filter(p => p.identity !== key);
+      const newList = (billingConfig.identityPricings || []).filter((p, idx) => `${p.identity}_${idx}` !== tableKey);
       onConfigChange({ ...billingConfig, identityPricings: newList });
     } else {
-      const newList = billingConfig.tripPricings.filter(p => p.trip !== key);
+      const newList = (billingConfig.tripPricings || []).filter((p, idx) => `${p.trip}_${idx}` !== tableKey);
       onConfigChange({ ...billingConfig, tripPricings: newList });
     }
   };
 
-  const editModifier = (key: string, currentPrice: PricingValue, currentDesc?: string, currentSort?: number) => {
-    let mKey = key;
+  const editModifier = (tableKey: string, currentPrice: PricingValue, currentDesc?: string, currentSort?: number, currentSubsidy?: boolean) => {
+    // Extract original name from tableKey (everything before the last underscore)
+    const originalName = tableKey.substring(0, tableKey.lastIndexOf('_'));
+    let mKey = originalName;
     let method = currentPrice.method;
     let value = currentPrice.value;
     let desc = currentDesc || '';
     let sort = currentSort ?? 0;
+    let subsidy = currentSubsidy !== false; 
     Modal.confirm({
       title: isIdentity ? t('stake.fee_config.edit_identity_title', '編輯身份規則') : t('stake.fee_config.edit_trip_title', '編輯行程規則'),
       okText: t('common.confirm', '確認'),
@@ -72,9 +77,20 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
             />
           </div>
           {isIdentity && (
-            <div>
-              <Text className="text-xs text-gray-500 mb-1 block">{t('stake.fee_config.identity_desc', '說明 (身份說明)')}</Text>
-              <Input defaultValue={desc} onChange={e => desc = e.target.value} />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Text className="text-xs text-gray-500 mb-1 block">補助</Text>
+                <Select 
+                  defaultValue={subsidy ? 'yes' : 'no'} 
+                  onChange={v => subsidy = v === 'yes'} 
+                  className="w-full"
+                  options={[{ value: 'yes', label: '有' }, { value: 'no', label: '無' }]}
+                />
+              </div>
+              <div className="flex-[2]">
+                <Text className="text-xs text-gray-500 mb-1 block">{t('stake.fee_config.identity_desc', '說明 (身份說明)')}</Text>
+                <Input defaultValue={desc} onChange={e => desc = e.target.value} />
+              </div>
             </div>
           )}
           <div>
@@ -98,15 +114,15 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       ),
       onOk: () => {
         if (isIdentity) {
-          const newList = [...billingConfig.identityPricings];
-          const idx = newList.findIndex(p => p.identity === key);
+          const newList = [...(billingConfig.identityPricings || [])];
+          const idx = newList.findIndex((p, i) => `${p.identity}_${i}` === tableKey);
           if (idx > -1) {
-            newList[idx] = { identity: mKey, price: { method, value }, description: desc, sortOrder: sort };
+            newList[idx] = { identity: mKey, price: { method, value }, description: desc, hasSubsidy: subsidy, sortOrder: sort };
           }
           onConfigChange({ ...billingConfig, identityPricings: newList });
         } else {
-          const newList = [...billingConfig.tripPricings];
-          const idx = newList.findIndex(p => p.trip === key);
+          const newList = [...(billingConfig.tripPricings || [])];
+          const idx = newList.findIndex((p, i) => `${p.trip}_${i}` === tableKey);
           if (idx > -1) {
             newList[idx] = { trip: mKey, price: { method, value }, sortOrder: sort };
           }
@@ -121,7 +137,8 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
     let method: 'fixed' | 'percent' | 'adjustment' = 'percent';
     let value = 100;
     let desc = '';
-    const currentList = isIdentity ? billingConfig.identityPricings : billingConfig.tripPricings;
+    let subsidy = true;
+    const currentList = isIdentity ? (billingConfig.identityPricings || []) : (billingConfig.tripPricings || []);
     const maxSort = currentList.reduce((max, p) => Math.max(max, p.sortOrder || 0), 0);
     let sort = maxSort + 1;
 
@@ -161,9 +178,20 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
              </div>
           </div>
           {isIdentity && (
-            <div>
-              <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.desc_optional', '說明 (選填)')}</Text>
-              <Input placeholder={t('common.optional', "選填")} onChange={e => desc = e.target.value} className="border-amber-200" />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Text className="text-xs font-black text-amber-900 mb-1 block">補助</Text>
+                <Select 
+                  defaultValue="yes" 
+                  onChange={v => subsidy = v === 'yes'} 
+                  className="w-full border-amber-200"
+                  options={[{ value: 'yes', label: '有' }, { value: 'no', label: '無' }]}
+                />
+              </div>
+              <div className="flex-[2]">
+                <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.desc_optional', '說明 (選填)')}</Text>
+                <Input placeholder={t('common.optional', "選填")} onChange={e => desc = e.target.value} className="border-amber-200" />
+              </div>
             </div>
           )}
         </div>
@@ -171,15 +199,17 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       onOk: () => {
         if (!mKey) return;
         if (isIdentity) {
-          const newList = [...billingConfig.identityPricings, { identity: mKey, price: { method, value }, description: desc, sortOrder: sort }];
+          const newList = [...(billingConfig.identityPricings || []), { identity: mKey, price: { method, value }, description: desc, hasSubsidy: subsidy, sortOrder: sort }];
           onConfigChange({ ...billingConfig, identityPricings: newList });
         } else {
-          const newList = [...billingConfig.tripPricings, { trip: mKey, price: { method, value }, sortOrder: sort }];
+          const newList = [...(billingConfig.tripPricings || []), { trip: mKey, price: { method, value }, sortOrder: sort }];
           onConfigChange({ ...billingConfig, tripPricings: newList });
         }
       }
     });
   };
+
+  const style = rainbowStyles[colorIndex % rainbowStyles.length];
 
   const columns: any[] = [
     {
@@ -193,15 +223,15 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
           value={val} 
           onChange={v => {
             if (isIdentity) {
-              const newList = [...billingConfig.identityPricings];
-              const idx = newList.findIndex(p => p.identity === record.key);
+              const newList = [...(billingConfig.identityPricings || [])];
+              const idx = newList.findIndex((p, i) => `${p.identity}_${i}` === record.key);
               if (idx > -1) {
                 newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
                 onConfigChange({ ...billingConfig, identityPricings: newList });
               }
             } else {
-              const newList = [...billingConfig.tripPricings];
-              const idx = newList.findIndex(p => p.trip === record.key);
+              const newList = [...(billingConfig.tripPricings || [])];
+              const idx = newList.findIndex((p, i) => `${p.trip}_${i}` === record.key);
               if (idx > -1) {
                 newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
                 onConfigChange({ ...billingConfig, tripPricings: newList });
@@ -241,6 +271,40 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
 
   if (isIdentity) {
     columns.push({
+      title: t('stake.fee_config.col_has_subsidy', '補助'),
+      dataIndex: 'hasSubsidy',
+      key: 'hasSubsidy',
+      width: 100,
+      sorter: (a: any, b: any) => {
+        const aVal = a.priceRecord?.hasSubsidy !== false ? 1 : 0;
+        const bVal = b.priceRecord?.hasSubsidy !== false ? 1 : 0;
+        return aVal - bVal;
+      },
+      render: (_: any, record: any) => {
+        const hasSubsidy = record.priceRecord?.hasSubsidy !== false; 
+        return (
+          <Select 
+            size="small" 
+            value={hasSubsidy ? 'yes' : 'no'} 
+            onChange={v => {
+              const newList = [...(billingConfig.identityPricings || [])];
+              const idx = newList.findIndex((p, i) => `${p.identity}_${i}` === record.key);
+              if (idx > -1) {
+                newList[idx] = { ...newList[idx], hasSubsidy: v === 'yes' };
+                onConfigChange({ ...billingConfig, identityPricings: newList });
+              }
+            }}
+            options={[
+              { value: 'yes', label: <span className="text-green-700 font-black">有</span> },
+              { value: 'no', label: <span className="text-red-700 font-black">無</span> }
+            ]}
+            className="w-full"
+            style={{ color: hasSubsidy ? '#15803d' : '#b91c1c' }}
+          />
+        );
+      }
+    });
+    columns.push({
       title: t('stake.fee_config.col_desc', '說明'),
       dataIndex: 'description',
       key: 'description',
@@ -253,14 +317,14 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
     key: 'action',
     render: (_: any, record: any) => (
       <Space>
-        <Button size="small" icon={<EditOutlined />} onClick={() => editModifier(record.key, record.price, record.priceRecord?.description, record.sortOrder)} />
+        <Button size="small" icon={<Edit2 className="w-3 h-3" />} onClick={() => editModifier(record.key, record.price, record.priceRecord?.description, record.sortOrder, record.priceRecord?.hasSubsidy)} />
         <Popconfirm 
           title={t('stake.fee_config.remove_rule_confirm', "移除此規則？")}
           onConfirm={() => deleteModifier(record.key)}
           okText={t('common.confirm', "確認")}
           cancelText={t('common.cancel', "取消")}
         >
-           <Button size="small" danger icon={<DeleteOutlined />} />
+           <Button size="small" danger icon={<Trash2 className="w-3 h-3" />} />
         </Popconfirm>
       </Space>
     )
@@ -269,14 +333,22 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
   return (
     <RainbowCard
       title={isIdentity ? t('stake.fee_config.step2_title', "第2步：身份規則 (Identity Rules)") : t('stake.fee_config.step3_title', "第3步：行程規則 (Trip Rules)")}
-      icon={isIdentity ? <Typography.Text>👤</Typography.Text> : <Typography.Text>🚗</Typography.Text>}
-      colorIndex={isIdentity ? 2 : 3}
+      icon={isIdentity ? <User size={20} /> : <Car size={20} />}
+      colorIndex={colorIndex}
       isExpanded={isExpanded}
       onToggle={onToggle}
       extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={addModifier}>
-          {isIdentity ? t('stake.fee_config.add_identity_title', '新增身份') : t('stake.fee_config.add_trip_title', '新增行程')}
-        </Button>
+        <button 
+          onClick={addModifier}
+          className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+          style={{ 
+            backgroundColor: style.bg,
+            color: style.text,
+            border: `1px solid ${style.border}`
+          }}
+        >
+          <Plus size={16} /> {isIdentity ? t('stake.fee_config.add_identity_title', '新增身份') : t('stake.fee_config.add_trip_title', '新增行程')}
+        </button>
       }
     >
       <div className="overflow-x-auto">

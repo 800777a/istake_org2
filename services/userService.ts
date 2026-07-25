@@ -47,7 +47,12 @@ export const subscribeToPersonalInfo = (callback: (list: any[]) => void) => {
     const q = query(collection(db, 'personal_info'));
     return onSnapshot(q, (snapshot) => {
         const list: any[] = [];
-        snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (!data.deleted) {
+                list.push({ id: doc.id, ...data });
+            }
+        });
         callback(list);
     });
 };
@@ -75,7 +80,12 @@ export const subscribeToRepresentatives = (callback: (list: any[]) => void) => {
     const q = query(collection(db, 'representatives'));
     return onSnapshot(q, (snapshot) => {
         const list: any[] = [];
-        snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (!data.deleted) {
+                list.push({ id: doc.id, ...data });
+            }
+        });
         callback(list);
     });
 };

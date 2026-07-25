@@ -1,6 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
-import { EventData, Registration, GlobalSettings, TripType, OrdinanceType, OrdinanceItem, PaymentMethod } from '../../types';
+import { useTranslation } from 'react-i18next';
+import { EventData, Registration, GlobalSettings, TripType, OrdinanceType, OrdinanceItem, PaymentMethod, InsuranceType, RegStatus } from '../../types';
 import { BookOpen, Bus, DollarSign, Activity, TrendingDown, Users, Wallet, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PublicAnalysisTabProps {
@@ -30,7 +31,19 @@ type SortConfig = {
     direction: 'asc' | 'desc';
 } | null;
 
+// Refined rainbow themes following strict system instructions (Light bg + Dark text & borders)
+const rainbowThemes = [
+    { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', hover: 'hover:bg-red-200' },
+    { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', hover: 'hover:bg-orange-200' },
+    { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300', hover: 'hover:bg-amber-200' },
+    { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', hover: 'hover:bg-emerald-200' },
+    { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', hover: 'hover:bg-blue-200' },
+    { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300', hover: 'hover:bg-indigo-200' },
+    { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', hover: 'hover:bg-purple-200' },
+];
+
 const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, registrations, settings, allEvents = [] }) => {
+    const { t } = useTranslation();
     
     // V300: Sorting States for each block
     const [sortConfigs, setSortConfigs] = useState<Record<string, SortConfig>>({
@@ -40,6 +53,22 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
         fee: null,
         income: null
     });
+
+    // Collapsible states for blocks
+    const [collapsedBlocks, setCollapsedBlocks] = useState<Record<string, boolean>>({
+        transport: false,
+        proxy: false,
+        living: false,
+        fee: false,
+        income: false,
+        expenses: false,
+        monthly: false,
+        yearly: false
+    });
+
+    const toggleBlock = (blockId: string) => {
+        setCollapsedBlocks(prev => ({ ...prev, [blockId]: !prev[blockId] }));
+    };
 
     // Yearly Stats Calculation
     const yearlyStats = useMemo(() => {
@@ -79,32 +108,49 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
     // 1. Calculate Expenses (From Event Data)
     const expenses = useMemo(() => {
-        let busBooking = 0;
+        let busRent = 0;
+        let busTax = 0;
         let driverMeal = 0;
         let parking = 0;
         let other = 0;
         
         activeEvent.busConfigs?.forEach(b => {
-            busBooking += b.bookingCost || 0;
+            busRent += b.bookingCost || 0;
+            busTax += b.taxCost || 0;
             driverMeal += b.driverMealCost || 0;
             parking += b.parkingCost || 0;
             other += b.otherCost || 0;
         });
         
-        const insurance = activeEvent.insuranceCost || 0;
+        // Vxxx: Calculate insurance based on type
+        const selfPaidInsuranceTotal = registrations.filter(r => r.needs_self_paid_insurance).length * (activeEvent.self_paid_insurance_amount || 0);
+        const insurance = activeEvent.insurance_type === InsuranceType.SELF_PAID ? selfPaidInsuranceTotal : (activeEvent.insurance_type === InsuranceType.GROUP ? (activeEvent.insuranceCost || 0) : 0);
+        
         const internetFee = settings.internet_fee || 0; 
-        const total = driverMeal + parking + other + insurance + internetFee;
+        const total = busRent + busTax + driverMeal + parking + other + insurance + internetFee;
 
-        return { busBooking, driverMeal, parking, other, insurance, internetFee, total };
-    }, [activeEvent, settings.internet_fee]);
+        return { busRent, busTax, driverMeal, parking, other, insurance, selfPaidInsuranceTotal, internetFee, total };
+    }, [activeEvent, settings.internet_fee, registrations]);
 
     // 2. Calculate Unit Statistics
-    const { unitStats, totalStats, allIdentityTypes } = useMemo(() => {
+    const { unitStats, totalStats, allIdentityTypes, totalSubsidy } = useMemo(() => {
         const statsMap = new Map<string, UnitStat & { transport: { retained: number } }>();
         const identitySet = new Set<string>();
         
+        // Vxxx: Subsidy Calculation logic from SubsidyTab
+        const billingConfig = settings.billingConfig;
+        const subsidyIdentities = new Set<string>();
+        if (billingConfig) {
+            (billingConfig.identityPricings || []).forEach(p => {
+                if (p.hasSubsidy !== false) {
+                    subsidyIdentities.add(p.identity);
+                }
+            });
+        }
+        let totalSubsidyAmount = 0;
+
         // Initialize Map
-        settings.units.forEach(u => {
+        (settings.units || []).forEach(u => {
             statsMap.set(u, {
                 unit: u,
                 transport: { bus: 0, self: 0, retained: 0, total: 0 },
@@ -117,7 +163,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
         // "Total" row object
         const grandTotal: UnitStat & { transport: { retained: number } } = {
-            unit: '支聯會',
+            unit: '合計', // Vxxx: Changed from 支聯會 to 合計
             transport: { bus: 0, self: 0, retained: 0, total: 0 },
             proxy: { [OrdinanceItem.BAPTISM]: 0, [OrdinanceItem.CONFIRMATION]: 0, [OrdinanceItem.INITIATORY]: 0, [OrdinanceItem.ENDOWMENT]: 0, [OrdinanceItem.SEALING]: 0 },
             living: { [OrdinanceItem.ENDOWMENT]: 0, [OrdinanceItem.SEALING]: 0, [OrdinanceItem.OBSERVER]: 0, [OrdinanceItem.CHILD]: 0, [OrdinanceItem.NONE]: 0 },
@@ -195,12 +241,37 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
             // 4. Identity Breakdown
             u.identities[r.identity_type] = (u.identities[r.identity_type] || 0) + 1;
             grandTotal.identities[r.identity_type] = (grandTotal.identities[r.identity_type] || 0) + 1;
+
+            // 5. Subsidy Calculation
+            if (billingConfig && r.status === RegStatus.NORMAL && subsidyIdentities.has(r.identity_type)) {
+                const unitName = r.unit || '';
+                let baseFee = billingConfig.baseFees['GLOBAL'] || 0;
+                let foundInGroup = false;
+                if (billingConfig.unitGroups) {
+                    for (const [groupName, units] of Object.entries(billingConfig.unitGroups)) {
+                        if ((units as string[]).includes(unitName)) {
+                            if (billingConfig.baseFees[groupName] !== undefined) {
+                                baseFee = billingConfig.baseFees[groupName];
+                                foundInGroup = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!foundInGroup && billingConfig.baseFees[unitName] !== undefined) {
+                    baseFee = billingConfig.baseFees[unitName];
+                }
+                const subsidyAmount = baseFee - r.amount_due;
+                if (subsidyAmount > 0) {
+                    totalSubsidyAmount += subsidyAmount;
+                }
+            }
         });
 
         // Sort Units
         const sortedUnits = Array.from(statsMap.values()).sort((a, b) => {
-            const idxA = settings.units.indexOf(a.unit);
-            const idxB = settings.units.indexOf(b.unit);
+            const idxA = (settings.units || []).indexOf(a.unit);
+            const idxB = (settings.units || []).indexOf(b.unit);
             if (idxA !== -1 && idxB !== -1) return idxA - idxB;
             return a.unit.localeCompare(b.unit);
         });
@@ -208,30 +279,33 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
         // Sort Identities for display
         const sortedIdentities = Array.from(identitySet).sort();
 
-        return { unitStats: sortedUnits, totalStats: grandTotal, allIdentityTypes: sortedIdentities };
-    }, [registrations, settings.units]);
+        return { unitStats: sortedUnits, totalStats: grandTotal, allIdentityTypes: sortedIdentities, totalSubsidy: totalSubsidyAmount };
+    }, [registrations, settings.units, settings.billingConfig]);
 
     // Helper to render table
     const renderTable = (
         title: string, 
         icon: React.ReactNode, 
-        theme: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo' | 'yellow',
+        themeIdx: number,
         columns: { header: string, align?: 'left'|'center'|'right', val: (u: UnitStat) => number | string, sortKey?: string }[],
         blockId: string
     ) => {
-        const themeStyles = {
-            blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', headBg: 'bg-blue-100', headBorder: 'border-blue-200' },
-            green: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', headBg: 'bg-green-100', headBorder: 'border-green-200' },
-            purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', headBg: 'bg-purple-100', headBorder: 'border-purple-200' },
-            orange: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', headBg: 'bg-orange-100', headBorder: 'border-orange-200' },
-            red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', headBg: 'bg-red-100', headBorder: 'border-red-200' },
-            indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', headBg: 'bg-indigo-100', headBorder: 'border-indigo-200' },
-            yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', headBg: 'bg-yellow-100', headBorder: 'border-yellow-200' },
-        }[theme];
-
+        // Rainbow Sequence Mapping: Red (0), Orange (1), Yellow (2), Green (3), Blue (4), Indigo (5), Purple (6)
+        const rainbowColors = [
+            { title: 'bg-red-200', header: 'bg-red-100', content: 'bg-red-50', accent: 'text-red-800', border: 'border-red-200' },
+            { title: 'bg-orange-200', header: 'bg-orange-100', content: 'bg-orange-50', accent: 'text-orange-800', border: 'border-orange-200' },
+            { title: 'bg-amber-200', header: 'bg-amber-100', content: 'bg-amber-50', accent: 'text-amber-900', border: 'border-amber-200' },
+            { title: 'bg-emerald-200', header: 'bg-emerald-100', content: 'bg-emerald-50', accent: 'text-emerald-800', border: 'border-emerald-200' },
+            { title: 'bg-blue-200', header: 'bg-blue-100', content: 'bg-blue-50', accent: 'text-blue-800', border: 'border-blue-200' },
+            { title: 'bg-indigo-200', header: 'bg-indigo-100', content: 'bg-indigo-50', accent: 'text-indigo-800', border: 'border-indigo-200' },
+            { title: 'bg-purple-200', header: 'bg-purple-100', content: 'bg-purple-50', accent: 'text-purple-800', border: 'border-purple-200' },
+        ];
+        
+        const theme = rainbowColors[themeIdx % 7];
         const config = sortConfigs[blockId];
+        const isCollapsed = collapsedBlocks[blockId] === undefined ? false : collapsedBlocks[blockId];
 
-        // V300: Sort logic (excluding "支聯會" which is in totalStats)
+        // V300: Sort logic
         const sortedData = useMemo(() => {
             if (!config) return unitStats;
             return [...unitStats].sort((a, b) => {
@@ -269,81 +343,102 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
         const renderSortIcon = (key: string) => {
             const active = config?.key === key;
             return (
-                <div className="inline-flex flex-col ml-1 align-middle">
-                    <ChevronUp className={`w-3 h-3 -mb-1 ${active && config?.direction === 'asc' ? 'text-blue-600' : 'text-gray-300'}`} />
-                    <ChevronDown className={`w-3 h-3 ${active && config?.direction === 'desc' ? 'text-blue-600' : 'text-gray-300'}`} />
+                <div className="inline-flex flex-col ml-1.5 align-middle opacity-40 group-hover:opacity-100 transition-opacity">
+                    <ChevronUp className={`w-3 h-3 -mb-1 ${active && config?.direction === 'asc' ? theme.accent : 'text-slate-400'}`} />
+                    <ChevronDown className={`w-3 h-3 ${active && config?.direction === 'desc' ? theme.accent : 'text-slate-400'}`} />
                 </div>
             );
         };
 
         return (
-            <div className={`${themeStyles.bg} rounded-xl shadow-sm border ${themeStyles.border} overflow-hidden flex flex-col h-full`}>
-                <div className={`p-3 ${themeStyles.headBg} border-b ${themeStyles.headBorder} flex items-center`}>
-                    <span className={`mr-2 ${themeStyles.text}`}>{icon}</span>
-                    <h3 className={`font-bold ${themeStyles.text} text-base`}>{title}</h3>
+            <div className={`w-full max-w-full min-w-0 rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6`}>
+                {/* Independent Header Row - 200 depth */}
+                <div 
+                    className={`w-full flex items-center justify-between px-4 md:px-5 py-2.5 md:py-3.5 ${theme.title} border-b border-inherit cursor-pointer transition-all hover:opacity-90`}
+                    onClick={() => toggleBlock(blockId)}
+                >
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className={`p-1.5 md:p-2 rounded-lg bg-white/40 border ${theme.border} shadow-sm ${theme.accent}`}>
+                            {React.cloneElement(icon as React.ReactElement, { size: 16 })}
+                        </div>
+                        <h4 className="font-bold text-xs md:text-base lg:text-lg text-slate-900 tracking-tight">{title}</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {isCollapsed ? <ChevronDown size={18}/> : <ChevronUp size={18}/>}
+                    </div>
                 </div>
-                <div className="overflow-x-auto flex-1">
-                    <table className="w-full text-sm whitespace-nowrap">
-                        <thead className={`${themeStyles.bg} text-gray-700 font-bold border-b ${themeStyles.headBorder}`}>
-                            <tr>
-                                <th 
-                                    className={`p-2 text-left w-20 sticky left-0 z-10 ${themeStyles.bg} border-r border-black/5 cursor-pointer hover:bg-gray-100 transition-colors`}
-                                    onClick={() => onSort('unit')}
-                                >
-                                    單位
-                                    {renderSortIcon('unit')}
-                                </th>
-                                {columns.map((col, idx) => (
-                                    <th 
-                                        key={idx} 
-                                        className={`p-2 text-${col.align || 'center'} cursor-pointer hover:bg-gray-100 transition-colors`}
-                                        onClick={() => onSort(col.sortKey || col.header)}
-                                    >
-                                        <div className={`flex items-center justify-${col.align === 'right' ? 'end' : (col.align === 'center' || !col.align) ? 'center' : 'start'}`}>
-                                            {col.header}
-                                            {renderSortIcon(col.sortKey || col.header)}
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200/50">
-                            {sortedData.map(u => (
-                                <tr key={u.unit} className="hover:bg-white/50 transition-colors">
-                                    <td className={`p-2 font-bold text-gray-700 sticky left-0 z-10 ${themeStyles.bg} border-r border-black/5`}>{u.unit}</td>
-                                    {columns.map((col, idx) => (
-                                        <td key={idx} className={`p-2 text-${col.align || 'center'} text-gray-800`}>
-                                            {col.align === 'right' && typeof col.val(u) === 'number' ? `$${(col.val(u) as number).toLocaleString()}` : col.val(u)}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))}
-                            {/* Total Row - "支聯會" only */}
-                            <tr className={`${themeStyles.headBg} font-bold`}>
-                                <td className={`p-2 text-gray-900 sticky left-0 z-10 ${themeStyles.headBg} border-r border-black/5 border-t border-black/10`}>支聯會</td>
-                                {columns.map((col, idx) => (
-                                    <td key={idx} className={`p-2 text-${col.align || 'center'} text-gray-900 border-t border-black/10`}>
-                                        {col.align === 'right' && typeof col.val(totalStats) === 'number' ? `$${(col.val(totalStats) as number).toLocaleString()}` : col.val(totalStats)}
-                                    </td>
-                                ))}
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+
+                {!isCollapsed && (
+                    <div className={`flex-1 flex flex-col ${theme.content} p-1 md:p-6 pb-4 md:pb-6 gap-2 w-full max-w-full min-w-0`}>
+                        <div className="md:hidden text-right text-[10px] font-black text-slate-400 select-none animate-pulse mb-1">
+                            👈 左右滑動查看完整資訊 👉
+                        </div>
+                        <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-2 md:pb-0">
+                            <div className="min-w-full inline-block align-middle">
+                                <table className="w-full min-w-[550px] table-fixed md:table-auto text-[10px] md:text-xs border-collapse">
+                                    <thead>
+                                        <tr className={`border-b ${theme.header} text-slate-900 ${theme.border}`}>
+                                            <th 
+                                                className={`px-1 py-1 text-left whitespace-nowrap sticky left-0 z-20 ${theme.header} border-r cursor-pointer transition-colors group ${theme.border} font-black uppercase tracking-wider`}
+                                                onClick={() => onSort('unit')}
+                                            >
+                                                <div className="flex items-center">
+                                                    單位 {renderSortIcon('unit')}
+                                                </div>
+                                            </th>
+                                            {columns.map((col, idx) => (
+                                                <th 
+                                                    key={idx} 
+                                                    className={`px-1 py-1 text-${col.align || 'center'} whitespace-nowrap cursor-pointer hover:bg-white/40 transition-colors group border-r last:border-r-0 ${theme.border} uppercase tracking-wider font-black`}
+                                                    onClick={() => onSort(col.sortKey || col.header)}
+                                                >
+                                                    <div className={`flex items-center justify-${col.align === 'right' ? 'end' : (col.align === 'center' || !col.align) ? 'center' : 'start'}`}>
+                                                        {col.header} {renderSortIcon(col.sortKey || col.header)}
+                                                    </div>
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className={`divide-y ${theme.border.replace('border', 'divide')}`}>
+                                        {sortedData.map(u => (
+                                            <tr key={u.unit} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className={`px-1 py-1 font-black text-slate-900 sticky left-0 z-10 bg-white border-r ${theme.border} whitespace-nowrap shadow-[2px_0_5px_0_rgba(0,0,0,0.05)]`}>{u.unit}</td>
+                                                {columns.map((col, idx) => (
+                                                    <td key={idx} className={`px-1 py-1 text-${col.align || 'center'} font-bold text-slate-800 border-r last:border-r-0 ${theme.border} whitespace-nowrap`}>
+                                                        {col.align === 'right' && typeof col.val(u) === 'number' ? `$${(col.val(u) as number).toLocaleString()}` : col.val(u)}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                        {/* Total Row */}
+                                        <tr className={`font-black border-t-2 bg-slate-100/50 ${theme.accent} ${theme.border}`}>
+                                            <td className={`px-1 py-1 sticky left-0 z-10 bg-slate-100 border-r ${theme.border} whitespace-nowrap shadow-[2px_0_5px_0_rgba(0,0,0,0.05)]`}>合計</td>
+                                            {columns.map((col, idx) => (
+                                                <td key={idx} className={`px-1 py-1 text-${col.align || 'center'} border-r last:border-r-0 ${theme.border} whitespace-nowrap`}>
+                                                    {col.align === 'right' && typeof col.val(totalStats) === 'number' ? `$${(col.val(totalStats) as number).toLocaleString()}` : col.val(totalStats)}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
 
     return (
-        <div className="space-y-6 pb-8 animate-fade-in">
-            {/* Grid Layout for Blocks - Adjusted to handle more blocks */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4 md:space-y-8 pb-12 animate-fade-in w-full max-w-full min-w-0 overflow-hidden px-2.5 md:px-0">
+            {/* Grid Layout for Blocks */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                 
-                {/* 1. Transport (Red) */}
+                {/* 1. Transport */}
                 {renderTable(
                     '交通安排', 
-                    <Bus className="w-5 h-5"/>, 
-                    'red', 
+                    <Bus />, 
+                    0, 
                     [
                         { header: '搭車', sortKey: 'bus', val: u => u.transport.bus },
                         { header: '自理', sortKey: 'self', val: u => u.transport.self },
@@ -353,11 +448,11 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                     'transport'
                 )}
 
-                {/* 2. Proxy Ordinances (Orange) */}
+                {/* 2. Proxy Ordinances */}
                 {renderTable(
                     '代替教儀', 
-                    <BookOpen className="w-5 h-5"/>, 
-                    'orange', 
+                    <BookOpen />, 
+                    1, 
                     [
                         { header: '洗禮', sortKey: OrdinanceItem.BAPTISM, val: u => u.proxy[OrdinanceItem.BAPTISM] || 0 },
                         { header: '證實', sortKey: OrdinanceItem.CONFIRMATION, val: u => u.proxy[OrdinanceItem.CONFIRMATION] || 0 },
@@ -368,11 +463,11 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                     'proxy'
                 )}
 
-                {/* 3. Living Ordinances (Yellow) */}
+                {/* 3. Living Ordinances */}
                 {renderTable(
                     '活人其他', 
-                    <Activity className="w-5 h-5"/>, 
-                    'yellow', 
+                    <Activity />, 
+                    2, 
                     [
                         { header: '恩道門', sortKey: OrdinanceItem.ENDOWMENT, val: u => u.living[OrdinanceItem.ENDOWMENT] || 0 },
                         { header: '印證', sortKey: OrdinanceItem.SEALING, val: u => u.living[OrdinanceItem.SEALING] || 0 },
@@ -383,11 +478,11 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                     'living'
                 )}
 
-                {/* 4. Fee Breakdown (Green) */}
+                {/* 4. Fee Breakdown */}
                 {renderTable(
-                    '收費分別', 
-                    <Users className="w-5 h-5"/>, 
-                    'green', 
+                    '身份收費', 
+                    <Users />, 
+                    3, 
                     allIdentityTypes.map(identity => ({
                         header: identity,
                         val: u => u.identities[identity] || 0
@@ -395,11 +490,11 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                     'fee'
                 )}
 
-                {/* 5. Income (Blue) */}
+                {/* 5. Income */}
                 {renderTable(
-                    '車資收入', 
-                    <DollarSign className="w-5 h-5"/>, 
-                    'blue', 
+                    '車資收入明細', 
+                    <DollarSign />, 
+                    4, 
                     [
                         { header: '轉帳', align: 'right', sortKey: 'transfer', val: u => u.income.transfer },
                         { header: '現金', align: 'right', sortKey: 'cash', val: u => u.income.cash },
@@ -408,168 +503,234 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                     'income'
                 )}
 
-                {/* 6. Expenses (Indigo) */}
-                <div className="bg-indigo-50 rounded-xl shadow-sm border border-indigo-200 overflow-hidden flex flex-col h-full">
-                    <div className="p-3 bg-indigo-100 border-b border-indigo-200 flex items-center">
-                        <TrendingDown className="mr-2 text-indigo-900 w-5 h-5"/>
-                        <h3 className="font-bold text-indigo-900 text-base">費用支出</h3>
+                {/* 6. Expenses */}
+                <div className="w-full max-w-full min-w-0 rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-indigo-200 overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6">
+                    <div 
+                        className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-indigo-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-indigo-200"
+                        onClick={() => toggleBlock('expenses')}
+                    >
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-indigo-200 shadow-sm text-indigo-800">
+                                <TrendingDown size={16}/>
+                            </div>
+                            <h4 className="font-bold text-xs md:text-base lg:text-lg text-slate-900 tracking-tight">費用支出</h4>
+                        </div>
+                        <div className="text-slate-600">
+                            {collapsedBlocks.expenses ? <ChevronDown size={18}/> : <ChevronUp size={18}/>}
+                        </div>
                     </div>
-                    <div className="p-4 flex-1">
-                        <table className="w-full text-sm">
-                            <tbody className="divide-y divide-indigo-200">
-                                <tr>
-                                    <td className="py-2 text-gray-700">網路費</td>
-                                    <td className="py-2 text-right text-indigo-700">${expenses.internetFee.toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-2 text-gray-700">保險費</td>
-                                    <td className="py-2 text-right text-indigo-700">${expenses.insurance.toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-2 text-gray-700">司機餐費</td>
-                                    <td className="py-2 text-right text-indigo-700">${expenses.driverMeal.toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-2 text-gray-700">停車費</td>
-                                    <td className="py-2 text-right text-indigo-700">${expenses.parking.toLocaleString()}</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-2 text-gray-700">其他費用</td>
-                                    <td className="py-2 text-right text-indigo-700">${expenses.other.toLocaleString()}</td>
-                                </tr>
-                                <tr className="bg-indigo-100/50 font-bold">
-                                    <td className="py-2 text-indigo-900">支出合計</td>
-                                    <td className="py-2 text-right text-indigo-900">${expenses.total.toLocaleString()}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    
+                    {!collapsedBlocks.expenses && (
+                        <div className="flex-1 flex flex-col bg-indigo-50 p-1 md:p-6 gap-2 w-full max-w-full min-w-0">
+                            <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-2 md:pb-0">
+                                <div className="w-full min-w-[300px]">
+                                    <table className="w-full text-[10px] md:text-xs border-collapse">
+                                        <thead>
+                                            <tr className="bg-indigo-100 border-b border-indigo-200 text-slate-900">
+                                                <th className="px-1 py-1 text-left font-bold uppercase tracking-wider border-r border-indigo-200 whitespace-nowrap">項目</th>
+                                                <th className="px-1 py-1 text-right font-bold uppercase tracking-wider whitespace-nowrap">金額</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-indigo-200">
+                                            {[
+                                                { label: '網路系統費', val: expenses.internetFee },
+                                                { label: '租車費', val: expenses.busRent },
+                                                { label: '所得稅', val: expenses.busTax },
+                                                { label: '保險費', val: expenses.insurance },
+                                                { label: '司機餐費', val: expenses.driverMeal },
+                                                { label: '停車費', val: expenses.parking },
+                                                { label: '其他費用', val: expenses.other },
+                                            ].map((item, i) => (
+                                                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-1 py-1 font-semibold text-slate-900 border-r border-indigo-200 whitespace-nowrap">{item.label}</td>
+                                                    <td className="px-1 py-1 text-right font-medium text-slate-900 whitespace-nowrap">${item.val.toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                            <tr className="bg-indigo-100/50 font-black border-t-2 border-indigo-200">
+                                                <td className="px-1 py-1 text-slate-900 border-r border-indigo-200 whitespace-nowrap">支出合計</td>
+                                                <td className="px-1 py-1 text-right text-indigo-900 whitespace-nowrap">${expenses.total.toLocaleString()}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-
             </div>
             
-            {/* 當月統計 (Monthly Stats) - Violet/Purple Theme */}
-            <div className="bg-purple-50 border-2 border-purple-200 rounded-3xl p-8 shadow-sm">
-                <div className="flex items-center mb-8 border-b-2 border-purple-100 pb-4">
-                    <Activity className="w-6 h-6 mr-3 text-purple-600" />
-                    <h3 className="text-xl font-black text-purple-900">當月統計</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-base">
-                    {/* Part 1: Attendance */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">活動人數：</span>
-                            <span className="font-black text-purple-900">{totalStats.transport.total} 人</span>
+            {/* 當月統計 (Monthly Stats) - Purple (6) */}
+            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-purple-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300 mb-4 md:mb-6`}>
+                <div 
+                    className="w-full px-4 md:px-6 py-3 md:py-4 bg-purple-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-purple-200"
+                    onClick={() => toggleBlock('monthly')}
+                >
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-purple-200 shadow-sm text-purple-800">
+                            <Activity size={18}/>
                         </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">搭車人數：</span>
-                            <span className="font-black text-purple-900">{totalStats.transport.bus} 人</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">自理人數：</span>
-                            <span className="font-black text-purple-900">{totalStats.transport.self} 人</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">留用人數：</span>
-                            <span className="font-black text-purple-900">{totalStats.transport.retained} 人</span>
-                        </div>
+                        <h4 className="font-black text-xs md:text-base lg:text-xl text-slate-900 tracking-tight uppercase">本次活動總結</h4>
                     </div>
-
-                    {/* Part 2: Revenue & Expenses */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">車資收入：</span>
-                            <span className="font-black text-purple-900">${totalStats.income.total.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">費用支出：</span>
-                            <span className="font-black text-purple-900">${expenses.total.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">結算繳回：</span>
-                            <span className={`font-black ${totalStats.income.total - expenses.total >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                ${Math.max(0, totalStats.income.total - expenses.total).toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Part 3: Booking & Subsidies */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">訂車總數：</span>
-                            <span className="font-black text-purple-900">{(activeEvent.busConfigs || []).length} 台</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">訂車費用：</span>
-                            <span className="font-black text-purple-900">${expenses.busBooking.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center border-b border-purple-100 pb-2">
-                            <span className="font-bold text-purple-700">教會補助：</span>
-                            <span className="font-black text-red-600">${Math.max(0, expenses.busBooking - (totalStats.income.total - expenses.total)).toLocaleString()}</span>
-                        </div>
+                    <div className="text-slate-600">
+                        {collapsedBlocks.monthly ? <ChevronDown size={18}/> : <ChevronUp size={18}/>}
                     </div>
                 </div>
+
+                {!collapsedBlocks.monthly && (
+                    <div className="flex flex-col bg-purple-50 p-1 py-1 md:p-6 gap-2">
+
+                        <div className="p-2 md:p-10">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-10">
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                    <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">人數統計</h5>
+                                    {[
+                                        { label: '總人數', val: totalStats.transport.total, unit: '人' },
+                                        { label: '搭車人數', val: totalStats.transport.bus, unit: '人' },
+                                        { label: '自理人數', val: totalStats.transport.self, unit: '人' },
+                                        { label: '留用人數', val: totalStats.transport.retained, unit: '人' },
+                                    ].map((row, i) => (
+                                        <div key={i} className="flex justify-between items-center border-b border-purple-100/50 py-1.5 md:py-2.5">
+                                            <span className="font-black text-slate-900 text-[10px] md:text-sm">{row.label}：</span>
+                                            <span className="font-black text-slate-900 text-xs md:text-base">{row.val} {row.unit}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                    <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">收入統計</h5>
+                                    {[
+                                        { label: '車資收入', val: totalStats.income.total },
+                                        { label: '自付保費', val: expenses.selfPaidInsuranceTotal },
+                                        { label: '收入合計', val: totalStats.income.total + expenses.selfPaidInsuranceTotal, highlight: true },
+                                    ].map((row, i) => (
+                                        <div key={i} className={`flex justify-between items-center border-b border-purple-100/50 py-1.5 md:py-2.5 ${row.highlight ? 'mt-2 md:mt-4 pt-2 md:pt-4 border-t-2 border-purple-200' : ''}`}>
+                                            <span className="font-black text-slate-900 text-[10px] md:text-sm">{row.label}：</span>
+                                            <span className={`font-black ${row.highlight ? 'text-sm md:text-lg text-indigo-800' : 'text-slate-900 text-xs md:text-base'}`}>${row.val.toLocaleString()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                    <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">收支對帳</h5>
+                                    {[
+                                        { label: '支出總計', val: expenses.total },
+                                        { label: '收支差額', val: Math.max(0, expenses.total - (totalStats.income.total + expenses.selfPaidInsuranceTotal)), isDiff: true },
+                                        { label: '對象補助', val: totalSubsidy, isSubsidy: true },
+                                    ].map((row, i) => {
+                                        const isNegative = row.isDiff && (expenses.total - (totalStats.income.total + expenses.selfPaidInsuranceTotal) > 0);
+                                        return (
+                                            <div key={i} className="flex justify-between items-center border-b border-purple-100/50 py-1.5 md:py-2.5">
+                                                <span className="font-black text-slate-900 text-[10px] md:text-sm">{row.label}：</span>
+                                                <span className={`font-black text-xs md:text-base ${isNegative || row.isSubsidy ? 'text-rose-600' : 'text-slate-900'}`}>
+                                                    ${row.val.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                    <div className="mt-4 md:mt-6 p-3 md:p-4 bg-indigo-900 rounded-lg text-center shadow-lg transform hover:scale-[1.02] transition-transform">
+                                        <span className="text-[8px] md:text-[10px] text-indigo-300 font-bold block uppercase tracking-widest mb-1">最終活動補助金額</span>
+                                        <span className="text-sm md:text-2xl font-black text-white">${Math.max(0, expenses.total - (totalStats.income.total + expenses.selfPaidInsuranceTotal)).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* 年度統計 (Yearly Stats) - Red Theme (Start cycle again) */}
-            <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-8 shadow-sm">
-                <div className="flex items-center mb-8 border-b-2 border-red-100 pb-4">
-                    <Activity className="w-6 h-6 mr-3 text-red-600" />
-                    <h3 className="text-xl font-black text-red-900">{yearlyStats.year} 年度統計 ({yearlyStats.count} 次活動)</h3>
+            {/* 年度統計 (Yearly Stats) - Red (0) */}
+            <div className="rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-red-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300">
+                <div 
+                    className="w-full px-4 md:px-5 py-2.5 md:py-4 bg-red-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-red-200"
+                    onClick={() => toggleBlock('yearly')}
+                >
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-red-200 shadow-sm text-red-800">
+                            <TrendingDown size={16}/>
+                        </div>
+                        <h4 className="font-black text-xs md:text-base lg:text-lg text-slate-900 tracking-tight uppercase">{yearlyStats.year} 年度累積</h4>
+                    </div>
+                    <div className="text-slate-600">
+                        {collapsedBlocks.yearly ? <ChevronDown size={18}/> : <ChevronUp size={18}/>}
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-base">
-                    {/* Left: Totals */}
-                    <div className="bg-white/80 p-6 rounded-2xl border border-red-100 shadow-sm">
-                        <h4 className="font-bold text-red-900 mb-4 border-b border-red-200 pb-2 flex items-center">
-                            <Activity className="w-4 h-4 mr-2" /> 合計 (Total)
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex justify-between items-center border-b border-red-100 pb-1">
-                                <span className="text-red-700 font-medium">總人數：</span>
-                                <span className="font-bold text-red-900">{yearlyStats.totals.attendance} 人</span>
+                {!collapsedBlocks.yearly && (
+                    <div className="flex flex-col bg-red-50 p-1 py-1 md:p-6 gap-2">
+                        {/* Secondary Info Row - Right Aligned & Responsive Grid */}
+                        <div className="w-full flex justify-end">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-right">
+                                <span className="text-[10px] md:text-sm font-black text-red-800 bg-white/60 px-3 py-1 rounded-full border border-red-200 shadow-sm">
+                                    年度活動次數：{yearlyStats.count} 次
+                                </span>
                             </div>
-                            <div className="flex justify-between items-center border-b border-red-100 pb-1">
-                                <span className="text-red-700 font-medium">總車資：</span>
-                                <span className="font-bold text-red-900">${yearlyStats.totals.revenue.toLocaleString()}</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-8 lg:gap-12">
+                            {/* Annual Totals Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded-lg md:border md:border-red-200 md:shadow-sm overflow-hidden">
+                                    <thead>
+                                        <tr className="bg-red-100 border-b border-red-200 text-slate-900">
+                                            <th colSpan={2} className="px-1 py-1 text-left font-black uppercase tracking-wider">
+                                                <div className="flex items-center gap-2">
+                                                    <Activity size={14} className="text-red-600" />
+                                                    年度總計 (ANNUAL TOTALS)
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-red-100">
+                                        {[
+                                            { label: '總人數', val: yearlyStats.totals.attendance, unit: '人' },
+                                            { label: '總車資', val: yearlyStats.totals.revenue, isMoney: true },
+                                            { label: '總支出', val: yearlyStats.totals.expense, isMoney: true },
+                                            { label: '總補助', val: yearlyStats.totals.subsidy, isMoney: true, highlight: true },
+                                        ].map((row, i) => (
+                                            <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-1 py-1 font-black text-slate-900 border-r border-red-100 whitespace-nowrap">{row.label}</td>
+                                                <td className={`px-1 py-1 text-right font-black whitespace-nowrap ${row.highlight ? 'text-rose-600 md:text-base' : 'text-slate-900'}`}>
+                                                    {row.isMoney ? `$${row.val.toLocaleString()}` : `${row.val.toLocaleString()} ${row.unit}`}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                            <div className="flex justify-between items-center border-b border-red-100 pb-1">
-                                <span className="text-red-700 font-medium">總支出：</span>
-                                <span className="font-bold text-red-900">${yearlyStats.totals.expense.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-red-100 pb-1">
-                                <span className="text-red-700 font-medium">總補助：</span>
-                                <span className="font-bold text-red-600">${yearlyStats.totals.subsidy.toLocaleString()}</span>
+
+                            {/* Average Performance Table */}
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded-lg md:border md:border-amber-200 md:shadow-sm overflow-hidden">
+                                    <thead>
+                                        <tr className="bg-amber-100 border-b border-amber-200 text-slate-900">
+                                            <th colSpan={2} className="px-1 py-1 text-left font-black uppercase tracking-wider">
+                                                <div className="flex items-center gap-2">
+                                                    <Activity size={14} className="text-amber-600" />
+                                                    平均數值 (AVERAGE PERFORMANCE)
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-amber-100">
+                                        {[
+                                            { label: '平均人數', val: yearlyStats.avgs.attendance, unit: '人' },
+                                            { label: '平均車資', val: yearlyStats.avgs.revenue, isMoney: true },
+                                            { label: '平均支出', val: yearlyStats.avgs.expense, isMoney: true },
+                                            { label: '平均補助', val: yearlyStats.avgs.subsidy, isMoney: true, highlight: true },
+                                        ].map((row, i) => (
+                                            <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-1 py-1 font-black text-slate-900 border-r border-amber-100 whitespace-nowrap">{row.label}</td>
+                                                <td className={`px-1 py-1 text-right font-black whitespace-nowrap ${row.highlight ? 'text-rose-600 md:text-base' : 'text-slate-900'}`}>
+                                                    {row.isMoney ? `$${row.val.toLocaleString()}` : `${row.val.toLocaleString()} ${row.unit}`}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-                    {/* Right: Averages - Orange theme for variety */}
-                    <div className="bg-orange-50/80 p-6 rounded-2xl border border-orange-100 shadow-sm">
-                        <h4 className="font-bold text-orange-900 mb-4 border-b border-orange-200 pb-2 flex items-center">
-                            <Activity className="w-4 h-4 mr-2" /> 平均 (Avg)
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex justify-between items-center border-b border-orange-100 pb-1">
-                                <span className="text-orange-700 font-medium">平均人數：</span>
-                                <span className="font-bold text-orange-900">{yearlyStats.avgs.attendance} 人</span>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-orange-100 pb-1">
-                                <span className="text-orange-700 font-medium">平均車資：</span>
-                                <span className="font-bold text-orange-900">${yearlyStats.avgs.revenue.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-orange-100 pb-1">
-                                <span className="text-orange-700 font-medium">平均支出：</span>
-                                <span className="font-bold text-orange-900">${yearlyStats.avgs.expense.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center border-b border-orange-100 pb-1">
-                                <span className="text-orange-700 font-medium">平均補助：</span>
-                                <span className="font-bold text-red-600">${yearlyStats.avgs.subsidy.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     );

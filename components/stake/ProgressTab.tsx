@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { EventData } from '../../types';
 import { updateEvent } from '../../services/sheetService';
 import { ClipboardList, Check } from 'lucide-react';
@@ -10,8 +10,26 @@ interface ProgressTabProps {
     onUpdateEvent: (event: EventData) => void;
 }
 
+// Modern Business Style constants (High-Contrast Theme)
+const THEME = {
+    canvas: 'bg-[#F0F4F8]',
+    card: 'bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden',
+    header: 'bg-indigo-900 text-white px-6 py-4 flex items-center justify-between cursor-pointer select-none',
+    sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
+    pageTitle: 'text-xl md:text-2xl font-bold tracking-tight text-slate-900',
+    bodyText: 'text-sm text-slate-600',
+    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
+    badge: {
+        success: 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300 px-2.5 py-0.5 rounded text-[10px]',
+        warning: 'bg-amber-100 text-amber-900 font-semibold border border-amber-300 px-2.5 py-0.5 rounded text-[10px]',
+        danger: 'bg-rose-100 text-rose-900 font-semibold border border-rose-300 px-2.5 py-0.5 rounded text-[10px]',
+        info: 'bg-blue-100 text-blue-900 font-semibold border border-blue-300 px-2.5 py-0.5 rounded text-[10px]'
+    }
+};
+
 const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     
     const calculateTaskDates = (eventDateStr: string) => {
         const eventDate = new Date(eventDateStr);
@@ -45,49 +63,80 @@ const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }
     };
 
     return (
-        <div className="bg-green-50 p-8 rounded-3xl shadow-sm border-2 border-green-200 animate-fade-in">
-            <div className="flex flex-col mb-10">
-                <h3 className="text-2xl font-black mb-4 flex items-center text-green-900">
-                    <ClipboardList className="w-8 h-8 mr-3 text-green-600" /> {t('stake.progress.title', '執行進度追蹤')}
-                </h3>
-                <div className="flex items-center">
-                    <div className="bg-green-200 px-6 py-2 rounded-xl text-sm font-black text-green-900 border-2 border-green-300 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)]">
-                        {t('stake.progress.total_progress', '完成總進度')}: {(currentEvent.sop_progress || []).filter(Boolean).length} / 11
+        <div className="space-y-6 animate-fade-in pb-20">
+            {/* Main Header conforming to 60-30-10 & RWD font rules */}
+            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+                {/* Row 1: Title Row Only */}
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                        <ClipboardList className="text-blue-300" size={24} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
+                            {t('stake.progress.title', '執行進度追蹤平台')}
+                        </h2>
+                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-[0.2em] opacity-80 mt-1">
+                            Event Planning & Operation SOP Roadmap
+                        </p>
+                    </div>
+                </div>
+                
+                {/* Row 2: Info Aligned Right beneath title row */}
+                <div className="flex justify-end items-center gap-3">
+                    <div className="bg-white/10 px-6 py-2 rounded-lg text-sm font-bold text-white border border-white/10 shadow-inner backdrop-blur-sm flex items-center gap-4">
+                        <span className="text-[10px] uppercase tracking-widest text-indigo-300 font-black">完成總進度</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-blue-400 text-2xl font-bold">{(currentEvent.sop_progress || []).filter(Boolean).length}</span> 
+                            <span className="text-indigo-400 text-lg opacity-40">/</span> 
+                            <span className="text-white text-lg opacity-60">11</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="relative border-l-4 border-green-200 ml-6 space-y-10">
-                {calculateTaskDates(currentEvent.event_date).map((task, index) => {
-                    const isDone = (currentEvent.sop_progress || [])[index];
-                    return (
-                        <div key={task.step} className="relative pl-12 group">
-                            <div className={`absolute -left-[14px] top-1.5 w-6 h-6 rounded-full border-4 border-white shadow-md transition-all ${isDone ? 'bg-green-500 scale-125' : 'bg-gray-300'}`}></div>
-                            <div 
-                                onClick={() => handleSopToggle(index)}
-                                className={`flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl border-2 transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${isDone ? 'bg-white border-green-500' : 'bg-white border-green-100 hover:border-green-400'}`}
-                            >
-                                <div className="flex-1">
-                                    <div className={`text-xs font-black mb-2 flex items-center ${isDone ? 'text-green-600' : 'text-green-400'}`}>
-                                        <span className="bg-green-100 px-2 py-0.5 rounded mr-2">{t('stake.progress.step_label', 'STEP')} {task.step}</span>
-                                        • {t('stake.progress.deadline_label', '預計截止日期')}: {task.deadline}
+            {/* Content Area with Canvas BG */}
+            <div className={THEME.card + " p-6 md:p-10"}>
+                <div className="relative border-l-2 border-slate-100 ml-4 md:ml-8 space-y-10">
+                    {calculateTaskDates(currentEvent.event_date).map((task, index) => {
+                        const isDone = (currentEvent.sop_progress || [])[index];
+                        return (
+                            <div key={task.step} className="relative pl-10 md:pl-12 group/step">
+                                <div className={`absolute -left-[9px] top-4 w-4 h-4 rounded-full border-2 border-white shadow-md transition-all duration-500 z-10 ${isDone ? 'bg-emerald-500 scale-125 ring-4 ring-emerald-500/20' : 'bg-slate-200 group-hover/step:bg-indigo-300 group-hover/step:scale-110'}`}></div>
+                                
+                                <div 
+                                    onClick={() => handleSopToggle(index)}
+                                    className={`flex flex-col md:flex-row md:items-center justify-between p-6 rounded-lg border transition-all cursor-pointer select-none shadow-sm ${isDone ? 'bg-emerald-50/20 border-emerald-200' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-lg hover:-translate-y-0.5'} active:scale-[0.98]`}
+                                >
+                                    <div className="flex-1">
+                                        <div className={`text-[10px] font-bold mb-3 flex items-center tracking-widest uppercase ${isDone ? 'text-emerald-700' : 'text-slate-400'}`}>
+                                            <span className={`px-2.5 py-1 rounded font-black border mr-4 ${isDone ? 'bg-emerald-100 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                                                {t('stake.progress.step_label', 'STEP')} {task.step}
+                                            </span>
+                                            <span className="opacity-30 mr-3">•</span>
+                                            {t('stake.progress.deadline_label', '預計截止日期')}: <span className={`ml-2 ${isDone ? 'text-emerald-600' : 'text-slate-600'}`}>{task.deadline}</span>
+                                        </div>
+                                        <h4 className={`text-base md:text-lg font-bold transition-all ${isDone ? 'text-emerald-900 line-through opacity-40' : 'text-slate-900'}`}>
+                                            {task.title}
+                                        </h4>
+                                        <p className="text-sm text-slate-500 mt-3 font-medium leading-relaxed max-w-2xl opacity-80">{task.desc}</p>
                                     </div>
-                                    <h4 className={`text-xl font-black ${isDone ? 'text-green-800 line-through opacity-60' : 'text-gray-900'}`}>{task.title}</h4>
-                                    <p className="text-sm text-gray-500 mt-2 font-medium">{task.desc}</p>
-                                </div>
-                                <div className="mt-4 md:mt-0 md:ml-8 flex items-center">
-                                    <div className={`flex items-center px-4 py-2 rounded-xl border-2 transition-all font-black text-sm ${isDone ? 'bg-green-600 text-white border-green-700 shadow-md' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
-                                        {isDone ? <Check className="w-4 h-4 mr-2" /> : null}
-                                        {isDone ? t('stake.progress.status.completed', '任務已完成') : t('stake.progress.status.pending', '待執行')}
+
+                                    {/* Action Button Right Aligned */}
+                                    <div className="mt-6 md:mt-0 md:ml-8 flex justify-end">
+                                        <div className={`flex items-center h-10 px-5 rounded-lg border transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-sm ${isDone ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-white text-slate-400 border-slate-200'}`}>
+                                            {isDone ? <Check className="w-3.5 h-3.5 mr-2 stroke-[3px]" /> : null}
+                                            {isDone ? t('stake.progress.status.completed', '任務已達成') : t('stake.progress.status.pending', '待執行')}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
+
 };
 
 export default ProgressTab;

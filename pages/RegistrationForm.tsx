@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { LogOut, Search, Check, XCircle, Clock, Shield, X, CheckCircle } from 'lucide-react';
 import { 
     RegistrationMemberInput, IdentityType, OrdinanceItem, PaymentMethod, Registration, 
@@ -9,26 +9,31 @@ import {
 import * as sheetService from '../services/sheetService';
 import MemberSection from '../src/components/registration/MemberSection';
 import RegistrationDashboard from '../src/components/registration/RegistrationDashboard';
+import TimeNodesDisplay from '../src/components/registration/TimeNodesDisplay';
 import PrimaryContactSection from '../src/components/registration/PrimaryContactSection';
 import RegistrationHeader from '../src/components/registration/RegistrationHeader';
 import LookupSection from '../src/components/registration/LookupSection';
 import PaymentSection from '../src/components/registration/PaymentSection';
 import FormDialogs from '../src/components/registration/FormDialogs';
+import ConfirmationModal from '../src/components/ConfirmationModal';
 import { useRegistrationForm } from '../hooks/useRegistrationForm';
-import { useI18n } from '../src/contexts/LanguageContext';
+// useI18n duplicate removed
 
 interface RegistrationFormProps {
   onGoHome?: () => void;
   onGoToStats?: () => void;
   setIsDirty?: (dirty: boolean) => void; 
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
-const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToStats, setIsDirty }) => {
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToStats, setIsDirty, activeTab, onTabChange }) => {
   const { currentLang, setLang } = useI18n();
   const lang = currentLang as 'zh' | 'en';
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const {
       mode, setMode,
+      lookupIntent, setLookupIntent,
       activeEvent, settings, loading, setLoading, msg, setMsg,
       eventStats, ordinanceStats, blacklist, personalInfoList, representatives,
       primaryName, setPrimaryName,
@@ -37,6 +42,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       primaryUnit, setPrimaryUnit,
       paymentMethod, setPaymentMethod,
       transferLast5, setTransferLast5,
+      needsSelfPaidInsurance, setNeedsSelfPaidInsurance,
       members, setMembers,
       editingFamilyGroupId, setEditingFamilyGroupId,
       lookupUnit, setLookupUnit,
@@ -61,10 +67,30 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       isPrimaryNameFinished, setIsPrimaryNameFinished
   } = useRegistrationForm(setIsDirty);
 
+  // Sync external activeTab with internal mode
+  React.useEffect(() => {
+    if (!activeTab) return;
+    if (activeTab === 'register') {
+      if (mode !== 'register') setMode('register');
+    } else if (activeTab === 'edit' || activeTab === 'delete') {
+      setLookupIntent(activeTab as 'edit' | 'delete');
+      if (mode !== 'lookup') setMode('lookup');
+    } else if (activeTab === 'save') {
+      setShowSidebarSaveConfirm(true);
+      onTabChange?.(mode === 'register' ? 'register' : 'edit');
+    } else if (activeTab === 'load') {
+      setShowSidebarLoadConfirm(true);
+      onTabChange?.(mode === 'register' ? 'register' : 'edit');
+    }
+  }, [activeTab]);
+
   const [confirmAction, setConfirmAction] = useState<{ type: 'abandon' | 'cancelReg' | 'cancelAll' | 'abandonToLookup' | 'backToRegister', payload?: any } | null>(null);
   const [showQueryConfirm, setShowQueryConfirm] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
+  const [showSidebarSaveConfirm, setShowSidebarSaveConfirm] = useState(false);
+  const [showSidebarLoadConfirm, setShowSidebarLoadConfirm] = useState(false);
+  const sidebarFileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Date Selectors Data
   const currentYear = new Date().getFullYear();
@@ -96,7 +122,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       const a = document.createElement('a');
       a.href = url;
       const datePrefix = activeEvent ? activeEvent.event_date.replace(/-/g, '_') : 'draft';
-      a.download = `${datePrefix}_聖殿之旅_報名檔.json`;
+      a.download = `${datePrefix}_聖殿旅行團_報名檔.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -201,10 +227,19 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
 
   const enabledIdentities = settings.billingConfig?.identityPricings?.length ? [...settings.billingConfig.identityPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.identity) : (settings.active_identities?.length ? settings.active_identities : Object.values(IdentityType));
   const enabledTripTypes = settings.billingConfig?.tripPricings?.length ? [...settings.billingConfig.tripPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.trip) : Object.values(TripType).filter(t => t !== TripType.RETAINED);
-  const unitsOptions = settings.billingConfig?.units?.length ? [...settings.billingConfig.units].sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0)).map(u => ({ value: u.shortName, label: u.shortName })) : settings.units.map(u => ({ value: u, label: u }));
+  const unitsOptions = settings.billingConfig?.units?.length ? [...settings.billingConfig.units].sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0)).map(u => ({ value: u.shortName, label: u.shortName })) : (settings.units || []).map(u => ({ value: u, label: u }));
 
   return (
     <div className="p-6 relative">
+      {/* Hidden input for loading config from sidebar/tab */}
+      <input 
+        ref={sidebarFileInputRef}
+        type="file" 
+        accept=".json" 
+        onChange={handleUploadConfig} 
+        className="hidden" 
+      />
+
       {msg && (
           <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded-lg shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.type === 'error' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-black border-transparent'}`}>
               {msg.type === 'error' ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-black" />}
@@ -221,20 +256,57 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
           executeCancelMember={executeCancelMember} executeCancelFamily={executeCancelFamily} lockCountdown={lockCountdown} showLockModal={showLockModal} setShowLockModal={setShowLockModal}
       />
       
+      {/* Sidebar Save Confirmation */}
+      <ConfirmationModal
+          isOpen={showSidebarSaveConfirm}
+          onClose={() => setShowSidebarSaveConfirm(false)}
+          onConfirm={() => {
+              handleDownloadConfig();
+              setShowSidebarSaveConfirm(false);
+          }}
+          title={t('common.notice', '通知')}
+          message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+          confirmText={t('common.confirm', '確定')}
+          type="info"
+      />
+
+      {/* Sidebar Load Confirmation */}
+      <ConfirmationModal
+          isOpen={showSidebarLoadConfirm}
+          onClose={() => setShowSidebarLoadConfirm(false)}
+          onConfirm={() => {
+              sidebarFileInputRef.current?.click();
+              setShowSidebarLoadConfirm(false);
+          }}
+          title={t('common.notice', '通知')}
+          message={t('common.confirm_load', '確定要讀取存檔嗎？這將會覆蓋目前正在填寫的資料。')}
+          confirmText={t('common.confirm', '確定')}
+          type="warning"
+      />
+      
       <RegistrationHeader 
-          mode={mode} setMode={setMode} lang={lang} setLang={setLang} activeEvent={activeEvent}
-          lockCountdown={lockCountdown} handleResetAndRegister={() => { setMode('register'); handleReset(); }}
+          mode={mode} setMode={(m) => { setMode(m); onTabChange?.(m === 'register' ? 'register' : 'edit'); }} lang={lang} setLang={setLang} activeEvent={activeEvent}
+          lockCountdown={lockCountdown} handleResetAndRegister={() => { setMode('register'); handleReset(); onTabChange?.('register'); }}
           isFormDirty={isFormDirty} setLookupIntent={() => {}} setConfirmAction={setConfirmAction}
           setMsg={setMsg} handleDownloadConfig={handleDownloadConfig} handleUploadConfig={handleUploadConfig}
+          hideModeButtons={!!activeTab}
       />
 
       <LookupSection 
-          mode={mode} lookupIntent="edit" lookupLockCountdown={lookupLockCountdown} lookupUnit={lookupUnit} setLookupUnit={setLookupUnit} lookupName={lookupName} setLookupName={setLookupName}
+          mode={mode} lookupIntent={lookupIntent} lookupLockCountdown={lookupLockCountdown} lookupUnit={lookupUnit} setLookupUnit={setLookupUnit} lookupName={lookupName} setLookupName={setLookupName}
           lookupPassword={lookupPassword} setLookupPassword={setLookupPassword} handleLookup={(e) => { e.preventDefault(); refreshLookup(); }} handleBackToRegister={() => setMode('register')} settings={settings}
       />
 
+      {mode === 'lookup' && (
+        <div className="mt-6">
+          <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
+          <RegistrationDashboard activeEvent={activeEvent} eventStats={eventStats} ordinanceStats={ordinanceStats} deadlineDisplay={activeEvent.registrationDeadline ? new Date(activeEvent.registrationDeadline).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('common.status.notSet')} isClosed={isClosed} lang={lang} />
+        </div>
+      )}
+
       {mode === 'register' && (
       <form onSubmit={handleSubmitTrigger} className="space-y-6">
+        <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
         <RegistrationDashboard activeEvent={activeEvent} eventStats={eventStats} ordinanceStats={ordinanceStats} deadlineDisplay={activeEvent.registrationDeadline ? new Date(activeEvent.registrationDeadline).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('common.status.notSet')} isClosed={isClosed} lang={lang} />
 
         {activeEvent?.stop_cancellation && (
@@ -260,7 +332,20 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
         />
 
         {(!activeEvent?.paymentDisplayMode || activeEvent.paymentDisplayMode !== 'none') && (
-            <PaymentSection paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} transferLast5={transferLast5} setTransferLast5={setTransferLast5} totalDue={getTotalFamilyDue()} availablePaymentMethods={[PaymentMethod.CASH, PaymentMethod.TRANSFER].filter(m => !settings.payment_methods || settings.payment_methods.includes(m))} settings={settings} lang={lang} />
+            <PaymentSection 
+                paymentMethod={paymentMethod} 
+                setPaymentMethod={setPaymentMethod} 
+                transferLast5={transferLast5} 
+                setTransferLast5={setTransferLast5} 
+                totalDue={getTotalFamilyDue()} 
+                needsSelfPaidInsurance={needsSelfPaidInsurance}
+                setNeedsSelfPaidInsurance={setNeedsSelfPaidInsurance}
+                memberCount={members.length}
+                activeEvent={activeEvent}
+                availablePaymentMethods={[PaymentMethod.CASH, PaymentMethod.TRANSFER].filter(m => !settings.payment_methods || settings.payment_methods.includes(m))} 
+                settings={settings} 
+                lang={lang} 
+            />
         )}
         
         <div className="pt-4 border-t flex gap-4 w-full flex-wrap md:flex-nowrap">
@@ -272,7 +357,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
              </button>
              <button type="submit" disabled={loading || settings.maintenance_mode || isClosed || lockCountdown > 0} className={`w-full md:flex-1 py-3 bg-blue-100 text-blue-700 font-bold rounded-lg shadow hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors text-sm ring-1 ring-blue-200 ${loading || settings.maintenance_mode || isClosed || lockCountdown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                  {settings.maintenance_mode ? <Shield className="w-4 h-4 mr-2" /> : isClosed ? <XCircle className="w-4 h-4 mr-2" /> : lockCountdown > 0 ? <Clock className="w-4 h-4 mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                 {settings.maintenance_mode ? t('stake.registration.form.maintenance_label') : isClosed ? t('stake.registration.form.reg_closed_label') : lockCountdown > 0 ? `${lockCountdown}s` : (loading ? t('stake.registration.form.processing_label') : (editingFamilyGroupId ? t('stake.registration.form.confirm_edit_btn') : t('stake.registration.form.submit_btn')))}
+                 {settings.maintenance_mode ? t('stake.registration.form.maintenance_label') : isClosed ? t('stake.registration.form.reg_closed_label') : lockCountdown > 0 ? `${lockCountdown}s` : (loading ? t('stake.registration.form.processing_label') : (editingFamilyGroupId ? t('stake.registration.form.confirm_edit_btn', '確認修改') : t('stake.registration.form.submit_btn', '提交')))}
              </button>
         </div>
       </form>

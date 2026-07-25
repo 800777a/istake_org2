@@ -1,12 +1,15 @@
 
 import React, { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { Registration, EventData, GlobalSettings, ServicePerson, Volunteer, PersonalInfo } from '../../types';
 import { updateEvent, updateUnitStaffInfo } from '../../services/sheetService';
-import { ShieldCheck, Upload, Download, Users, UserCheck, Bus, Badge, Edit2, Trash2, Plus, Check, X, HeartHandshake, ArrowUp, UserPlus, ChevronDown, ChevronUp, FileOutput, Save } from 'lucide-react';
+import { ShieldCheck, Upload, Download, Users, UserCheck, Bus, Badge, Edit2, Trash2, Plus, Check, X, HeartHandshake, ArrowUp, UserPlus, ChevronDown, ChevronUp, FileOutput, Save, LayoutDashboard, List, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { maskName } from '../../utils/validation';
+import { useEffect, useRef } from 'react';
 import ConfirmDialog from '../ConfirmDialog';
 import ExportChoiceModal from '../ExportChoiceModal';
+import { RainbowCard } from './fee-config/RainbowCard';
 
 import Toast, { ToastType } from '../Toast';
 
@@ -20,23 +23,23 @@ interface StaffTabProps {
 }
 
 const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, personalInfo, settings, onUpdateEvent, onPushToEditor }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     
     // Updated Role Definitions
     const TEMPLE_WORKER_ROLES = [
-        { key: 'A', label: t('staff.role.A', 'A.協調員 (恩道門後的弟兄)') },
-        { key: 'B', label: t('staff.role.B', 'B.洗禮記錄員 (恩道門後的弟兄)') },
-        { key: 'C', label: t('staff.role.C', 'C.證實記錄員 (恩道門後的弟兄)') },
-        { key: 'D', label: t('staff.role.D', 'D.證實者 (長老以上的聖職)') },
-        { key: 'E', label: t('staff.role.E', 'E.發衣服 (恩道門後的姐妹)') },
-        { key: 'F', label: t('staff.role.F', 'F.發毛巾 (成年姐妹)') },
-        { key: 'G', label: t('staff.role.G', 'G.照顧兒童 (成人)') },
-        { key: 'H', label: t('staff.role.H', 'H.照顧兒童 (與G為夫妻或同性別的成人)') },
-        { key: 'I', label: t('staff.role.I', 'I.施洗者1 (祭司以上的聖職)') }, 
-        { key: 'J', label: t('staff.role.J', 'J.施洗者2 (祭司以上的聖職)') },
-        { key: 'K', label: t('staff.role.K', 'K.領車 (成人)') },
-        { key: 'L', label: t('staff.role.L', 'L.領車 (成人)') },
-        { key: 'M', label: t('staff.role.M', 'M.領車 (成人)') },
+        { key: 'A', label: tString('staff.role.A', 'A.協調員 (恩道門後的弟兄)') },
+        { key: 'B', label: tString('staff.role.B', 'B.洗禮記錄員 (恩道門後的弟兄)') },
+        { key: 'C', label: tString('staff.role.C', 'C.證實記錄員 (恩道門後的弟兄)') },
+        { key: 'D', label: tString('staff.role.D', 'D.證實者 (長老以上的聖職)') },
+        { key: 'E', label: tString('staff.role.E', 'E.發衣服 (恩道門後的姐妹)') },
+        { key: 'F', label: tString('staff.role.F', 'F.發毛巾 (成年姐妹)') },
+        { key: 'G', label: tString('staff.role.G', 'G.照顧兒童 (成人)') },
+        { key: 'H', label: tString('staff.role.H', 'H.照顧兒童 (與G為夫妻或同性別的成人)') },
+        { key: 'I', label: tString('staff.role.I', 'I.施洗者1 (祭司以上的聖職)') }, 
+        { key: 'J', label: tString('staff.role.J', 'J.施洗者2 (祭司以上的聖職)') },
+        { key: 'K', label: tString('staff.role.K', 'K.領車 (成人)') },
+        { key: 'L', label: tString('staff.role.L', 'L.領車 (成人)') },
+        { key: 'M', label: tString('staff.role.M', 'M.領車 (成人)') },
     ];
 
     // Staff Member Identities (Using raw values for filtering to match DB/Sheet)
@@ -93,6 +96,41 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
 
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
+
+    const [remountKey, setRemountKey] = useState(0);
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    // 捲動控制函數
+    const scrollTable = (sectionId: string, direction: 'left' | 'right') => {
+        const wrapper = wrapperRefs.current[sectionId];
+        if (wrapper) {
+            const scrollAmount = 200;
+            wrapper.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    // Auto-switch to card view on very small screens (portrait mobile)
+    useEffect(() => {
+        const checkMobile = () => {
+            if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+                setViewMode('card');
+            }
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Orientation change hard reset
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        return () => window.removeEventListener('orientationchange', handleResize);
+    }, []);
 
     // Handlers
     const handleSaveFile = () => {
@@ -237,7 +275,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
         workers.sort((a, b) => a.unit.localeCompare(b.unit, 'zh-Hant'));
 
         const eventDate = currentEvent.event_date;
-        const eventTitle = currentEvent.event_title || t('common.temple_trip', '聖殿之旅');
+        const eventTitle = currentEvent.event_title || t('common.temple_trip', '聖殿旅行團');
         const stakeName = settings.stake_name || t('common.temple_trip', '聖殿行程');
         const appVersion = settings.app_version || '1.0.2';
 
@@ -264,18 +302,8 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
         setIsExportModalOpen(false);
     };
 
-    const handleExportSimpleList = (filename: string, data: any) => {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${filename}_export.json`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
-
     return (
-        <div className="space-y-6 animate-fade-in relative">
+        <div key={remountKey} className={`space-y-6 animate-fade-in pb-20 w-full ${viewMode === 'card' ? 'px-2' : ''}`}>
             <ConfirmDialog 
                 isOpen={confirmConfig.isOpen}
                 title={confirmConfig.title}
@@ -293,241 +321,415 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
 
             {msg && <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />}
 
-            {/* 3. Temple Workers - Yellow Container (Renamed to Staff List) */}
-            <div className="bg-yellow-50 p-6 rounded-lg shadow-sm border border-yellow-500 overflow-hidden">
-                <div 
-                    className="flex justify-between items-center mb-4 cursor-pointer hover:opacity-80"
-                    onClick={() => setIsWorkersExpanded(!isWorkersExpanded)}
-                >
-                    <h3 className="text-base font-bold flex items-center text-yellow-900"><Badge className="w-5 h-5 mr-2 text-yellow-700"/> {t('staff.delegation_list', '委派名單')}</h3>
-                    <div className="text-yellow-600">
-                        {isWorkersExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                    </div>
-                </div>
-
-                {isWorkersExpanded && (
-                    <div className="animate-fade-in">
-                        <div className="flex flex-wrap gap-2 mb-6">
-                            <button 
-                                onClick={handleSaveFile} 
-                                className="bg-white border border-yellow-200 text-yellow-800 px-4 py-2 rounded-lg text-xs flex items-center hover:bg-yellow-100 font-bold transition-all"
-                            >
-                                <Save className="w-3.5 h-3.5 mr-1.5 text-yellow-600"/> {t('common.save_file', '存檔')}
-                            </button>
-                            <label className="bg-white border border-yellow-200 text-yellow-800 px-4 py-2 rounded-lg text-xs flex items-center hover:bg-yellow-100 cursor-pointer font-bold transition-all">
-                                <Upload className="w-3.5 h-3.5 mr-1.5 text-yellow-600"/> {t('common.load_file', '讀檔')}
-                                <input type="file" className="hidden" accept=".json" onChange={handleImportWorkers}/>
-                            </label>
-                            <button 
-                                onClick={() => setIsExportModalOpen(true)}
-                                className="bg-yellow-600 text-white px-4 py-2 rounded-lg text-xs flex items-center hover:bg-yellow-700 font-bold shadow-sm transition-all ml-auto"
-                            >
-                                <FileOutput className="w-3.5 h-3.5 mr-1.5"/> {t('common.export', '輸出')}
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {TEMPLE_WORKER_ROLES.map(role => {
-                                const existingData = currentEvent.temple_workers?.[role.key] || { name: '', unit: '' };
-                                const worker = typeof existingData === 'string' ? { name: existingData, unit: '' } : existingData;
-                                const hasWorker = !!worker.name;
-                                
-                                return (
-                                    <div key={role.key} className="flex flex-col">
-                                        <label className="text-xs font-bold text-gray-500 mb-1">{role.label}</label>
-                                        <div className="flex gap-2">
-                                            {/* Changed to Read-Only Display with Conditional Style */}
-                                            <div className={`w-1/3 border rounded-lg p-2 text-xs font-bold h-[34px] flex items-center ${hasWorker ? 'bg-red-50 border-red-500 text-black' : 'bg-gray-100 border-gray-300 text-gray-700'}`}>
-                                                {worker.unit || '-'}
-                                            </div>
-                                            <div className={`w-2/3 border rounded-lg p-2 text-xs h-[34px] flex items-center justify-between ${hasWorker ? 'bg-red-50 border-red-500 text-black font-bold' : 'bg-gray-100 border-gray-300 text-gray-700'}`}>
-                                                <span>{worker.name || t('staff.awaiting_application', '待志願者申請')}</span>
-                                                {worker.name && (
-                                                    <button 
-                                                        onClick={() => triggerClearWorker(role.key)}
-                                                        className="text-red-400 hover:text-red-600 p-1 rounded transition-colors"
-                                                        title={t('common.clear', '清空')}
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+            {/* Header conforming to Rainbow Depth Level 1 */}
+            <div className="bg-indigo-900 text-white p-3 md:p-4 rounded-[8px] shadow-sm flex items-center gap-3 overflow-hidden">
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-indigo-300 shrink-0" />
+                <h2 className="text-sm md:text-xl font-black tracking-tight truncate font-title flex-1">
+                    {t('staff.tab_title', '主辦行政與同工管理')}
+                </h2>
             </div>
 
-            {/* 4. Volunteers Section - Green Theme */}
-            <div className="bg-green-50 p-6 rounded-lg shadow-sm border border-green-500">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold flex items-center text-green-900">
-                        <HeartHandshake className="w-5 h-5 mr-2 text-green-700"/> {t('staff.apply_for_service', '申請服務')}
-                    </h3>
-                </div>
-
-                {/* Add Form - Mobile Optimized */}
-                <div className="flex flex-col md:flex-row gap-2 mb-4 bg-white p-3 rounded-lg border border-green-200 items-end">
-                    <div className="w-full md:flex-1">
-                        <label className="text-[10px] text-gray-500 block mb-1">{t('common.unit', '單位')}</label>
-                        <select 
-                            className="w-full border rounded p-2 text-xs bg-white focus:ring-2 focus:ring-green-300 outline-none"
-                            value={newVolunteer.unit}
-                            onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
-                        >
-                            <option value="">{t('common.please_select', '請選擇')}</option>
-                            {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                    </div>
-                    <div className="w-full md:flex-1">
-                        <label className="text-[10px] text-gray-500 block mb-1">{t('common.name', '姓名')}</label>
-                        <input 
-                            type="text" 
-                            className="w-full border rounded p-2 text-xs focus:ring-2 focus:ring-green-300 outline-none"
-                            placeholder={t('common.placeholder.enter_name', '輸入姓名')}
-                            value={newVolunteer.name}
-                            onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})}
-                        />
-                    </div>
-                    <div className="w-full md:flex-[2]">
-                        <label className="text-[10px] text-gray-500 block mb-1">{t('staff.assigned_role', '擔任')}</label>
-                        <select 
-                            className="w-full border rounded p-2 text-xs bg-white focus:ring-2 focus:ring-green-300 outline-none"
-                            value={newVolunteer.roleKey}
-                            onChange={e => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
-                        >
-                            <option value="">{t('common.please_select', '請選擇')}</option>
-                            {TEMPLE_WORKER_ROLES.map(role => (
-                                <option key={role.key} value={role.key}>{role.label}</option>
-                            ))}
-                        </select>
-                    </div>
+            {/* Action Row - Level 2 */}
+            <div className="bg-indigo-100/50 p-2 rounded-[8px] border border-indigo-200 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
                     <button 
-                        onClick={handleAddVolunteer}
-                        disabled={!newVolunteer.name || !newVolunteer.unit || !newVolunteer.roleKey}
-                        className="w-full md:w-auto bg-green-600 text-white px-4 py-2 rounded text-xs hover:bg-green-700 disabled:opacity-50 font-bold h-[34px] flex items-center justify-center"
+                        onClick={handleSaveFile} 
+                        className="bg-white text-indigo-700 h-9 px-3 rounded-lg text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center active:scale-95 shadow-sm"
                     >
-                        <Plus className="w-3 h-3 mr-1" /> {t('common.apply', '申請')}
+                        <Save className="w-4 h-4 mr-1.5" />
+                        {t('common.save_file', '存檔')}
+                    </button>
+                    <label className="bg-white text-indigo-700 h-9 px-3 rounded-lg text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center cursor-pointer active:scale-95 shadow-sm">
+                        <Upload className="w-4 h-4 mr-1.5" />
+                        {t('common.load_file', '讀取')}
+                        <input type="file" className="hidden" accept=".json" onChange={handleImportWorkers}/>
+                    </label>
+                    <button 
+                        onClick={() => setIsExportModalOpen(true)}
+                        className="bg-blue-600 text-white h-9 px-3 rounded-lg text-[11px] font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center active:scale-95 border border-blue-500/50"
+                    >
+                        <FileOutput className="w-4 h-4 mr-1.5"/>
+                        {t('common.export', '導出')}
                     </button>
                 </div>
 
-                {/* Volunteer List */}
-                <div className="overflow-x-auto bg-white rounded-lg border border-green-200">
-                    <table className="w-full text-xs text-left"><thead className="bg-green-100 text-green-900 font-bold border-b border-green-200"><tr>
-                                <th className="p-2 pl-4 w-24">{t('common.unit', '單位')}</th>
-                                <th className="p-2 w-32">{t('common.name', '姓名')}</th>
-                                <th className="p-2">{t('staff.assigned_role', '擔任職務')}</th>
-                                <th className="p-2 w-32 text-center">{t('common.actions', '操作')}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-green-100">
-                            {(currentEvent.volunteers || []).map(v => {
-                                const roleLabel = TEMPLE_WORKER_ROLES.find(r => r.key === v.roleKey)?.label || v.roleKey;
-                                return (
-                                    <tr key={v.id} className="hover:bg-green-50/50">
-                                        <td className="p-2 pl-4 text-green-800 font-bold">{v.unit}</td>
-                                        <td className="p-2 text-gray-800 font-medium">{v.name}</td>
-                                        <td className="p-2 text-gray-600">{roleLabel}</td>
-                                        <td className="p-2 flex justify-center gap-2">
-                                            <button 
-                                                onClick={() => handlePromoteVolunteer(v)}
-                                                className="bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 border border-green-200 flex items-center font-bold"
-                                                title={t('staff.tooltip.promote_to_worker', '確認並填入上方')}
-                                            >
-                                                <ArrowUp className="w-3 h-3 mr-1" /> {t('common.confirm', '確認')}
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDeleteVolunteer(v.id)}
-                                                className="bg-red-50 text-red-600 px-2 py-1 rounded hover:bg-red-100 border border-red-100"
-                                                title={t('common.delete', '刪除')}
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            {(currentEvent.volunteers || []).length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="p-4 text-center text-gray-400">{t('staff.msg.no_volunteer_data', '目前無志願工作資料')}</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                {/* ViewMode Switcher - Right Aligned */}
+                <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-inner">
+                    <button 
+                        onClick={() => setViewMode('table')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                    >
+                        <List size={14} />
+                        <span>表格</span>
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('card')}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                    >
+                        <LayoutDashboard size={14} />
+                        <span>卡片</span>
+                    </button>
                 </div>
             </div>
 
-            {/* 5. Service List (服務名單) - Blue Theme */}
-            <div className="bg-blue-50 p-6 rounded-lg shadow-sm border border-blue-500">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-base font-bold flex items-center text-blue-900">
-                        <UserPlus className="w-5 h-5 mr-2 text-blue-700"/> {t('staff.service_list', '服務名單')}
-                    </h3>
-                    <div className="text-[10px] text-blue-600 font-bold bg-blue-100 px-2 py-1 rounded-full border border-blue-200">
-                        {t('staff.service_list_hint', '顯示身分為「服務/工作人員、聖殿工作人員」之報名名單')}
+            <div className="space-y-6">
+
+                {/* 1. Administrative Roles (Rainbow: Indigo/Violet) */}
+                <RainbowCard
+                    title={t('staff.delegation_list', '聖殿教儀及行政職責')}
+                    icon={<ShieldCheck size={18} />}
+                    colorIndex={5}
+                    isExpanded={isWorkersExpanded}
+                    onToggle={() => setIsWorkersExpanded(!isWorkersExpanded)}
+                >
+                    <div className={`p-1 ${viewMode === 'card' ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4'}`}>
+                        {TEMPLE_WORKER_ROLES.map(role => {
+                            const existingData = currentEvent.temple_workers?.[role.key] || { name: '', unit: '' };
+                            const worker = typeof existingData === 'string' ? { name: existingData, unit: '' } : existingData;
+                            const hasWorker = !!worker.name;
+                            
+                            return (
+                                <div key={role.key} className={`flex flex-col gap-1.5 p-3 rounded-lg border transition-all ${hasWorker ? 'bg-white border-indigo-200 shadow-sm' : 'bg-slate-50/50 border-slate-100'}`}>
+                                    <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-relaxed">
+                                        {role.label}
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <div className={`w-20 md:w-24 shrink-0 flex items-center justify-center rounded-md border text-[11px] font-black h-9 transition-all ${hasWorker ? 'bg-indigo-50 border-indigo-100 text-indigo-900' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
+                                            {worker.unit || '-'}
+                                        </div>
+                                        <div className={`flex-1 flex items-center justify-between px-3 rounded-md border text-xs h-9 transition-all ${hasWorker ? 'bg-white border-indigo-500 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 italic'}`}>
+                                            <span className="truncate">{worker.name || t('staff.awaiting_application', '待申請')}</span>
+                                            {worker.name && (
+                                                <button 
+                                                    onClick={() => triggerClearWorker(role.key)}
+                                                    className="text-slate-300 hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-50 transition-all ml-1"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </div>
+                </RainbowCard>
 
-                <div className="overflow-x-auto bg-white rounded-lg border border-blue-200 max-h-[400px] overflow-y-auto">
-                    <table className="w-full text-xs text-left sticky-header">
-                        <thead className="bg-blue-100 text-blue-900 font-bold border-b border-blue-200 sticky top-0 z-10">
-                            <tr>
-                                <th className="p-3 pl-4 w-28 text-center sticky left-0 bg-blue-100 z-20">{t('common.unit', '單位')}</th>
-                                <th className="p-3 w-32 text-center sticky left-28 bg-blue-100 z-20 border-r border-blue-200">{t('common.name', '姓名')}</th>
-                                <th className="p-3 w-32 text-center">{t('staff.service_qualification', '服務資格')}</th>
-                                <th className="p-3 w-32 text-center">{t('registration.label.identity_type', '報名身分')}</th>
-                                <th className="p-3 text-right">{t('staff.assigned_role_with_promotion', '擔任 (委派至上方)')}</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-blue-100">
-                            {serviceList.map(reg => (
-                                <tr key={reg.reg_id} className="hover:bg-blue-50/50">
-                                    <td className="p-3 pl-4 text-blue-800 font-bold text-center sticky left-0 bg-white group-hover:bg-blue-50 transition-colors">{reg.unit}</td>
-                                    <td className="p-3 text-gray-800 font-black text-center sticky left-28 bg-white group-hover:bg-blue-50 transition-colors border-r border-blue-200">{reg.name}</td>
-                                    <td className="p-3 text-center">
-                                        <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] border border-indigo-100 font-bold">
-                                            {getQualification(reg.name, reg.unit)}
-                                        </span>
-                                    </td>
-                                    <td className="p-3 text-center">
-                                        <span className="bg-gray-100 px-2 py-0.5 rounded text-[10px]">{reg.identity_type}</span>
-                                    </td>
-                                    <td className="p-3 text-right">
-                                        <select 
-                                            className="border rounded p-1.5 text-[10px] bg-white focus:ring-2 focus:ring-blue-300 outline-none w-full max-w-[200px] font-bold"
-                                            onChange={(e) => handleDelegateFromList(reg, e.target.value)}
-                                            value={assignedRolesMap[reg.reg_id] || ""}
-                                        >
-                                            <option value="">{t('staff.placeholder.select_service_item', '選擇服務項目...')}</option>
-                                            {TEMPLE_WORKER_ROLES.map(role => {
-                                                const currentAssigned = currentEvent.temple_workers?.[role.key];
-                                                const assignedName = typeof currentAssigned === 'object' ? currentAssigned?.name : currentAssigned;
-                                                return (
-                                                    <option key={role.key} value={role.key}>
-                                                        {role.label} {assignedName ? t('staff.label.already_assigned', '(已派: {{name}})', { name: assignedName }) : ''}
-                                                    </option>
-                                                );
-                                            })}
-                                        </select>
-                                    </td>
-                                </tr>
-                            ))}
-                            {serviceList.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="p-8 text-center text-gray-400">
-                                        {t('staff.msg.no_eligible_service_staff', '目前的報名名單中無符合條件的服務人員')}
-                                    </td>
-                                </tr>
+                {/* 2. Volunteers Section (Rainbow: Green) */}
+                <RainbowCard
+                    title={t('staff.apply_for_service', '志願者申請管理')}
+                    icon={<HeartHandshake size={18} />}
+                    colorIndex={3}
+                >
+                    <div className="space-y-4">
+                        {/* Add Form */}
+                        <div className="bg-indigo-50/50 p-3 md:p-4 rounded-lg border border-indigo-100 space-y-4">
+                            <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{t('staff.manual_add_volunteer', '手動新增志願者')}</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-400">{t('common.unit', '單位')}</label>
+                                    <select 
+                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={newVolunteer.unit}
+                                        onChange={(e) => setNewVolunteer({...newVolunteer, unit: e.target.value})}
+                                    >
+                                        <option value="">{tString('common.select_unit', '選擇單位')}</option>
+                                        {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-400">{t('common.name', '姓名')}</label>
+                                    <input 
+                                        type="text"
+                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        placeholder={tString('common.placeholder.input_name', '輸入姓名')}
+                                        value={newVolunteer.name}
+                                        onChange={(e) => setNewVolunteer({...newVolunteer, name: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-slate-400">{t('staff.role_to_apply', '申請職務')}</label>
+                                    <select 
+                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={newVolunteer.roleKey}
+                                        onChange={(e) => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
+                                    >
+                                        <option value="">{tString('staff.placeholder.select_role', '選擇職務')}</option>
+                                        {TEMPLE_WORKER_ROLES.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex justify-end pt-2">
+                                <button 
+                                    onClick={handleAddVolunteer}
+                                    className="bg-indigo-600 text-white h-10 px-6 rounded-lg font-bold text-xs shadow-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
+                                >
+                                    <Plus size={16} /> {t('common.add', '新增')}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            {viewMode === 'table' ? (
+                                <div className="space-y-0">
+                                    <div className="flex items-center justify-between px-2 py-1.5 bg-white/50 border-b border-slate-200/50 md:hidden">
+                                        <div className="flex items-center gap-1 text-[10px] font-black text-slate-400">
+                                            <ArrowUpDown size={10} />
+                                            <span>{t('common.scroll_hint', '左右滑動或點擊按鈕')}</span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => scrollTable('volunteers', 'left')}
+                                                className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                            >
+                                                <ChevronLeft size={16} />
+                                            </button>
+                                            <button 
+                                                onClick={() => scrollTable('volunteers', 'right')}
+                                                className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                            >
+                                                <ChevronRight size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div 
+                                        ref={el => wrapperRefs.current['volunteers'] = el}
+                                        className="dense-table-wrapper"
+                                    >
+                                        <table className="dense-table">
+                                            <thead className="bg-slate-50 border-b border-slate-200">
+                                                <tr className="font-title">
+                                                    <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600">{t('common.unit', '單位')}</th>
+                                                    <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600">{t('common.name', '姓名')}</th>
+                                                    <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600">{t('staff.assigned_role', '申請職務')}</th>
+                                                    <th className="px-4 py-3 text-center font-black text-[11px] md:text-xs text-slate-600 w-32">{t('common.actions', '操作')}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 bg-white">
+                                                {(currentEvent.volunteers || []).map(v => {
+                                                    const roleLabel = TEMPLE_WORKER_ROLES.find(r => r.key === v.roleKey)?.label || v.roleKey;
+                                                    return (
+                                                        <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                                                            <td className="px-4 py-3">
+                                                                <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-black border border-indigo-100">
+                                                                    {v.unit}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-3 font-black text-slate-900 text-xs">{v.name}</td>
+                                                            <td className="px-4 py-3 text-slate-500 text-xs">{roleLabel}</td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    <button 
+                                                                        onClick={() => handlePromoteVolunteer(v)}
+                                                                        className="bg-emerald-600 text-white h-8 px-3 rounded-md hover:bg-emerald-700 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+                                                                    >
+                                                                        <Check size={14} /> {t('common.confirm', '錄用')}
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handleDeleteVolunteer(v.id)}
+                                                                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 transition-all"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                {(currentEvent.volunteers || []).length === 0 && (
+                                                    <tr>
+                                                        <td colSpan={4} className="py-12 text-center text-slate-400 italic text-[11px]">
+                                                            {t('staff.msg.no_volunteer_data', '目前尚無待審核的志願申請')}
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-1">
+                                    {(currentEvent.volunteers || []).map(v => {
+                                        const roleLabel = TEMPLE_WORKER_ROLES.find(r => r.key === v.roleKey)?.label || v.roleKey;
+                                        return (
+                                            <div key={v.id} className="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-3 hover:shadow-md transition-shadow">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="text-sm font-black text-slate-900">{v.name}</span>
+                                                            <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-black border border-indigo-100">
+                                                                {v.unit}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-500 font-bold leading-relaxed">{roleLabel}</p>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => handleDeleteVolunteer(v.id)}
+                                                        className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handlePromoteVolunteer(v)}
+                                                    className="w-full bg-emerald-600 text-white h-9 rounded-lg font-bold text-xs shadow-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                                                >
+                                                    <Check size={16} /> {t('common.confirm', '錄用此位志願者')}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </div>
+                    </div>
+                </RainbowCard>
+
+                {/* 3. Potential Workers List (Rainbow: Indigo/Blue) */}
+                <RainbowCard
+                    title={t('staff.service_list', '潛在同工候選名單')}
+                    icon={<UserPlus size={18} />}
+                    colorIndex={4}
+                >
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <span className="bg-indigo-50 text-indigo-400 px-3 py-1 rounded-full text-[10px] font-black border border-indigo-100 uppercase tracking-widest">
+                                {t('staff.service_list_hint', '顯示身分為工作人員之名單')}
+                            </span>
+                        </div>
+
+                        {viewMode === 'table' ? (
+                            <div className="space-y-0">
+                                <div className="flex items-center justify-between px-2 py-1.5 bg-white/50 border-b border-slate-200/50 md:hidden">
+                                    <div className="flex items-center gap-1 text-[10px] font-black text-slate-400">
+                                        <ArrowUpDown size={10} />
+                                        <span>{t('common.scroll_hint', '左右滑動或點擊按鈕')}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => scrollTable('serviceList', 'left')}
+                                            className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+                                        <button 
+                                            onClick={() => scrollTable('serviceList', 'right')}
+                                            className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div 
+                                    ref={el => wrapperRefs.current['serviceList'] = el}
+                                    className="dense-table-wrapper"
+                                >
+                                    <table className="dense-table">
+                                        <thead className="bg-slate-50 border-b border-slate-200">
+                                            <tr className="font-title">
+                                                <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600">{t('common.unit', '單位')}</th>
+                                                <th className="px-4 py-3 text-left font-black text-[11px] md:text-xs text-slate-600">{t('common.name', '姓名')}</th>
+                                                <th className="px-4 py-3 text-center font-black text-[11px] md:text-xs text-slate-600">{t('staff.service_qualification', '資格')}</th>
+                                                <th className="px-4 py-3 text-right font-black text-[11px] md:text-xs text-slate-600">{t('staff.assigned_role_with_promotion', '快速委派職務')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 bg-white">
+                                            {serviceList.map(reg => (
+                                                <tr key={reg.reg_id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="px-4 py-3 font-bold text-slate-600 text-xs">{reg.unit}</td>
+                                                    <td className="px-4 py-3 font-black text-slate-900 text-xs">{reg.name}</td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span className="bg-blue-600 text-white px-3 py-0.5 rounded-full text-[10px] font-black shadow-sm uppercase tracking-widest border border-blue-500">
+                                                            {getQualification(reg.name, reg.unit)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <select 
+                                                            className="w-full max-w-[200px] h-9 border border-slate-200 rounded-lg px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                            onChange={(e) => handleDelegateFromList(reg, e.target.value)}
+                                                            value={assignedRolesMap[reg.reg_id] || ""}
+                                                        >
+                                                            <option value="">{tString('staff.placeholder.select_service_item', '選擇職務')}</option>
+                                                            {TEMPLE_WORKER_ROLES.map(role => {
+                                                                const currentAssigned = currentEvent.temple_workers?.[role.key];
+                                                                const assignedName = typeof currentAssigned === 'object' ? currentAssigned?.name : currentAssigned;
+                                                                return (
+                                                                    <option key={role.key} value={role.key}>
+                                                                        {role.label} {assignedName ? `(${tString('staff.label.already_assigned_simple', '已派')}: ${assignedName})` : ''}
+                                                                    </option>
+                                                                );
+                                                            })}
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {serviceList.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={4} className="py-12 text-center text-slate-400 italic text-[11px]">
+                                                        {t('staff.msg.no_eligible_service_staff', '查無符合同工資格之人員')}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-1">
+                                {serviceList.map(reg => (
+                                    <div key={reg.reg_id} className="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-black text-slate-900">{reg.name}</span>
+                                                    <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[9px] font-black border border-indigo-100">
+                                                        {reg.unit}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] text-slate-400 font-bold tracking-tight uppercase">{t('staff.service_qualification', '教儀資格')}:</span>
+                                                    <span className="bg-blue-600 text-white px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm uppercase tracking-widest">
+                                                        {getQualification(reg.name, reg.unit)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{t('staff.assigned_role_with_promotion', '快速委派職務')}</label>
+                                            <select 
+                                                className="w-full h-9 border border-slate-200 rounded-lg px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                onChange={(e) => handleDelegateFromList(reg, e.target.value)}
+                                                value={assignedRolesMap[reg.reg_id] || ""}
+                                            >
+                                                <option value="">{tString('staff.placeholder.select_service_item', '選擇委派職務')}</option>
+                                                {TEMPLE_WORKER_ROLES.map(role => {
+                                                    const currentAssigned = currentEvent.temple_workers?.[role.key];
+                                                    const assignedName = typeof currentAssigned === 'object' ? currentAssigned?.name : currentAssigned;
+                                                    return (
+                                                        <option key={role.key} value={role.key}>
+                                                            {role.label} {assignedName ? `(${tString('staff.label.already_assigned_simple', '已派')}: ${assignedName})` : ''}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        </div>
+                                    </div>
+                                ))}
+                                {serviceList.length === 0 && (
+                                    <div className="bg-white p-12 rounded-lg border border-indigo-100 text-center text-xs font-bold text-slate-400 italic">
+                                        {t('staff.msg.no_eligible_service_staff', '查無符合同工資格之人員')}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </RainbowCard>
         </div>
-    );
+    </div>
+);
+
 };
 
 export default StaffTab;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { 
   GlobalSettings, 
   IdentityType, 
@@ -8,11 +8,13 @@ import {
   UnitConfig, 
   PricingValue, 
   TripType,
-  SpecialPromoRule
+  SpecialPromoRule,
+  PaymentMethod
 } from '../../types';
 import { 
   saveSettings, 
 } from '../../services/sheetService';
+import { getEffectiveBankInfo } from '../../utils/bankInfo';
 import { 
   Tabs, 
   Row, 
@@ -20,23 +22,26 @@ import {
   Button, 
   Input, 
   Space, 
+  Flex,
   Typography, 
   Modal, 
   message, 
   Divider, 
+  Checkbox,
 } from 'antd';
 import { 
-  CalculatorOutlined, 
-  SafetyOutlined, 
-  GlobalOutlined, 
-  CreditCardOutlined,
-  SaveOutlined,
-  UpOutlined,
-  DownOutlined,
-} from '@ant-design/icons';
+  Calculator, 
+  ShieldCheck, 
+  Globe, 
+  CreditCard,
+  Save,
+  Upload,
+  Coins,
+  Settings
+} from 'lucide-react';
 
 // Modular components
-import { RainbowCard } from './fee-config/RainbowCard';
+import { RainbowCard, rainbowStyles } from './fee-config/RainbowCard';
 import { BankInfoSection } from './fee-config/BankInfoSection';
 import { UnitFeesStep } from './fee-config/UnitFeesStep';
 import { ModifierStep } from './fee-config/ModifierStep';
@@ -54,12 +59,13 @@ interface FeeConfigTabProps {
 }
 
 const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, currentEvent, onRefreshEvents }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const [settings, setSettings] = useState<GlobalSettings>(initialSettings);
   const [loading, setLoading] = useState(false);
   const [sandboxVisible, setSandboxVisible] = useState(false);
   const [expandedSteps, setExpandedSteps] = useState<Record<string, boolean>>({
     'payment_info': true,
+    'payment_methods': true,
     'step1': true,
     'step2': true,
     'step3': true,
@@ -72,7 +78,8 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
   const [countdown, setCountdown] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
   const [originalBankInfo, setOriginalBankInfo] = useState<{info1: any, info2: any} | null>(null);
-  const [bankInfoDraft, setBankInfoDraft] = useState(initialSettings.bank_info || { bank_name: '', bank_code: '', account_name: '', account_number: '' });
+
+  const [bankInfoDraft, setBankInfoDraft] = useState(getEffectiveBankInfo(initialSettings.bank_info));
   const [bankInfo2Draft, setBankInfo2Draft] = useState(initialSettings.bank_info2 || { bank_name: '', bank_code: '', account_name: '', account_number: '' });
 
   const [isVerified, setIsVerified] = useState(false);
@@ -100,7 +107,7 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
   }, [countdown, isVerifying, originalBankInfo, settings, isVerified, t]);
 
   const [billingConfig, setBillingConfig] = useState<BillingEngineConfig>(settings.billingConfig || {
-    units: settings.units.map(u => ({ shortName: u, fullName: u })),
+    units: (settings.units || []).map(u => ({ shortName: u, fullName: u })),
     baseFees: { 'GLOBAL': 500 },
     unitGroups: {},
     identityPricings: [],
@@ -113,7 +120,7 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
   useEffect(() => {
     setSettings(initialSettings);
     if (!isVerifying) {
-      setBankInfoDraft(initialSettings.bank_info || { bank_name: '', bank_code: '', account_name: '', account_number: '' });
+      setBankInfoDraft(getEffectiveBankInfo(initialSettings.bank_info));
       setBankInfo2Draft(initialSettings.bank_info2 || { bank_name: '', bank_code: '', account_name: '', account_number: '' });
     }
     if (initialSettings.billingConfig) {
@@ -189,6 +196,18 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
         message.success(t('stake.fee_config.otp_sent', '驗證碼已發送至您的信箱'));
       } else {
         message.error(data.error || t('stake.fee_config.otp_fail', '驗證碼發送失敗'));
+        if (data.error?.includes('Gmail') || data.details?.includes('Gmail') || data.details?.includes('refresh_token')) {
+          Modal.warning({
+            title: 'Gmail 授權失效',
+            content: (
+              <div>
+                <p>Gmail 發信授權已失效或尚未設定。請聯繫資管人員至「資管專區」重新連結 Gmail 帳號並更新 Refresh Token。</p>
+                <p className="text-xs text-gray-500 mt-2">錯誤詳情: {data.details || '無'}</p>
+              </div>
+            ),
+            okText: '知道了'
+          });
+        }
       }
     } catch (err) {
       message.error(t('common.send_fail_retry', '發送失敗，請稍後再試'));
@@ -234,130 +253,266 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
 
   const [isMainHeaderExpanded, setIsMainHeaderExpanded] = useState(true);
 
+  const handleExportLogic = () => {
+    Modal.confirm({
+      title: t('stake.fee_config.confirm_save_logic', '確定要儲存收費邏輯檔嗎？'),
+      okText: t('common.confirm', '確定'),
+      cancelText: t('common.cancel', '取消'),
+      onOk: () => {
+        const data = {
+          fee_logic_config: billingConfig,
+          exportedAt: new Date().toISOString(),
+          version: "1.0"
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = tString('stake.fee_config.logic_filename', '收費邏輯檔.json');
+        link.click();
+        URL.revokeObjectURL(url);
+        message.success(t('stake.fee_config.export_success', '收費邏輯檔已匯出'));
+      }
+    });
+  };
+
+  const handleImportLogic = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.json')) {
+      message.error(t('stake.fee_config.invalid_extension', '檔案格式不符 (僅支援 .json)'));
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (!json.fee_logic_config) {
+          message.error(t('stake.fee_config.invalid_format', '檔案格式不符 (缺少 fee_logic_config)'));
+          return;
+        }
+
+        Modal.confirm({
+          title: t('stake.fee_config.confirm_read_logic', '確定要讀取收費邏輯檔嗎？'),
+          content: t('stake.fee_config.confirm_read_logic_desc', '這將會覆蓋現有的第1步到第6步設定值。'),
+          okText: t('common.confirm', '確定'),
+          cancelText: t('common.cancel', '取消'),
+          onOk: () => {
+            handleConfigChange(json.fee_logic_config);
+            message.success(t('stake.fee_config.import_success', '收費邏輯檔匯入成功'));
+          }
+        });
+      } catch (err) {
+        message.error(t('stake.fee_config.parse_error', '檔案解析失敗'));
+      } finally {
+        e.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
-    <div className="animate-fade-in">
-      <div 
-        className="flex justify-between items-center mb-4 p-4 bg-white/60 rounded-xl cursor-pointer border border-white/80 shadow-sm hover:bg-white/80 transition-all"
-        onClick={() => setIsMainHeaderExpanded(!isMainHeaderExpanded)}
-      >
-        <Title level={4} className="mb-0 flex items-center">
-          <GlobalOutlined className="mr-3 text-indigo-600" /> {t('stake.fee_config.title', '收費設定 / Fee Config')}
-        </Title>
-        {isMainHeaderExpanded ? <UpOutlined /> : <DownOutlined />}
+    <div className="animate-fade-in space-y-6">
+      {/* Tab Title Row - Static, no toggle */}
+      <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex items-center gap-4 mb-6">
+        <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+          <Settings className="text-blue-300" size={24} />
+        </div>
+        <div>
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
+            {t('stake.fee_config.title', '收費設定 / Fee Config')}
+          </h2>
+          <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider opacity-60">
+            System Financial & Billing Configuration
+          </p>
+        </div>
       </div>
 
-      {isMainHeaderExpanded && (
-        <div className="mb-6 animate-fade-in">
-          <Row justify="end" gutter={8}>
-            <Col>
-               <Button 
-                type="primary" 
-                icon={<CalculatorOutlined />} 
-                onClick={() => setSandboxVisible(true)}
-                className="bg-amber-500 border-amber-600 hover:bg-amber-600"
+      <div className="flex justify-end gap-3 mb-6">
+        <button 
+          onClick={() => setSandboxVisible(true)}
+          className="h-11 px-6 bg-amber-500 text-white rounded-lg text-sm font-bold shadow-md hover:bg-amber-600 transition-all flex items-center gap-2"
+        >
+          <Calculator size={18} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Sandbox')}
+        </button>
+      </div>
+
+      <div className="space-y-8">
+        <RainbowCard
+          title={tString('stake.fee_config.payment_info_title', '付款資訊 (Payment Info)')}
+          icon={<CreditCard size={20} />}
+          colorIndex={0}
+          isExpanded={expandedSteps['payment_info']}
+          onToggle={() => toggleStep('payment_info')}
+          extra={
+            !isVerifying ? (
+              <button 
+                onClick={sendOTP}
+                className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                style={{ 
+                  backgroundColor: rainbowStyles[0].bg,
+                  color: rainbowStyles[0].text,
+                  border: `1px solid ${rainbowStyles[0].border}`
+                }}
               >
-                {t('stake.fee_config.sandbox_btn', '收費試算 / Sandbox')}
-              </Button>
-            </Col>
-          </Row>
-        </div>
-      )}
-
-      {isMainHeaderExpanded && (
-        <>
-          <RainbowCard
-        title={t('stake.fee_config.payment_info_title', '付款資訊 (Payment Info)')}
-        icon={<CreditCardOutlined />}
-        colorIndex={0}
-        isExpanded={expandedSteps['payment_info']}
-        onToggle={() => toggleStep('payment_info')}
-        extra={
-          !isVerifying ? (
-            <Button 
-              size="small" 
-              type="primary" 
-              icon={<SafetyOutlined />}
-              onClick={sendOTP}
-              className="bg-indigo-600 border-indigo-700"
-            >
-              {t('stake.fee_config.edit_payment_btn', '修改付款資訊 (OTP 驗證)')}
-            </Button>
-          ) : (
-            <Space>
-              <Input 
-                placeholder={t('common.verification_code', '驗證碼')} 
-                size="small" 
-                className="w-24"
-                value={inputCode}
-                onChange={e => setInputCode(e.target.value)}
-              />
-              <Button size="small" type="primary" onClick={verifyOTP}>{t('common.verify_and_save', '驗證並儲存')}</Button>
-              <Text type="danger" className="text-[10px]">{t('common.remaining', '剩餘')} {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</Text>
-            </Space>
-          )
-        }
-      >
-        <BankInfoSection 
-          info1={bankInfoDraft}
-          info2={bankInfo2Draft}
-          onChange1={setBankInfoDraft}
-          onChange2={setBankInfo2Draft}
-        />
-      </RainbowCard>
-
-      <Divider>{t('stake.fee_config.billing_rules_divider', '收費邏輯配置 (Billing Rules)')}</Divider>
-
-      <UnitFeesStep 
-        billingConfig={billingConfig}
-        onConfigChange={handleConfigChange}
-        isExpanded={expandedSteps['step1']}
-        onToggle={() => toggleStep('step1')}
-      />
-
-      <ModifierStep 
-        type="identity"
-        billingConfig={billingConfig}
-        onConfigChange={handleConfigChange}
-        isExpanded={expandedSteps['step2']}
-        onToggle={() => toggleStep('step2')}
-      />
-
-      <ModifierStep 
-        type="trip"
-        billingConfig={billingConfig}
-        onConfigChange={handleConfigChange}
-        isExpanded={expandedSteps['step3']}
-        onToggle={() => toggleStep('step3')}
-      />
-
-      <SpecialPromosStep 
-        billingConfig={billingConfig}
-        onConfigChange={handleConfigChange}
-        isExpanded={expandedSteps['step4']}
-        onToggle={() => toggleStep('step4')}
-      />
-
-      <LogicRoundingStep 
-        billingConfig={billingConfig}
-        onConfigChange={handleConfigChange}
-        expandedSteps={expandedSteps}
-        onToggle={toggleStep}
-        onOpenSandbox={() => setSandboxVisible(true)}
-      />
-
-      <Row className="mt-6">
-        <Col span={24}>
-          <FeeExplanationSection 
-            billingConfig={billingConfig} 
-            onOpenCalcModal={() => setSandboxVisible(true)}
+                <ShieldCheck size={16} /> {t('stake.fee_config.edit_payment_btn', '修改付款資訊 (OTP 驗證)')}
+              </button>
+            ) : (
+              <div className="flex items-center gap-3">
+                <input 
+                  placeholder={tString('common.verification_code', '驗證碼')} 
+                  className="w-24 h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm"
+                  value={inputCode}
+                  onChange={e => setInputCode(e.target.value)}
+                />
+                <button 
+                  onClick={verifyOTP}
+                  className="h-10 px-5 bg-blue-600 text-white rounded-lg text-xs font-bold"
+                >
+                  {t('common.verify_and_save', '驗證並儲存')}
+                </button>
+                <span className="text-rose-600 font-bold text-xs">{t('common.remaining', '剩餘')} {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
+              </div>
+            )
+          }
+        >
+          <BankInfoSection 
+            info1={bankInfoDraft}
+            info2={bankInfo2Draft}
+            onChange1={setBankInfoDraft}
+            onChange2={setBankInfo2Draft}
           />
-        </Col>
-      </Row>
+        </RainbowCard>
+
+        <RainbowCard
+          title={tString('stake.fee_config.payment_methods_title', '付款方式設定 (Payment Methods)')}
+          icon={<Globe size={20} />}
+          colorIndex={1}
+          isExpanded={expandedSteps['payment_methods']}
+          onToggle={() => toggleStep('payment_methods')}
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-500 font-medium">
+              {t('stake.fee_config.payment_methods_hint', '勾選欲開放的付款方式，報名表單將僅顯示已啟用的項目：')}
+            </p>
+            <div className="flex flex-wrap gap-6">
+              {[
+                { value: PaymentMethod.CASH, label: t('stake.fee_config.payment_methods.cash', '現金 (Cash)') },
+                { value: PaymentMethod.TRANSFER, label: t('stake.fee_config.payment_methods.transfer', '轉帳 (Transfer)') },
+                { value: PaymentMethod.EXTENDED, label: t('stake.fee_config.payment_methods.extended', '留用 (Roll-over)') }
+              ].map(method => (
+                <label key={method.value} className="flex items-center gap-2 cursor-pointer group">
+                  <input 
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    checked={(settings.payment_methods || [PaymentMethod.CASH, PaymentMethod.TRANSFER]).includes(method.value)}
+                    onChange={(e) => {
+                      const current = settings.payment_methods || [PaymentMethod.CASH, PaymentMethod.TRANSFER];
+                      let next;
+                      if (e.target.checked) next = [...current, method.value];
+                      else next = current.filter(v => v !== method.value);
+                      const updated = { ...settings, payment_methods: next };
+                      setSettings(updated);
+                      handleSave(undefined, updated);
+                    }}
+                  />
+                  <span className="text-sm font-bold text-slate-700 group-hover:text-blue-600 transition-colors">{method.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </RainbowCard>
+
+        {/* Billing Rules Header Row - Independent row as per rules */}
+        <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex justify-between items-center mt-12 mb-6">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-white/10 rounded-lg border border-white/10">
+              <Coins className="text-blue-300" size={20} />
+            </div>
+            <h3 className="font-bold text-base md:text-lg tracking-tight">
+              {t('stake.fee_config.billing_rules_title', '收費邏輯配置 (Billing Rules)')}
+            </h3>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleExportLogic}
+              className="h-10 px-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-100 transition-all flex items-center gap-2"
+            >
+              <Save size={16} /> {t('stake.fee_config.save_logic_file', '儲存收費邏輯檔')}
+            </button>
+            <button 
+              onClick={() => document.getElementById('logic-file-input')?.click()}
+              className="h-10 px-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-all flex items-center gap-2"
+            >
+              <Upload size={16} /> {t('stake.fee_config.read_logic_file', '讀取收費邏輯檔')}
+            </button>
+            <input 
+              id="logic-file-input" 
+              type="file" 
+              accept=".json" 
+              className="hidden"
+              onChange={handleImportLogic} 
+            />
+          </div>
+        </div>
+
+        <UnitFeesStep 
+          billingConfig={billingConfig}
+          onConfigChange={handleConfigChange}
+          isExpanded={expandedSteps['step1']}
+          onToggle={() => toggleStep('step1')}
+          colorIndex={2}
+        />
+
+        <ModifierStep 
+          type="identity"
+          billingConfig={billingConfig}
+          onConfigChange={handleConfigChange}
+          isExpanded={expandedSteps['step2']}
+          onToggle={() => toggleStep('step2')}
+          colorIndex={3}
+        />
+
+        <ModifierStep 
+          type="trip"
+          billingConfig={billingConfig}
+          onConfigChange={handleConfigChange}
+          isExpanded={expandedSteps['step3']}
+          onToggle={() => toggleStep('step3')}
+          colorIndex={4}
+        />
+
+        <SpecialPromosStep 
+          billingConfig={billingConfig}
+          onConfigChange={handleConfigChange}
+          isExpanded={expandedSteps['step4']}
+          onToggle={() => toggleStep('step4')}
+          colorIndex={5}
+        />
+
+        <LogicRoundingStep 
+          billingConfig={billingConfig}
+          onConfigChange={handleConfigChange}
+          expandedSteps={expandedSteps}
+          onToggle={toggleStep}
+          onOpenSandbox={() => setSandboxVisible(true)}
+          colorIndexStart={6}
+        />
+
+        <FeeExplanationSection 
+          billingConfig={billingConfig} 
+          onOpenCalcModal={() => setSandboxVisible(true)}
+          colorIndex={1}
+        />
+      </div>
 
       <Modal
         title={
           <div className="flex items-center text-amber-900">
-            <CalculatorOutlined className="mr-2" /> {t('stake.fee_config.sandbox_modal_title', '收費試算 (Fee Calculation Sandbox)')}
+            <Calculator size={20} className="mr-2" /> {t('stake.fee_config.sandbox_modal_title', '收費試算 (Fee Calculation Sandbox)')}
           </div>
         }
         open={sandboxVisible}
@@ -390,8 +545,6 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-        </>
-      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Info } from 'lucide-react';
 import { GlobalSettings } from '../../../types';
 
@@ -9,7 +9,7 @@ interface UnitRulesSectionProps {
 }
 
 const UnitRulesSection: React.FC<UnitRulesSectionProps> = ({ settings, lang }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     if (!settings.rules_content) return null;
 
     return (

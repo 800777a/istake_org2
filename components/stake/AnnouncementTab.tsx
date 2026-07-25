@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { GlobalSettings, BillingEngineConfig } from '../../types';
 import { subscribeToSettings, saveSettings } from '../../services/sheetService';
-import { FileText, Download, Upload, Save, CheckCircle, XCircle } from 'lucide-react';
-import { CalculatorOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
+import { FileText, Download, Upload, Save, CheckCircle, XCircle, Info, Settings, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { CalculatorOutlined } from '@ant-design/icons';
 import ConfirmDialog from '../ConfirmDialog';
 import { FeeExplanationSection } from './fee-config/FeeExplanationSection';
 import { FeeCalculationModal } from './fee-config/FeeCalculationModal';
+import { RainbowCard, rainbowStyles } from './fee-config/RainbowCard';
 import { Modal, Button } from 'antd';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -18,13 +19,13 @@ interface AnnouncementTabProps {
 }
 
 const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSettings }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [rulesContent, setRulesContent] = useState(initialSettings.rules_content || '');
     const [localSettings, setLocalSettings] = useState<GlobalSettings>(initialSettings);
     const [msg, setMsg] = useState<string | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
     const [sandboxVisible, setSandboxVisible] = useState(false);
-    const [isRulesCollapsed, setIsRulesCollapsed] = useState(false);
+    const [isRulesExpanded, setIsRulesExpanded] = useState(true);
 
     const [billingConfig, setBillingConfig] = useState<BillingEngineConfig>(initialSettings.billingConfig || {
         units: initialSettings.units.map(u => ({ shortName: u, fullName: u })),
@@ -100,7 +101,7 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
     };
 
     return (
-        <div className="bg-yellow-50 p-6 rounded-2xl shadow-sm border-2 border-yellow-200 flex flex-col h-full animate-fade-in">
+        <div className="animate-fade-in space-y-6">
             {msg && (
                 <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded-xl shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.includes(t('common.failed', '失敗')) ? 'bg-red-100 text-red-800 border-red-200' : 'bg-black bg-opacity-80 text-white border-transparent'}`}>
                     {msg.includes(t('common.failed', '失敗')) ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-6 h-6 mr-3 text-green-400" />}
@@ -110,91 +111,112 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
 
             <ConfirmDialog 
                 isOpen={showConfirm}
-                title={t('stake.announcement.modal.importConfirmTitle', '匯入確認')}
+                title={tString('stake.announcement.modal.importConfirmTitle', '匯入確認')}
                 message={t('stake.announcement.modal.importConfirmMsg', '讀取成功！確定要覆蓋現有內容嗎？')}
                 onConfirm={confirmImport}
                 onCancel={() => setShowConfirm(false)}
             />
 
-            <div className="flex flex-col mb-6 bg-white/50 p-6 rounded-3xl border border-yellow-100 shadow-sm">
-                <div 
-                    className="flex items-center justify-between cursor-pointer select-none py-2"
-                    onClick={() => setIsRulesCollapsed(!isRulesCollapsed)}
-                >
-                    <h3 className="font-black text-2xl text-yellow-900 flex items-center mb-0">
-                        <FileText className="w-7 h-7 mr-3 text-yellow-600" /> {t('stake.announcement.title.rules', '活動辦法')}
-                    </h3>
-                    <div className="text-yellow-400">
-                        {isRulesCollapsed ? <DownOutlined className="text-xl" /> : <UpOutlined className="text-xl" />}
+            {/* Page Title Row - Independent */}
+            <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex items-center gap-4 mb-6">
+                <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+                    <FileText className="text-blue-300" size={24} />
+                </div>
+                <div>
+                    <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
+                        {t('stake.announcement.title.rules', '活動辦法')}
+                    </h2>
+                    <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider opacity-60">
+                        Event Rules & Guidelines Management
+                    </p>
+                </div>
+            </div>
+
+            <RainbowCard
+                title={t('stake.announcement.title.rules', '活動辦法內容')}
+                icon={<Settings size={20} />}
+                colorIndex={0} // Red
+                isExpanded={isRulesExpanded}
+                onToggle={() => setIsRulesExpanded(!isRulesExpanded)}
+            >
+                <div className="space-y-4">
+                    {/* Buttons Row - Below Title, Right Aligned */}
+                    <div className="flex flex-wrap justify-end gap-3 w-full">
+                        <button 
+                            onClick={handleExport} 
+                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded-lg text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 shadow-sm"
+                            style={{ 
+                                backgroundColor: rainbowStyles[0].bg,
+                                color: rainbowStyles[0].text,
+                                border: `1px solid ${rainbowStyles[0].border}`
+                            }}
+                        >
+                            <Download size={16} /> {t('common.exportData', '匯出資料')}
+                        </button>
+                        <label 
+                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded-lg text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                            style={{ 
+                                backgroundColor: rainbowStyles[0].bg,
+                                color: rainbowStyles[0].text,
+                                border: `1px solid ${rainbowStyles[0].border}`
+                            }}
+                        >
+                            <Upload size={16} /> {t('common.importData', '匯入資料')}
+                            <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange} />
+                        </label>
+                        <button 
+                            onClick={handleSaveRules} 
+                            className="h-12 md:h-11 lg:h-10 px-8 md:px-6 lg:px-6 bg-blue-600 text-white rounded-lg text-base md:text-sm lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
+                        >
+                            <Save size={16} /> {t('common.saveSettings', '儲存設定')}
+                        </button>
+                    </div>
+
+                    <div className="bg-white/40 backdrop-blur-sm rounded-lg border border-white/20 p-2 shadow-inner min-h-[400px]">
+                        <ReactQuill 
+                            theme="snow"
+                            value={rulesContent}
+                            onChange={setRulesContent}
+                            className="h-[350px] mb-12"
+                            placeholder={tString('stake.announcement.placeholder.rules', '請輸入活動辦法、注意事項等內容...')}
+                            modules={{
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    ['clean']
+                                ]
+                            }}
+                        />
                     </div>
                 </div>
-
-                <AnimatePresence>
-                    {!isRulesCollapsed && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="overflow-hidden"
-                        >
-                            <div className="flex flex-wrap gap-4 mt-6 pt-6 border-t border-yellow-200/50">
-                                <button onClick={handleExport} className="bg-yellow-100 text-yellow-900 border-2 border-yellow-200 hover:bg-white px-6 py-3 rounded-xl text-sm flex items-center font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                                    <Download className="w-4 h-4 mr-2 text-yellow-600"/> {t('common.exportData', '匯出資料')}
-                                </button>
-                                <label className="bg-yellow-100 text-yellow-900 border-2 border-yellow-200 hover:bg-white px-6 py-3 rounded-xl text-sm flex items-center cursor-pointer font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                                    <Upload className="w-4 h-4 mr-2 text-yellow-600"/> {t('common.importData', '匯入資料')}
-                                    <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange} />
-                                </label>
-                                <button onClick={handleSaveRules} className="bg-yellow-600 text-white hover:bg-yellow-700 px-8 py-3 rounded-xl text-sm flex items-center font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ml-auto">
-                                    <Save className="w-5 h-5 mr-2"/> {t('common.saveSettings', '儲存設定')}
-                                </button>
-                            </div>
-                            
-                            <div className="mt-6 bg-white rounded-2xl border-2 border-yellow-200 p-2 shadow-inner min-h-[400px]">
-                                <ReactQuill 
-                                    theme="snow"
-                                    value={rulesContent}
-                                    onChange={setRulesContent}
-                                    className="h-[350px] mb-12"
-                                    placeholder={t('stake.announcement.placeholder.rules', '請輸入活動辦法、注意事項等內容...')}
-                                    modules={{
-                                        toolbar: [
-                                            [{ 'header': [1, 2, 3, false] }],
-                                            ['bold', 'italic', 'underline', 'strike'],
-                                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                            [{ 'color': [] }, { 'background': [] }],
-                                            ['clean']
-                                        ]
-                                    }}
-                                />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            </RainbowCard>
 
             <div className="mt-4">
                 <FeeExplanationSection 
                     billingConfig={billingConfig} 
                     onOpenCalcModal={() => setSandboxVisible(true)}
                     defaultCollapsed={false}
+                    colorIndex={1}
                 />
             </div>
 
             <Modal
                 title={
-                    <div className="flex items-center text-amber-900">
-                        <CalculatorOutlined className="mr-2" /> {t('stake.fee_config.modal.calculationSandbox', '收費試算 (Fee Calculation Sandbox)')}
+                    <div className="flex items-center text-indigo-900 font-bold">
+                        <Calculator size={20} className="mr-2 text-indigo-600" /> {t('stake.fee_config.modal.calculationSandbox', '收費試算 (Fee Calculation Sandbox)')}
                     </div>
                 }
                 open={sandboxVisible}
                 onCancel={() => setSandboxVisible(false)}
                 footer={[
-                    <Button key="close" onClick={() => setSandboxVisible(false)}>{t('common.close', '關閉 (Close)')}</Button>
+                    <Button key="close" type="primary" onClick={() => setSandboxVisible(false)} className="bg-indigo-600">
+                        {t('common.close', '關閉 (Close)')}
+                    </Button>
                 ]}
-                width={500}
-                styles={{ body: { padding: '24px', backgroundColor: '#FFFBE6' } }}
+                width={600}
+                styles={{ body: { padding: '24px' } }}
             >
                 <FeeCalculationModal billingConfig={billingConfig} />
             </Modal>

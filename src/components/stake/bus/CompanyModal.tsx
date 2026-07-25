@@ -1,9 +1,10 @@
 
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
+import { useI18n } from '../../../contexts/LanguageContext';
 import { X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BusCompany } from '../../../../types';
+import ConfirmationModal from '../../ConfirmationModal';
 
 interface CompanyModalProps {
     isOpen: boolean;
@@ -13,7 +14,8 @@ interface CompanyModalProps {
 }
 
 const CompanyModal: React.FC<CompanyModalProps> = ({ isOpen, onClose, onSave, editingCompany }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [data, setData] = React.useState({ name1: '', name2: '', name3: '', phone: '', manager: '' });
 
     React.useEffect(() => {
@@ -75,13 +77,22 @@ const CompanyModal: React.FC<CompanyModalProps> = ({ isOpen, onClose, onSave, ed
                         </div>
                     </div>
                     <button 
-                        onClick={() => onSave(data)}
+                        onClick={() => setShowSaveConfirm(true)}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingCompany ? t('bus.button.updateCompany') : t('bus.button.saveCompany')}
                     </button>
                 </div>
             </motion.div>
+            <ConfirmationModal
+                isOpen={showSaveConfirm}
+                onClose={() => setShowSaveConfirm(false)}
+                onConfirm={() => onSave(data)}
+                title={t('common.notice', '通知')}
+                message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+                confirmText={t('common.confirm', '確定')}
+                type="info"
+            />
         </div>
     );
 };

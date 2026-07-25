@@ -1,17 +1,25 @@
 import React from 'react';
-import { Card, Space, Typography } from 'antd';
-import { DownOutlined, UpOutlined } from '@ant-design/icons';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
-const { Text } = Typography;
+export interface RainbowStyle {
+  bg: string;
+  text: string;
+  border: string;
+  hover: string;
+  header: string;
+  title: string;
+  level1: string;
+}
 
-export const rainbowStyles = [
-  { bg: '#FFF1F0', text: '#A8071A', border: '#FFA39E' }, // 紅
-  { bg: '#FFF7E6', text: '#AD4E00', border: '#FFD591' }, // 橙
-  { bg: '#FEFFE6', text: '#AD8B00', border: '#FFF1B8' }, // 黃
-  { bg: '#F6FFED', text: '#237804', border: '#B7EB8F' }, // 綠
-  { bg: '#E6F7FF', text: '#0050B3', border: '#91D5FF' }, // 藍
-  { bg: '#F0F5FF', text: '#061178', border: '#ADC6FF' }, // 靛
-  { bg: '#F9F0FF', text: '#391085', border: '#D3ADF7' }, // 紫
+export const rainbowStyles: RainbowStyle[] = [
+  { bg: 'bg-red-50', text: 'text-red-800', border: 'border-red-200', hover: 'hover:bg-red-100', header: 'bg-red-100', title: 'bg-red-200 text-red-900', level1: 'bg-red-200' }, // 紅
+  { bg: 'bg-orange-50', text: 'text-orange-800', border: 'border-orange-200', hover: 'hover:bg-orange-100', header: 'bg-orange-100', title: 'bg-orange-200 text-orange-900', level1: 'bg-orange-200' }, // 橙
+  { bg: 'bg-amber-50', text: 'text-amber-900', border: 'border-amber-200', hover: 'hover:bg-amber-100', header: 'bg-amber-100', title: 'bg-amber-200 text-amber-900', level1: 'bg-amber-200' }, // 黃
+  { bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200', hover: 'hover:bg-emerald-100', header: 'bg-emerald-100', title: 'bg-emerald-200 text-emerald-900', level1: 'bg-emerald-200' }, // 綠
+  { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200', hover: 'hover:bg-blue-100', header: 'bg-blue-100', title: 'bg-blue-200 text-blue-900', level1: 'bg-blue-200' }, // 藍
+  { bg: 'bg-indigo-50', text: 'text-indigo-800', border: 'border-indigo-200', hover: 'hover:bg-indigo-100', header: 'bg-indigo-100', title: 'bg-indigo-200 text-indigo-900', level1: 'bg-indigo-200' }, // 靛
+  { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200', hover: 'hover:bg-purple-100', header: 'bg-purple-100', title: 'bg-purple-200 text-purple-900', level1: 'bg-purple-200' }, // 紫
 ];
 
 interface RainbowCardProps {
@@ -19,9 +27,10 @@ interface RainbowCardProps {
   icon: React.ReactNode;
   colorIndex: number;
   extra?: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
+  isExpanded?: boolean;
+  onToggle?: () => void;
   children: React.ReactNode;
+  noPadding?: boolean; // 新增：可選，移除內部 Padding 以適應全寬表格
 }
 
 export const RainbowCard: React.FC<RainbowCardProps> = ({ 
@@ -29,56 +38,62 @@ export const RainbowCard: React.FC<RainbowCardProps> = ({
   icon, 
   colorIndex, 
   extra, 
-  isExpanded,
-  onToggle,
-  children 
+  isExpanded: propExpanded,
+  onToggle: propToggle,
+  children,
+  noPadding = false
 }) => {
+  const [internalExpanded, setInternalExpanded] = React.useState(true);
+  
+  const isExpanded = propExpanded ?? internalExpanded;
+  const onToggle = propToggle ?? (() => setInternalExpanded(!internalExpanded));
+  
   const style = rainbowStyles[colorIndex % rainbowStyles.length];
   
   return (
-    <Card 
-      className="mb-6 shadow-sm overflow-hidden"
-      style={{ 
-        backgroundColor: style.bg, 
-        borderColor: style.border,
-        color: style.text 
-      }}
-      styles={{
-        header: { 
-          cursor: 'pointer', 
-          borderBottom: isExpanded ? `1px solid ${style.border}` : 'none',
-          padding: 0
-        },
-        body: { 
-          padding: isExpanded ? '16px 24px' : '0', 
-          display: isExpanded ? 'block' : 'none' 
-        }
-      }}
-      title={
-        <div 
-          className="flex items-center justify-between w-full px-6 py-4"
-          onClick={onToggle}
-        >
-          <Space size="middle">
-            <span style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>{icon}</span>
-            <Text strong style={{ color: style.text, fontSize: '1.1rem' }}>{title}</Text>
-          </Space>
-          <Space>
-            {isExpanded ? <UpOutlined style={{ color: style.text }} /> : <DownOutlined style={{ color: style.text }} />}
-          </Space>
-        </div>
-      }
+    <div 
+      className={`mb-6 shadow-sm overflow-hidden border rounded-lg transition-all ${style.bg} ${style.border} md:rounded-lg rounded-none md:border border-none md:shadow-sm shadow-none`}
     >
-      {isExpanded && (
-        <>
-          {extra && (
-            <div className="flex justify-end mb-4">
-               <Space>{extra}</Space>
+      {/* Level 1: Block Title Row */}
+      <div 
+        className={`w-full flex justify-between items-center cursor-pointer select-none transition-colors ${style.title} px-4 py-3 md:px-6 md:py-4`}
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="p-1.5 md:p-2 bg-white/40 rounded-lg flex items-center justify-center border border-white/20">
+             {icon}
+          </div>
+          <h3 className="font-black text-sm md:text-lg tracking-tight">
+            {title}
+          </h3>
+        </div>
+        <div>
+          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </div>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            {/* Level 2: Action/Extra Row */}
+            {extra && (
+              <div className={`px-4 py-2 md:px-6 md:py-3 flex justify-end gap-3 border-b ${style.border} ${style.header}`}>
+                {extra}
+              </div>
+            )}
+
+            {/* Level 4: Content Area */}
+            <div className={`${noPadding ? 'p-0' : 'p-1 md:p-6'}`}>
+              {children}
             </div>
-          )}
-          {children}
-        </>
-      )}
-    </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };

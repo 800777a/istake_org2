@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { EventData, RoutePlanItem } from '../../types';
 import { updateEvent } from '../../services/sheetService';
 import { Clock, Eye, EyeOff, ChevronUp, ChevronDown, Trash2, Plus } from 'lucide-react';
@@ -22,7 +21,6 @@ const addMinutes = (timeStr: string, minutes: number | string): string => {
 };
 
 const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEvent, onUpdateEvent }) => {
-    const { t } = useTranslation();
     const config = currentEvent.templeConfig || { title: '', startTime: '', endTime: '', items: [], isPublished: false };
     const [deleteTargetIdx, setDeleteTargetIdx] = useState<number | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -96,99 +94,123 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
         <>
             <ConfirmDialog 
                 isOpen={deleteTargetIdx !== null}
-                title={t('temple.msg.delete_node_title', '刪除節點')}
-                message={t('temple.msg.delete_node_confirm', '確定要刪除此教儀時間節點嗎？')}
+                title="刪除節點"
+                message="確定要刪除此教儀時間節點嗎？"
                 onConfirm={executeDelete}
                 onCancel={() => setDeleteTargetIdx(null)}
                 isDangerous={true}
             />
 
-            <div className={`${theme.bg} rounded-lg shadow-sm border ${theme.border} overflow-hidden mb-6`}>
-                <div className={`p-0 border-b ${theme.border} ${theme.headBg}`}>
-                    <div 
-                        className="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-black/5 transition-colors border-b border-red-200"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                    >
-                        <h4 className={`font-bold ${theme.text} text-lg flex items-center`}>
-                            <Clock className="w-5 h-5 mr-2" /> {t('ordinance_seat', '教儀安排')}
-                        </h4>
-                        <div className={theme.text}>
-                            {isCollapsed ? <ChevronDown className="w-6 h-6" /> : <ChevronUp className="w-6 h-6" />}
+            <div className="rounded-lg border border-indigo-200 shadow-sm overflow-hidden mb-12 animate-fade-in transition-all bg-white/60 backdrop-blur-sm">
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <Clock className="text-blue-300" size={20} />
                         </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">聖殿教儀時間安排 (TEMPLE ORDINANCE SCHEDULE)</h4>
                     </div>
-                    
-                    {!isCollapsed && (
-                        <div className="px-4 py-3 flex items-center justify-end gap-4 bg-red-100/50">
-                            <button 
-                                onClick={togglePublish}
-                                className={`flex items-center px-4 py-1.5 rounded-full text-xs font-bold transition-colors border border-red-900 ${config.isPublished ? 'bg-green-600 text-white shadow-md' : 'bg-gray-300 text-gray-700'}`}
-                            >
-                                {config.isPublished ? <><Eye className="w-4 h-4 mr-1" /> {t('common.published', '已公佈')} (ON)</> : <><EyeOff className="w-4 h-4 mr-1" /> {t('common.unpublished', '未公佈')} (OFF)</>}
-                            </button>
-                        </div>
-                    )}
+                    <div className="text-white opacity-60">
+                        {isCollapsed ? <ChevronDown size={22}/> : <ChevronUp size={22}/>}
+                    </div>
                 </div>
                 
                 {!isCollapsed && (
-                    <div className="p-4 grid gap-4">
-                        {/* Config Fields */}
-                        <div className="flex flex-col md:flex-row gap-2 items-end">
-                            <div className="flex-1 w-full">
-                                <label className={`text-xs font-bold ${theme.text} uppercase block mb-1`}>{t('common.label.title', '標題')}</label>
-                                <input 
-                                    className={`w-full border ${theme.border} rounded p-2 text-sm focus:ring-2 focus:ring-red-900 outline-none bg-white ${theme.text} font-bold`}
-                                    value={config.title}
-                                    onChange={e => handleFieldUpdate('title', e.target.value)}
-                                    placeholder={t('temple.form.title_placeholder', '例如: 台北聖殿教儀時間')}
-                                />
+                    <div className="p-6 flex flex-col gap-6 bg-white/40">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 p-4 rounded-lg border border-indigo-100 shadow-sm backdrop-blur-sm">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-md border border-indigo-100 shadow-sm">
+                                    {config.items?.length || 0} SESSIONS CONFIGURED
+                                </span>
+                            </div>
+                            <div className="flex flex-wrap justify-end items-center gap-3 w-full sm:w-auto">
+                                <button
+                                    onClick={() => {
+                                        const blob = new Blob([JSON.stringify(config.items || [], null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `temple_schedule_${currentEvent.event_date}.json`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                    }}
+                                    className="h-10 px-5 rounded-lg bg-white border border-indigo-200 text-indigo-700 text-sm font-bold hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2"
+                                >
+                                    <Plus size={16} /> 匯出資料
+                                </button>
+                                <div className="flex items-center gap-3 bg-white px-5 h-10 rounded-lg border border-indigo-200 shadow-sm">
+                                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">公開發佈</span>
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            togglePublish();
+                                        }}
+                                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ${config.isPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                                    >
+                                        <span
+                                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform shadow-sm ${config.isPublished ? 'translate-x-5.5' : 'translate-x-1'}`}
+                                        />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         {/* Items Table */}
-                        <div className={`border ${theme.border} rounded-lg overflow-x-auto shadow-sm`}>
-                            <table className="w-full text-sm text-left min-w-[600px]">
-                                <thead className={`border-b ${theme.border} font-bold ${theme.text} ${theme.headBg}`}>
-                                    <tr>
-                                        <th className={`p-2 w-10 text-center ${theme.border} border-r`}>{t('common.col.sort', '排序')}</th>
-                                        <th className={`p-2 w-24 sticky left-0 z-20 ${theme.headBg} ${theme.border} border-r shadow-[1px_0_0_0_rgba(0,0,0,0.1)]`}>{t('common.col.session', '場次')}</th>
-                                        <th className={`p-2 w-16 text-center ${theme.border} border-r`}>{t('common.col.duration', '需時')}</th>
-                                        <th className={`p-2 min-w-[150px] ${theme.border} border-r`}>{t('common.col.note', '備註')}</th>
-                                        <th className="p-2 w-10 text-center">{t('common.col.action', '操作')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-red-300 font-sans">
-                                    {config.items?.map((item, idx) => {
-                                        const rowBg = idx % 2 !== 0 ? 'bg-red-50' : 'bg-white';
-                                        return (
-                                        <tr key={idx} className={`${rowBg} hover:opacity-100`}>
-                                            <td className={`p-1 text-center ${theme.border} border-r bg-gray-100/50`}>
-                                                <div className="flex flex-col items-center gap-1">
-                                                    <button onClick={() => handleMoveItem(idx, 'up')} className="text-red-800 hover:text-red-900"><ChevronUp className="w-3 h-3"/></button>
-                                                    <button onClick={() => handleMoveItem(idx, 'down')} className="text-red-800 hover:text-red-900"><ChevronDown className="w-3 h-3"/></button>
-                                                </div>
-                                            </td>
-                                            <td className={`p-1 sticky left-0 z-10 ${rowBg} ${theme.border} border-r shadow-[1px_0_0_0_rgba(0,0,0,0.1)]`}>
-                                                <input className={`w-full border ${theme.border} rounded p-1 ${theme.inputBg} text-center text-sm font-bold`} value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder={t('common.col.session', '場次')} />
-                                            </td>
-                                            <td className={`p-1 ${theme.border} border-r`}>
-                                                <input className={`w-full border ${theme.border} rounded p-1 ${theme.inputBg} text-center text-sm`} value={item.stay} onChange={e => handleItemUpdate(idx, 'stay', e.target.value)} placeholder={t('common.label.minutes', '分')} />
-                                            </td>
-                                            <td className={`p-1 ${theme.border} border-r`}>
-                                                <input className={`w-full border ${theme.border} rounded p-1 ${theme.inputBg} text-sm`} value={item.address || ''} onChange={e => handleItemUpdate(idx, 'address', e.target.value)} placeholder={t('common.col.note', '備註')} />
-                                            </td>
-                                            <td className="p-1 text-center bg-gray-100/50">
-                                                <button onClick={() => setDeleteTargetIdx(idx)} className="text-red-700 hover:text-red-900"><Trash2 className="w-4 h-4"/></button>
-                                            </td>
+                        <div className="rounded-lg shadow-sm border border-indigo-100 overflow-hidden bg-white/60">
+                            <div className="overflow-x-auto custom-scrollbar">
+                                <table className="w-full text-sm text-left border-collapse min-w-[800px]">
+                                    <thead>
+                                        <tr className="bg-indigo-50 font-bold text-indigo-900 border-b border-indigo-100">
+                                            <th className="p-4 w-16 text-center border-r border-indigo-100 uppercase tracking-wider text-[11px]">排序</th>
+                                            <th className="p-4 w-40 border-r border-indigo-100 uppercase tracking-wider text-[11px]">場次/類別</th>
+                                            <th className="p-4 w-32 text-center border-r border-indigo-100 uppercase tracking-wider text-[11px]">開始時間</th>
+                                            <th className="p-4 w-32 text-center border-r border-indigo-100 uppercase tracking-wider text-[11px]">結束時間</th>
+                                            <th className="p-4 w-28 text-center border-r border-indigo-100 uppercase tracking-wider text-[11px]">需時(分)</th>
+                                            <th className="p-4 min-w-[200px] uppercase tracking-wider text-[11px]">詳細備註</th>
+                                            <th className="p-4 w-16 text-right"></th>
                                         </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-indigo-50">
+                                        {config.items?.map((item, idx) => {
+                                            return (
+                                            <tr key={idx} className={`bg-transparent hover:bg-white/60 transition-colors group`}>
+                                                <td className="p-2 text-center border-r border-indigo-50 bg-white/20">
+                                                    <div className="flex flex-col items-center gap-0.5">
+                                                        <button onClick={() => handleMoveItem(idx, 'up')} className="text-indigo-300 hover:text-indigo-600 transition-all"><ChevronUp size={14}/></button>
+                                                        <button onClick={() => handleMoveItem(idx, 'down')} className="text-indigo-300 hover:text-indigo-600 transition-all"><ChevronDown size={14}/></button>
+                                                    </div>
+                                                </td>
+                                                <td className="p-2 border-r border-indigo-50">
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-3 py-2 text-center font-bold text-indigo-700 focus:bg-white outline-none transition-all shadow-sm text-sm" value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder="如：洗禮" />
+                                                </td>
+                                                <td className="p-2 border-r border-indigo-50">
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-slate-900 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.arrivalTime} onChange={e => handleItemUpdate(idx, 'arrivalTime', e.target.value)} placeholder="00:00" />
+                                                </td>
+                                                <td className="p-2 border-r border-indigo-50">
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-emerald-600 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.departureTime} onChange={e => handleItemUpdate(idx, 'departureTime', e.target.value)} placeholder="00:00" />
+                                                </td>
+                                                <td className="p-2 border-r border-indigo-50">
+                                                    <input className="w-full bg-indigo-50/50 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-indigo-900 focus:bg-white outline-none transition-all shadow-sm" value={item.stay} onChange={e => handleItemUpdate(idx, 'stay', e.target.value)} placeholder="分" />
+                                                </td>
+                                                <td className="p-2">
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 focus:bg-white outline-none transition-all shadow-sm" value={item.address || ''} onChange={e => handleItemUpdate(idx, 'address', e.target.value)} placeholder="請輸入相關事項..." />
+                                                </td>
+                                                <td className="p-2 text-right">
+                                                    <button onClick={() => setDeleteTargetIdx(idx)} className="text-slate-300 hover:text-rose-600 transition-all p-2 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-100"><Trash2 size={16}/></button>
+                                                </td>
+                                            </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                             <button 
                                 onClick={handleAddItem}
-                                className={`w-full py-2 ${theme.headBg} ${theme.text} hover:bg-red-200 text-xs font-bold border-t ${theme.border} flex justify-center items-center`}
+                                className="w-full h-12 bg-white/80 text-indigo-900 hover:bg-indigo-900 hover:text-white text-sm font-bold border-t border-indigo-100 flex justify-center items-center transition-all gap-2"
                             >
-                                <Plus className="w-3 h-3 mr-1" /> {t('temple.button.add_time_node', '新增時間節點')}
+                                <Plus size={18} /> 新增教儀場次
                             </button>
                         </div>
                     </div>

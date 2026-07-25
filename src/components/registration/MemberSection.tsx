@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Plus } from 'lucide-react';
 import { RegistrationMemberInput, EventData, GlobalSettings, OrdinanceItem } from '../../../types';
 import MemberItem from './MemberItem';
@@ -52,7 +52,7 @@ const MemberSection: React.FC<MemberSectionProps> = ({
     onDeleteMember,
     calculateMemberPrice
 }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
 
     return (
         <div className="mb-6">

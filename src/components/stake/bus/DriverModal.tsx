@@ -1,9 +1,10 @@
 
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
+import { useI18n } from '../../../contexts/LanguageContext';
 import { X, Save } from 'lucide-react';
 import { motion } from 'motion/react';
 import { BusDriver, BusCompany, BusVehicle } from '../../../../types';
+import ConfirmationModal from '../../ConfirmationModal';
 
 interface DriverModalProps {
     isOpen: boolean;
@@ -15,7 +16,8 @@ interface DriverModalProps {
 }
 
 const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, editingDriver, companies, vehicles }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [data, setData] = React.useState({ name: '', phone: '', companyId: '', companyName: '', plate: '' });
 
     React.useEffect(() => {
@@ -70,7 +72,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                                     setData({...data, companyId: id, companyName: name, plate: ''});
                                 }}
                             >
-                                <option value="">{t('bus.placeholder.selectCompany')}</option>
+                                <option value="">{tString('bus.placeholder.selectCompany')}</option>
                                 {companies.map(c => (
                                     <option key={c.id} value={`${c.id}|${c.name1}`}>{c.name1}</option>
                                 ))}
@@ -83,7 +85,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                                 value={data.plate} onChange={e => setData({...data, plate: e.target.value})}
                                 disabled={!data.companyId}
                             >
-                                <option value="">{t('bus.placeholder.selectPlateOptional')}</option>
+                                <option value="">{tString('bus.placeholder.selectPlateOptional')}</option>
                                 {vehicles.filter(v => v.companyId === data.companyId).map(v => (
                                     <option key={v.plate} value={v.plate}>{v.plate}</option>
                                 ))}
@@ -91,13 +93,22 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                         </div>
                     </div>
                     <button 
-                        onClick={() => onSave(data)}
+                        onClick={() => setShowSaveConfirm(true)}
                         className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingDriver ? t('bus.button.updateDriver') : t('bus.button.saveDriver')}
                     </button>
                 </div>
             </motion.div>
+            <ConfirmationModal
+                isOpen={showSaveConfirm}
+                onClose={() => setShowSaveConfirm(false)}
+                onConfirm={() => onSave(data)}
+                title={t('common.notice', '通知')}
+                message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+                confirmText={t('common.confirm', '確定')}
+                type="info"
+            />
         </div>
     );
 };

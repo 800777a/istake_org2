@@ -1,13 +1,15 @@
 
 import React, { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { Registration, GlobalSettings, PaymentMethod, RegStatus, TripType } from '../../types';
 import { saveSettings, updateRegistrationField, getActiveEvent, updateFamilyPaymentStatus, batchUpdatePaymentStatus } from '../../services/sheetService';
 import { Settings, Download, Upload, Save, CheckSquare, Square, DollarSign, Bus, Lock, Unlock, RefreshCw, Check, Zap, XCircle, CheckCircle, FileText, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ConfirmDialog from '../ConfirmDialog';
 import { useStats, useRanks } from '../../hooks/useStats';
+import { maskName } from '../../utils/maskUtils';
 import UnitFeeTable from './UnitFeeTable';
+import ExportChoiceModal from '../ExportChoiceModal';
 import { ColorTheme } from './ReconciliationRow';
 
 interface FeeTabProps {
@@ -28,12 +30,13 @@ const RAINBOW_THEMES: ColorTheme[] = [
 ];
 
 const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onPushToEditor }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [isPaymentLocked, setIsPaymentLocked] = useState(false);
     const [confirmAction, setConfirmAction] = useState<{type: 'saveSettings' | 'export' | 'convertCash'} | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
     const [isReconCollapsed, setIsReconCollapsed] = useState(false);
+    const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
     const [batchConfirm, setBatchConfirm] = useState<{ isOpen: boolean, unit: string, count: number } | null>(null);
     
     // Reconciliation Tool State
@@ -43,7 +46,8 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
     // Reconciliation Table State
     const [filterUnit, setFilterUnit] = useState('');
     const [filterName, setFilterName] = useState('');
-    const [filterPaid, setFilterPaid] = useState<'all' | 'paid' | 'unpaid'>('all');
+    const [filterPaid, setFilterPaid] = useState<'all' | 'paid' | 'unpaid' | 'exempt'>('all');
+    const [matchConfirmData, setMatchConfirmData] = useState<{ familyId: string, info: string } | null>(null);
 
     // Get Active Event for Bus Configs (Parking Cost)
     const activeEvent = getActiveEvent();
@@ -57,20 +61,36 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
         let expectedCash = 0;
         let actualCash = 0;
         let retainedAmount = 0;
+        let exemptCount = 0;
+
+        const eventData = getActiveEvent();
+        const selfPaidInsuranceAmt = eventData?.self_paid_insurance_amount || 0;
 
         registrations.filter(r => r.status === RegStatus.NORMAL).forEach(r => {
+            let amountWithInsurance = r.amount_due;
+            
+            // Primary contact carries the insurance flag for the whole family
+            if (r.is_primary_contact && r.needs_self_paid_insurance) {
+                const familyCount = registrations.filter(f => f.family_group_id === r.family_group_id && f.status === RegStatus.NORMAL).length;
+                amountWithInsurance += (familyCount * selfPaidInsuranceAmt);
+            }
+
             if (r.payment_method === PaymentMethod.TRANSFER) {
-                expectedTransfer += r.amount_due;
-                if (r.is_paid) actualTransfer += r.amount_due;
+                expectedTransfer += amountWithInsurance;
+                if (r.is_paid) actualTransfer += amountWithInsurance;
             } else if (r.payment_method === PaymentMethod.CASH) {
-                expectedCash += r.amount_due;
-                if (r.is_paid) actualCash += r.amount_due;
+                expectedCash += amountWithInsurance;
+                if (r.is_paid) actualCash += amountWithInsurance;
             } else if (r.trip_type === TripType.RETAINED) {
-                retainedAmount += r.amount_due;
+                retainedAmount += amountWithInsurance;
+            }
+            
+            if (r.payment_method === PaymentMethod.EXEMPT) {
+                exemptCount++;
             }
         });
 
-        return { expectedTransfer, actualTransfer, expectedCash, actualCash, retainedAmount };
+        return { expectedTransfer, actualTransfer, expectedCash, actualCash, retainedAmount, exemptCount };
     }, [registrations]);
 
     // Calculate Cash Recovery Data
@@ -115,19 +135,19 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
     const handleBatchPaid = async (unitName: string) => {
         if (isPaymentLocked) return;
         const targetedRegs = (groupedRegs[unitName] || []) as Registration[];
-        const unpaidRegs = targetedRegs.filter(r => !r.is_paid && r.amount_due > 0 && r.payment_method !== PaymentMethod.EXTENDED);
+        const unpaidCashRegs = targetedRegs.filter(r => !r.is_paid && r.amount_due > 0 && r.payment_method === PaymentMethod.CASH);
         
-        if (unpaidRegs.length === 0) return;
+        if (unpaidCashRegs.length === 0) return;
 
-        setBatchConfirm({ isOpen: true, unit: unitName, count: unpaidRegs.length });
+        setBatchConfirm({ isOpen: true, unit: unitName, count: unpaidCashRegs.length });
     };
 
     const executeBatchPaid = async (unitName: string) => {
         const targetedRegs = (groupedRegs[unitName] || []) as Registration[];
-        const unpaidRegs = targetedRegs.filter(r => !r.is_paid && r.amount_due > 0 && r.payment_method !== PaymentMethod.EXTENDED);
-        const regIds = unpaidRegs.map(r => r.reg_id);
+        const unpaidCashRegs = targetedRegs.filter(r => !r.is_paid && r.amount_due > 0 && r.payment_method === PaymentMethod.CASH);
+        const regIds = unpaidCashRegs.map(r => r.reg_id);
         await batchUpdatePaymentStatus(regIds, true);
-        setToastMsg(t('fee.msg.batch_paid_success', '{{unit}} 全部已收更新成功', { unit: unitName }));
+        setToastMsg(t('fee.msg.batch_paid_success', '{{unit}} 現金已收更新成功', { unit: unitName }));
         setTimeout(() => setToastMsg(null), 3000);
         onRefresh();
         setBatchConfirm(null);
@@ -136,6 +156,9 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
     // Calculate Family Groups Data for Matching
     const familyDataMap = useMemo(() => {
         const map = new Map<string, { totalAmount: number, last5: string, members: Registration[] }>();
+        const eventData = getActiveEvent();
+        const insuranceAmt = eventData?.self_paid_insurance_amount || 0;
+
         registrations.filter(r => r.status === RegStatus.NORMAL).forEach(r => {
             const fid = r.family_group_id;
             if (!map.has(fid)) {
@@ -146,41 +169,36 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
             group.totalAmount += r.amount_due;
             if (r.transfer_last_5) group.last5 = r.transfer_last_5;
         });
+
+        // Add insurance to total amount for families that need it
+        for (const group of map.values()) {
+            const primary = group.members.find(m => m.is_primary_contact) || group.members[0];
+            if (primary?.needs_self_paid_insurance) {
+                group.totalAmount += (group.members.length * insuranceAmt);
+            }
+        }
+
         return map;
     }, [registrations]);
 
-    const handleExportTransferRecords = (onlyUnpaid: boolean) => {
+    const handleExportTransferRecords = (shouldMask: boolean, toEditor: boolean = false, scope: 'all' | 'unpaid' = 'all') => {
         if (!activeEvent) {
             setToastMsg(t('common.msg.event_info_not_found', '查無活動資訊'));
             setTimeout(() => setToastMsg(null), 3000);
             return;
         }
 
+        const onlyUnpaid = scope === 'unpaid';
         const appVer = settings.app_version || 'V212';
         const stakeTitle = settings.stake_name || t('common.chiayi_stake', '嘉義支聯會');
         const eventDate = (activeEvent.event_date || '').replace(/\//g, '-');
         const eventName = activeEvent.event_title || t('common.event', '活動');
         const fileName = `${appVer}_${stakeTitle}_${eventDate}_${eventName}_${t('fee.payment_list', '收款名單')}.txt`;
 
-        const maskNameHelper = (nameStr: string) => {
-            if (!nameStr) return "";
-            const isEnglish = /^[A-Za-z\s.-]+$/.test(nameStr);
-            if (isEnglish) {
-                const firstPart = nameStr.trim().split(/\s+/)[0];
-                return `${firstPart} Ｏ`;
-            } else {
-                const cleanName = nameStr.trim();
-                if (cleanName.length <= 1) return cleanName;
-                if (cleanName.length === 2) return cleanName[0] + "Ｏ";
-                const first = cleanName[0];
-                const last = cleanName[cleanName.length - 1];
-                return `${first}Ｏ${last}`;
-            }
-        };
-
         let content = `${activeEvent.event_date || ''} ${eventName}\n${t('fee.payment_list', '收款名單')}\n\n`;
 
-        const unitsOrdered = [...settings.units].sort(new Intl.Collator('zh-Hant-TW-u-co-stroke').compare);
+        const billingUnits = (settings.billingConfig?.units || []).map(u => u.shortName);
+        const unitsOrdered = [...billingUnits].sort(new Intl.Collator('zh-Hant-TW-u-co-stroke').compare);
         unitsOrdered.forEach(unit => {
             const unitRegs = registrations.filter(r => r.unit === unit && r.status === RegStatus.NORMAL);
             if (unitRegs.length === 0) return;
@@ -189,9 +207,12 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
             const families: Record<string, Registration[]> = {};
             unitRegs.forEach(r => {
                 // If ranks exist, check if person has a rank (not waitlisted)
+                // Vxxx: But we must check IF they need a seat. SELF_MANAGED don't have ranks but are NOT waitlisted.
+                const needsSeat = r.trip_type !== TripType.SELF_MANAGED && r.trip_type !== TripType.RETAINED;
                 const hasRank = vehicleRanks.has(r.reg_id);
-                // If there are NO ranks loaded yet, we treat everyone as if they could be on the list
-                const isWaitlisted = vehicleRanks.size > 0 ? !hasRank : false;
+                
+                // Waitlisted only if they NEED a seat but don't have a rank
+                const isWaitlisted = needsSeat && vehicleRanks.size > 0 && !hasRank;
 
                 if (!isWaitlisted) {
                     if (!families[r.family_group_id]) families[r.family_group_id] = [];
@@ -223,7 +244,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
 
             content += `${unit}\n`;
             filteredFamilies.forEach(f => {
-                const masked = maskNameHelper(f.primary.name);
+                const masked = maskName(f.primary.name, shouldMask);
                 const statusStr = f.isAllPaid ? t('common.paid_short', '已收') : t('common.unpaid_short', '未收');
                 const methodStr = f.method === PaymentMethod.TRANSFER ? t('common.payment.transfer', '轉帳') : (f.method === PaymentMethod.CASH ? t('common.payment.cash', '現金') : f.method);
                 content += `${masked} ${methodStr} ${statusStr} ${f.totalDue.toLocaleString()}\n`;
@@ -234,18 +255,23 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
         content += `${t('common.url', '網址')} https://istake.org/\n`;
         content += t('common.customer_service_hint', '如需服務, 系統可留言, 感謝您.');
 
-        // Use UTF-8 BOM for correct character display in Windows Notepad
-        const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
+        if (toEditor && onPushToEditor) {
+            onPushToEditor(content);
+            setToastMsg(t('fee.msg.payment_list_push_success', '已傳送至文書處理'));
+        } else {
+            // Use UTF-8 BOM for correct character display in Windows Notepad
+            const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            setToastMsg(t('fee.msg.payment_list_download_success', '收款名單下載成功'));
+        }
         
-        setToastMsg(t('fee.msg.payment_list_download_success', '收款名單下載成功'));
         setTimeout(() => setToastMsg(null), 3000);
         setIsExportModalOpen(false);
     };
@@ -267,28 +293,43 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
         }
 
         if (matchFamilyId && matchCount === 1) {
-            const result = await updateFamilyPaymentStatus(matchFamilyId, true);
-            if (result.success) {
-                onRefresh();
-                const firstMember = familyDataMap.get(matchFamilyId)?.members[0];
-                if (firstMember) {
-                    const element = document.getElementById(`row-${firstMember.reg_id}`);
-                    if (element) {
-                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        element.classList.add('bg-green-100');
-                        setTimeout(() => element.classList.remove('bg-green-100'), 2000);
-                    }
-                }
-                setToastMsg(t('fee.msg.match_success', '比對成功！已將全家更新為「已收」'));
-            } else {
-                setToastMsg(t('common.update_failed', '更新失敗'));
-            }
+            const familyMembers = familyDataMap.get(matchFamilyId)?.members || [];
+            const primaryName = familyMembers.find(m => m.is_primary_contact)?.name || familyMembers[0]?.name || '';
+            const unit = familyMembers[0]?.unit || '';
+            setMatchConfirmData({ 
+                familyId: matchFamilyId, 
+                info: `${unit} ${primaryName} (${amount.toLocaleString()})` 
+            });
         } else if (matchCount > 1) {
             setToastMsg(t('fee.msg.multiple_matches_found', '發現多筆符合資料，請人工確認'));
+            setTimeout(() => setToastMsg(null), 3000);
         } else {
             setToastMsg(t('fee.msg.no_record_found', '查無此資料'));
+            setTimeout(() => setToastMsg(null), 3000);
         }
-        
+    };
+
+    const confirmMatchUpdate = async () => {
+        if (!matchConfirmData) return;
+        const result = await updateFamilyPaymentStatus(matchConfirmData.familyId, true);
+        if (result.success) {
+            onRefresh();
+            const firstMember = familyDataMap.get(matchConfirmData.familyId)?.members[0];
+            if (firstMember) {
+                const element = document.getElementById(`row-${firstMember.reg_id}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.add('bg-green-100');
+                    setTimeout(() => element.classList.remove('bg-green-100'), 2000);
+                }
+            }
+            setToastMsg(t('fee.msg.match_success', '比對成功！已將全家更新為「已收」'));
+        } else {
+            setToastMsg(t('common.update_failed', '更新失敗'));
+        }
+        setMatchConfirmData(null);
+        setMatchAmount('');
+        setMatchLast5('');
         setTimeout(() => setToastMsg(null), 3000);
     };
 
@@ -305,14 +346,22 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
     // Filter and Group Logic
     const groupedRegs = useMemo<Record<string, Registration[]>>(() => {
         const groups: Record<string, Registration[]> = {};
-        settings.units.forEach(u => groups[u] = []);
+        const billingUnits = (settings.billingConfig?.units || []).map(u => u.shortName);
+        const strokeSorter = new Intl.Collator('zh-Hant-TW-u-co-stroke').compare;
+        const sortedUnits = [...billingUnits].sort(strokeSorter);
+        
+        sortedUnits.forEach(u => groups[u] = []);
 
         registrations.filter(r => {
             if (r.status !== RegStatus.NORMAL) return false;
             if (filterUnit && r.unit !== filterUnit) return false;
             if (filterName && !r.name.includes(filterName)) return false;
+            
+            const isWaived = r.amount_due === 0 || r.payment_method === PaymentMethod.EXTENDED || r.payment_method === PaymentMethod.EXEMPT;
+            
             if (filterPaid === 'paid' && !r.is_paid) return false;
-            if (filterPaid === 'unpaid' && r.is_paid) return false;
+            if (filterPaid === 'unpaid' && (r.is_paid || isWaived)) return false;
+            if (filterPaid === 'exempt' && !isWaived) return false;
             return true;
         }).forEach(r => {
             if (!groups[r.unit]) groups[r.unit] = [];
@@ -325,46 +374,92 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
             });
         }
         return groups;
-    }, [registrations, filterUnit, filterName, filterPaid, settings.units]);
+    }, [registrations, filterUnit, filterName, filterPaid, settings.billingConfig?.units]);
 
     return (
-        <div className="space-y-6 animate-fade-in relative pb-20">
+        <div className="space-y-12 animate-fade-in pb-20">
             {toastMsg && (
-                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-3 rounded-lg shadow-xl z-[200] font-bold flex items-center animate-fade-in border ${toastMsg.includes('成功') ? 'bg-green-600 text-white border-green-700' : 'bg-black text-yellow-400 border-yellow-500'}`}>
-                    {toastMsg.includes('成功') ? <Check className="w-5 h-5 mr-2" /> : <XCircle className="w-5 h-5 mr-2" />}
+                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded-2xl shadow-2xl z-[200] font-black flex items-center animate-fade-in border-2 ${toastMsg.includes('成功') ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900 text-amber-400 border-slate-700'}`}>
+                    {toastMsg.includes('成功') ? <CheckCircle className="w-6 h-6 mr-3" /> : <XCircle className="w-6 h-6 mr-3" />}
                     {toastMsg}
                 </div>
             )}
 
-            <ConfirmDialog 
+            <ExportChoiceModal 
                 isOpen={isExportModalOpen}
-                title={t('fee.export_selection', '選擇導出名單')}
-                message={t('fee.export_scope_confirm', '請選擇要導出的收款名單範圍？')}
-                confirmText={t('fee.export_all', '全部名單')}
-                cancelText={t('fee.export_unpaid', '未收名單')}
-                onConfirm={() => handleExportTransferRecords(false)}
-                onCancel={() => handleExportTransferRecords(true)}
+                showScopeSelector={true}
+                onClose={() => setIsExportModalOpen(false)}
+                onConfirm={(mask, toEditor, scope) => handleExportTransferRecords(mask, toEditor, scope)}
+            />
+
+            <ConfirmDialog 
+                isOpen={!!matchConfirmData}
+                title={tString('fee.match_confirm_title', '自動對帳確認')}
+                message={t('fee.match_confirm_msg', '比對成功，對象：{{info}}，是否將狀態改為「已收」？', { info: matchConfirmData?.info })}
+                onConfirm={confirmMatchUpdate}
+                onCancel={() => setMatchConfirmData(null)}
             />
 
             <ConfirmDialog 
                 isOpen={!!batchConfirm?.isOpen}
-                title={t('fee.batch_update_title', '批次更新')}
-                message={t('fee.msg.batch_paid_confirm', '確定要將 {{unit}} 的 {{count}} 筆未收帳目全設為「已收」嗎？', { unit: batchConfirm?.unit, count: batchConfirm?.count })}
+                title={tString('fee.batch_update_title', '批次收款確認')}
+                message={t('fee.msg.batch_paid_confirm', '確定要將 {{unit}} 的 {{count}} 筆「現金」未收帳目全設為「已收」嗎？', { unit: batchConfirm?.unit, count: batchConfirm?.count })}
                 onConfirm={() => batchConfirm && executeBatchPaid(batchConfirm.unit)}
                 onCancel={() => setBatchConfirm(null)}
             />
 
-            {/* 4. Detailed Reconciliation Section - Header Controls */}
-            <div className="bg-indigo-50 rounded-lg shadow-sm border border-indigo-200 mb-6 overflow-hidden">
+            {/* Header & Global Financial Stats */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
                 <div 
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-indigo-100 transition-colors"
+                    className="bg-indigo-900 p-4 flex justify-between items-center cursor-pointer"
+                    onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+                >
+                    <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                        <DollarSign size={20} className="text-blue-300" />
+                        {t('stake.admin.tabs.payment_audit', '財務收款對帳中心')}
+                    </h2>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider hidden sm:inline">Financial Audit Control</span>
+                        {isHeaderCollapsed ? <ChevronDown size={20} className="text-white" /> : <ChevronUp size={20} className="text-white" />}
+                    </div>
+                </div>
+
+                {!isHeaderCollapsed && (
+                    <div className="p-6 bg-[#F0F4F8]/30">
+                        <div className="flex flex-col items-end gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
+                                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm min-w-[160px]">
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">轉帳實收</div>
+                                    <div className="text-xl font-bold text-slate-900">${stats.actualTransfer.toLocaleString()}</div>
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm min-w-[160px]">
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">現金實收</div>
+                                    <div className="text-xl font-bold text-slate-900">${stats.actualCash.toLocaleString()}</div>
+                                </div>
+                                <div className="bg-blue-600 p-4 rounded-lg shadow-md min-w-[160px]">
+                                    <div className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-1">應收總額</div>
+                                    <div className="text-xl font-bold text-white">${(stats.expectedTransfer + stats.expectedCash).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Reconciliation Control Panel */}
+            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+                <div 
+                    className="bg-slate-50 p-4 flex justify-between items-center cursor-pointer border-b border-slate-200"
                     onClick={() => setIsReconCollapsed(!isReconCollapsed)}
                 >
-                    <div className="flex items-center gap-2">
-                        <DollarSign className="w-5 h-5 text-indigo-600" />
-                        <h3 className="font-bold text-indigo-900 text-base">{t('payment_audit')}</h3>
+                    <h3 className="text-base md:text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Zap size={18} className="text-amber-500" />
+                        {t('stake.admin.tabs.payment_audit', '智慧對帳與篩選工具')}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden sm:inline">Automated Audit Tools</span>
+                        {isReconCollapsed ? <ChevronDown size={20} className="text-slate-400" /> : <ChevronUp size={20} className="text-slate-400" />}
                     </div>
-                    {isReconCollapsed ? <ChevronDown className="w-5 h-5 text-indigo-400" /> : <ChevronUp className="w-5 h-5 text-indigo-400" />}
                 </div>
 
                 <AnimatePresence>
@@ -373,78 +468,111 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="border-t border-indigo-100"
+                            transition={{ duration: 0.3 }}
                         >
-                            <div className="p-4 space-y-4">
-                                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                                    <div className="flex gap-2 items-center flex-wrap w-full md:w-auto">
-                                        <select 
-                                            className="border-2 border-indigo-200 rounded-lg text-sm h-10 px-3 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" 
-                                            value={filterUnit} 
-                                            onChange={e => setFilterUnit(e.target.value)}
-                                        >
-                                            <option value="">{t('common.all_units', '所有單位')}</option>
-                                            {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
-                                        </select>
-                                        <select 
-                                            className="border-2 border-indigo-200 rounded-lg text-sm h-10 px-3 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" 
-                                            value={filterPaid} 
-                                            onChange={e => setFilterPaid(e.target.value as any)}
-                                        >
-                                            <option value="all">{t('common.all_status', '全部狀態')}</option>
-                                            <option value="paid">{t('common.paid_short', '已收')}</option>
-                                            <option value="unpaid">{t('common.unpaid_short', '未收')}</option>
-                                        </select>
-                                        <input 
-                                            type="text" 
-                                            placeholder={t('common.search_name_placeholder', '搜尋姓名')} 
-                                            className="border-2 border-indigo-200 rounded-lg text-sm h-10 px-3 bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold w-full md:w-48" 
-                                            value={filterName} 
-                                            onChange={e => setFilterName(e.target.value)} 
-                                        />
-                                        
-                                        <button 
-                                            onClick={() => setIsPaymentLocked(!isPaymentLocked)} 
-                                            className={`flex items-center px-4 h-10 rounded-lg text-sm font-black transition-all border-2 ${isPaymentLocked ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'}`}
-                                        >
-                                            {isPaymentLocked ? <Lock className="w-4 h-4 mr-2" /> : <Unlock className="w-4 h-4 mr-2" />}
-                                            {isPaymentLocked ? t('fee.locked', '已鎖定') : t('fee.editable', '可編輯')}
-                                        </button>
+                            <div className="p-6 space-y-8 bg-[#F0F4F8]/10">
+                                <div className="flex flex-col items-end gap-6">
+                                    {/* Auto Match Row */}
+                                    <div className="w-full space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('fee.receive_audit', '自動化轉帳查收工具')}</span>
+                                        </div>
+                                        <div className="flex flex-wrap justify-end items-center gap-3">
+                                            <div className="relative flex-1 min-w-[140px] max-w-[200px]">
+                                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                                <input 
+                                                    type="number" 
+                                                    placeholder="金額" 
+                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none transition-all" 
+                                                    value={matchAmount} 
+                                                    onChange={e => setMatchAmount(e.target.value)} 
+                                                />
+                                            </div>
+                                            <div className="relative flex-1 min-w-[140px] max-w-[200px]">
+                                                <Zap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="帳號末五碼" 
+                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none uppercase" 
+                                                    value={matchLast5} 
+                                                    onChange={e => setMatchLast5(e.target.value)} 
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={handleMatch}
+                                                disabled={!matchLast5 || !matchAmount}
+                                                className="h-10 px-6 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 disabled:opacity-30 transition-all flex items-center gap-2"
+                                            >
+                                                <RefreshCw size={14} />
+                                                執行查收
+                                            </button>
+                                        </div>
+                                    </div>
 
+                                    {/* Actions Row */}
+                                    <div className="flex gap-2">
                                         <button 
                                             onClick={() => setIsExportModalOpen(true)}
-                                            className="flex items-center px-4 h-10 rounded-lg text-sm font-black transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-md border-2 border-indigo-700"
+                                            className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2"
                                         >
-                                            <FileText className="w-4 h-4 mr-2" />
-                                            {t('fee.payment_list', '收款名單')}
+                                            <FileText size={16} className="text-rose-500" />
+                                            導出名單
+                                        </button>
+                                        <button 
+                                            onClick={() => setIsPaymentLocked(!isPaymentLocked)} 
+                                            className={`h-10 px-4 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${isPaymentLocked ? 'bg-amber-600 text-white shadow-amber-200' : 'bg-emerald-600 text-white shadow-emerald-200'}`}
+                                        >
+                                            {isPaymentLocked ? <Lock size={16} /> : <Unlock size={16} />}
+                                            {isPaymentLocked ? '系統已鎖定' : '編輯模式中'}
                                         </button>
                                     </div>
                                 </div>
 
-                                {/* Match Tool */}
-                                <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl border-2 border-indigo-100 shadow-inner">
-                                    <span className="text-sm font-black text-indigo-800">{t('fee.transfer_match', '轉帳比對')}:</span>
-                                    <input 
-                                        type="number" 
-                                        placeholder={t('fee.match_amount_placeholder', '轉帳金額')} 
-                                        className="border-2 border-indigo-100 rounded-lg text-sm h-10 px-3 w-40 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" 
-                                        value={matchAmount} 
-                                        onChange={e => setMatchAmount(e.target.value)} 
-                                    />
-                                    <input 
-                                        type="text" 
-                                        placeholder={t('fee.last_5_digits_placeholder', '末五碼')} 
-                                        className="border-2 border-indigo-100 rounded-lg text-sm h-10 px-3 w-32 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" 
-                                        value={matchLast5} 
-                                        onChange={e => setMatchLast5(e.target.value)} 
-                                    />
-                                    <button 
-                                        onClick={handleMatch}
-                                        disabled={!matchLast5 || !matchAmount}
-                                        className="bg-indigo-600 text-white px-5 h-10 rounded-lg text-sm font-black hover:bg-indigo-700 disabled:opacity-50 flex items-center transition-all shadow-md border-2 border-indigo-700"
-                                    >
-                                        <Zap className="w-4 h-4 mr-2" /> {t('fee.match_and_update', '比對並更新')}
-                                    </button>
+                                {/* Filters Area */}
+                                <div className="pt-6 border-t border-slate-200 space-y-4">
+                                    <div className="flex flex-col items-end gap-4">
+                                        <div className="flex flex-wrap justify-end gap-2 w-full">
+                                            <button 
+                                                onClick={() => setFilterUnit('')}
+                                                className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border ${filterUnit === '' ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
+                                            >
+                                                {t('common.all_units', '所有單位')}
+                                            </button>
+                                            {(settings.billingConfig?.units || []).map(u => u.shortName).sort(new Intl.Collator('zh-Hant-TW-u-co-stroke').compare).map((u) => (
+                                                <button 
+                                                    key={u}
+                                                    onClick={() => setFilterUnit(u)}
+                                                    className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border ${filterUnit === u ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
+                                                >
+                                                    {u}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex flex-wrap justify-end gap-3 w-full">
+                                            <select 
+                                                className="h-10 bg-white border border-slate-200 rounded-lg px-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
+                                                value={filterPaid} 
+                                                onChange={e => setFilterPaid(e.target.value as any)}
+                                            >
+                                                <option value="all">所有收款狀態</option>
+                                                <option value="paid">{tString('common.paid_short', '已實收')}</option>
+                                                <option value="unpaid">{tString('common.unpaid_short', '待收款')}</option>
+                                                <option value="exempt">免收/特殊項</option>
+                                            </select>
+                                            <div className="relative min-w-[200px]">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="搜尋姓名..." 
+                                                    className="w-full h-10 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
+                                                    value={filterName} 
+                                                    onChange={e => setFilterName(e.target.value)} 
+                                                />
+                                                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
@@ -452,13 +580,10 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                 </AnimatePresence>
             </div>
 
-            {/* Render Individual Unit Blocks - Rainbow Loop */}
-            <div className="space-y-6">
-                {Object.entries(groupedRegs).map(([unitName, regs], index) => {
+            {/* Units Rendering */}
+            <div className="space-y-16">
+                {Object.entries(groupedRegs).map(([unitName, regs]) => {
                     const typedRegs = regs as Registration[];
-                    // Assign Rainbow Theme
-                    const theme = RAINBOW_THEMES[index % RAINBOW_THEMES.length];
-
                     return (
                         <UnitFeeTable 
                             key={unitName}
@@ -469,12 +594,17 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                             onTogglePaid={handleTogglePaid}
                             onBatchPaid={handleBatchPaid}
                             isLocked={isPaymentLocked}
-                            theme={theme}
                         />
                     );
                 })}
                 {Object.keys(groupedRegs).length === 0 && (
-                    <div className="text-center py-8 text-gray-400 bg-white border rounded-lg">{t('common.no_data_match', '無符合資料')}</div>
+                    <div className="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-24 text-center group hover:border-indigo-200 transition-all">
+                        <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform">
+                            <DollarSign className="text-slate-200" size={48} />
+                        </div>
+                        <h4 className="text-2xl font-black text-slate-300 uppercase tracking-widest mb-2">{t('common.no_data_match', '查無符合條件之帳目')}</h4>
+                        <p className="text-slate-400 font-bold">請嘗試調整篩選條件或重新搜尋</p>
+                    </div>
                 )}
             </div>
         </div>

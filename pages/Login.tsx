@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, EventData, GlobalSettings } from '../types';
 import { subscribeToEvents, logAction, subscribeToSettings } from '../services/sheetService';
-import { Info, ArrowRight, BarChart3, Ban, MessageSquare } from 'lucide-react';
+import { Info, ArrowRight, BarChart3, Ban, MessageSquare, Bus } from 'lucide-react';
 import PublicCommentTab from '../components/public/PublicCommentTab';
 import { useI18n } from '../src/contexts/LanguageContext';
 
@@ -11,25 +11,17 @@ interface LoginProps {
   onGuestAccess: () => void;
   onGoToStats: () => void;
   onGoToInstructions: () => void;
+  onGoToFeedback: () => void;
   initialShowComments?: boolean;
 }
 
-const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstructions, initialShowComments }) => {
+const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstructions, onGoToFeedback, initialShowComments }) => {
   const { currentLang, t, tString } = useI18n();
   const lang = currentLang as 'zh' | 'en';
   
   const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
-  const [quoteIndex, setQuoteIndex] = useState(0);
   const [showComments, setShowComments] = useState(initialShowComments || false);
   const [settings, setSettings] = useState<GlobalSettings | null>(null);
-
-  // V405: Note that the custom i18n system currently uses key-value strings. 
-  // For arrays, we use a fallback or specific keys.
-  const quotes = [
-    tString('stake.login.quote_1') || 'Faith is the substance of things hoped for.',
-    tString('stake.login.quote_2') || 'The temple is the house of the Lord.',
-    tString('stake.login.quote_3') || 'Seek learning, even by study and also by faith.'
-  ];
 
   useEffect(() => {
       const unsubSettings = subscribeToSettings((s) => setSettings(s));
@@ -38,17 +30,13 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
           setActiveEvent(active);
       });
       
-      setQuoteIndex(Math.floor(Math.random() * quotes.length));
-
-      if (initialShowComments) {
-          setShowComments(true);
-      }
+      setShowComments(initialShowComments || false);
 
       return () => {
           unsubEvents();
           unsubSettings();
       };
-  }, [initialShowComments, quotes.length]);
+  }, [initialShowComments]);
 
   const handleGuestEntry = () => {
       // 屬性與參數需使用 tString
@@ -56,115 +44,111 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
       onGuestAccess();
   };
 
-  const renderStatus = () => {
-      if (!activeEvent) return <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-bold shadow-sm">{t('stake.login.no_event')}</span>;
-      
-      let statusContent: React.ReactNode = null;
-      let statusColor = '';
-
-      switch (activeEvent.status) {
-          case 'confirmed': 
-              statusContent = t('stake.login.event_confirmed'); 
-              statusColor = 'bg-emerald-100 text-emerald-700 border-emerald-200'; 
-              break;
-          case 'cancelled': 
-              statusContent = t('stake.login.event_cancelled'); 
-              statusColor = 'bg-red-100 text-red-700 border-red-200'; 
-              break;
-          case 'completed': 
-              statusContent = t('stake.login.event_completed'); 
-              statusColor = 'bg-gray-100 text-gray-700 border-gray-200'; 
-              break;
-          default: 
-              statusContent = t('stake.login.open_for_reg'); 
-              statusColor = 'bg-blue-100 text-blue-700 border-blue-200';
-      }
-
-      return (
-          <div className="flex flex-col items-center animate-fade-in mb-6 mt-2">
-              <span className={`px-4 py-1.5 rounded-full text-base font-bold border shadow-sm ${statusColor}`}>
-                  {statusContent}
-              </span>
-          </div>
-      );
-  };
-
   const isUnavailable = !activeEvent || activeEvent.status === 'cancelled' || activeEvent.status === 'completed';
-  const currentQuote = quotes[quoteIndex];
 
   if (showComments && activeEvent && settings) {
       return (
-          <div className="min-h-screen bg-slate-50 p-4 pb-24">
+          <div className="min-h-[calc(100vh-64px)] bg-[#F0F4F8] p-4 pb-24">
               <div className="max-w-md mx-auto">
-                <button onClick={() => setShowComments(false)} className="mb-4 text-slate-600 font-bold underline">{t('stake.login.back_btn')}</button>
-                <PublicCommentTab activeEvent={activeEvent} settings={settings} lang={lang} />
+                <div className="mb-6 flex items-center gap-3">
+                    <div className="bg-indigo-600 p-2 rounded-lg">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <h1 className="text-xl md:text-2xl font-bold text-slate-900">留言</h1>
+                </div>
+                <div className="bg-white rounded-none md:rounded-[8px] shadow-xl border border-indigo-100 overflow-hidden">
+                    <PublicCommentTab activeEvent={activeEvent} settings={settings} lang={lang} />
+                </div>
               </div>
           </div>
       );
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-amber-50 pb-24">
-      <div className="w-full max-w-md relative">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] overflow-hidden border border-white/50 relative">
-                <div className="h-1.5 w-full bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300"></div>
+    <div className="min-h-full bg-[#F0F4F8] flex flex-col">
+      {/* Hero Section */}
+      <section className="bg-white border-b border-indigo-100 pt-16 pb-20 px-6 md:px-12 text-center overflow-hidden relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[1200px] bg-indigo-50/40 rounded-full -translate-y-1/2 -z-10 blur-3xl"></div>
+          
+          <div className="max-w-4xl mx-auto space-y-8">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] md:leading-[1.1] lg:leading-[1.1]">
+                  <span className="text-indigo-600 block mb-3 drop-shadow-sm">{activeEvent ? activeEvent.event_date : ''}</span>
+                  <span className="block px-4">{activeEvent?.event_title || t('stake.login.default_event_title', '聖殿旅行團')}</span>
+              </h1>
+              
+              <div className="pt-10 flex flex-wrap items-center justify-center gap-3 md:gap-5 px-4">
+                  <button
+                      onClick={isUnavailable ? undefined : handleGuestEntry}
+                      disabled={isUnavailable}
+                      className={`
+                        w-full sm:w-auto rounded-none md:rounded-[8px] font-black transition-all shadow-xl flex items-center justify-center gap-3 group
+                        h-12 px-8 text-base md:h-11 md:px-6 md:text-sm lg:h-10 lg:px-8 lg:text-sm
+                        ${isUnavailable 
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                            : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-[1.02] active:scale-95 shadow-indigo-200'}
+                      `}
+                  >
+                      <span>{isUnavailable ? t('stake.login.paused') : t('stake.login.register')}</span>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                  </button>
+                  
+                  <button
+                      onClick={onGoToInstructions}
+                      className="w-full sm:w-auto h-12 px-6 text-base md:h-11 md:px-5 md:text-sm lg:h-10 lg:px-8 lg:text-sm bg-white text-slate-700 border-2 border-slate-200 rounded-none md:rounded-[8px] font-black hover:bg-slate-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 shadow-md active:scale-95"
+                  >
+                      <Info size={20} className="text-indigo-500" />
+                      <span>{t('stake.login.instructions')}</span>
+                  </button>
 
-                <div className="p-10 md:p-12">
-                    <div className="text-center">
-                        <div className="flex flex-col justify-center items-center gap-1 mb-4">
-                            <div className="text-2xl text-gray-700 tracking-widest mb-1">{t('stake.login.welcome_title')}</div>
-                            <h1 className="text-xl text-gray-700 tracking-tight flex flex-wrap items-center justify-center gap-2">
-                                <span>{activeEvent ? activeEvent.event_date : ''}</span>
-                                <span>{activeEvent?.event_title || t('stake.login.default_event_title')}</span>
-                            </h1>
-                        </div>
-                        
-                        {renderStatus()}
+                  <button
+                      onClick={onGoToStats}
+                      className="w-full sm:w-auto h-12 px-6 text-base md:h-11 md:px-5 md:text-sm lg:h-10 lg:px-8 lg:text-sm bg-blue-50 text-blue-700 border-2 border-blue-100 rounded-none md:rounded-[8px] font-black hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 group/btn"
+                  >
+                      <BarChart3 size={20} className="group-hover/btn:scale-110 transition-transform" />
+                      <span>前往查詢</span>
+                  </button>
 
-                        <div className="grid grid-cols-2 gap-4 mb-6">
-                            <button
-                                onClick={isUnavailable ? undefined : handleGuestEntry}
-                                disabled={isUnavailable}
-                                className={`flex flex-col items-center justify-center font-bold px-2 py-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-xs ${
-                                    isUnavailable 
-                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' 
-                                    : 'text-slate-900 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 hover:from-amber-400 hover:to-yellow-600'
-                                }`}
-                            >
-                                <ArrowRight className="w-8 h-8 mb-2" />
-                                {isUnavailable ? t('stake.login.paused') : t('stake.login.register')}
-                            </button>
-                            <button
-                                onClick={onGoToInstructions}
-                                className="flex flex-col items-center justify-center text-slate-900 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 hover:from-amber-400 hover:to-yellow-600 font-bold px-2 py-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-xs"
-                            >
-                                <Info className="w-8 h-8 mb-2 text-slate-800" />
-                                {t('stake.login.instructions')}
-                            </button>
-                            <button
-                                onClick={onGoToStats}
-                                className="flex flex-col items-center justify-center text-slate-900 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 hover:from-amber-400 hover:to-yellow-600 font-bold px-2 py-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-xs"
-                            >
-                                <BarChart3 className="w-8 h-8 mb-2 text-slate-800" />
-                                {t('stake.login.search')}
-                            </button>
-                            <button
-                                onClick={() => setShowComments(true)}
-                                className="flex flex-col items-center justify-center text-slate-900 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 hover:from-amber-400 hover:to-yellow-600 font-bold px-2 py-4 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-xs"
-                            >
-                                <MessageSquare className="w-8 h-8 mb-2 text-slate-800" />
-                                {t('stake.login.comments')}
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <p className="text-xs text-gray-400 italic font-serif text-center leading-relaxed">"{currentQuote}"</p>
-                            {/* Legacy language switcher removed as it's now in the header */}
-                        </div>
-                    </div>
-                </div>
+                  <button
+                      onClick={onGoToFeedback}
+                      className="w-full sm:w-auto h-12 px-6 text-base md:h-11 md:px-5 md:text-sm lg:h-10 lg:px-8 lg:text-sm bg-amber-50 text-amber-700 border-2 border-amber-100 rounded-none md:rounded-[8px] font-black hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 group/btn"
+                  >
+                      <MessageSquare size={20} className="group-hover/btn:scale-110 transition-transform" />
+                      <span>查看留言</span>
+                  </button>
+              </div>
           </div>
-      </div>
+      </section>
+
+      {/* Latest News Announcement */}
+      <section className="px-6 md:px-12 py-12 bg-white/50 border-t border-indigo-50">
+          <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-red-600 p-2 rounded-lg shadow-sm">
+                      <Info className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">最新消息</h2>
+              </div>
+              
+              <div className="bg-white border-2 border-red-100 rounded-none md:rounded-[8px] p-6 md:p-8 shadow-sm relative overflow-hidden group hover:border-red-200 transition-colors">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-50/50 rounded-full translate-x-16 -translate-y-16 -z-0"></div>
+                  
+                  <div className="relative z-10">
+                      {settings?.latest_news ? (
+                          <div className="text-slate-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium">
+                              {settings.latest_news}
+                          </div>
+                      ) : (
+                          <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-3">
+                              <Ban size={48} className="opacity-20" />
+                              <p className="text-xs font-bold uppercase tracking-widest">目前尚無公告</p>
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      <div className="mt-auto py-8"></div>
     </div>
   );
 };

@@ -7,7 +7,7 @@ interface I18nTextProps {
 }
 
 const I18nText: React.FC<I18nTextProps> = ({ stringKey, className = "" }) => {
-  const { t, isEditMode, activeKey, setActiveKey } = useI18n();
+  const { t, tString, isEditMode, activeKey, setActiveKey } = useI18n();
   
   const isActive = activeKey === stringKey;
 

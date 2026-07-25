@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { EventData, FinalReportData } from '../types';
 import { X, Printer, TrendingUp, DollarSign, AlertCircle, Award } from 'lucide-react';
 
@@ -10,7 +10,7 @@ interface FinalReportModalProps {
 }
 
 const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const report = event.finalReport;
 
   if (!report) return null;
@@ -39,7 +39,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
         {/* Report Content */}
         <div className="flex-1 overflow-y-auto p-10 print:p-0 print:overflow-visible">
             <div className="text-center mb-10 border-b-2 border-gray-200 pb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('report.temple_trip_report', '聖殿之旅 成果報告書')}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('report.temple_trip_report', '聖殿旅行團 成果報告書')}</h1>
                 <p className="text-gray-500 font-mono">Event ID: {event.event_id}</p>
                 <p className="text-gray-600 mt-2">{t('common.event_date', '活動日期')}：{event.event_date}</p>
                 <p className="text-gray-400 text-xs mt-1">{t('report.generated_at', '報告生成時間')}：{new Date(report.generatedAt).toLocaleString()}</p>

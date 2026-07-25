@@ -148,6 +148,13 @@ export enum PaymentMethod {
   CASH = '現金',
   TRANSFER = '轉帳',
   EXTENDED = '延用',
+  EXEMPT = '免收',
+}
+
+// V600: Insurance Type
+export enum InsuranceType {
+  GROUP = '團體投保',
+  SELF_PAID = '自費投保',
 }
 
 // V002: 使用者帳號
@@ -155,6 +162,7 @@ export interface User {
   username: string;
   password: string; // Mock mode: plain text
   role: Role;
+  originalRole?: Role; // V410: Track original role for frontend preview switching
   roles?: Role[]; // V099: Multi-role support
   name: string;
   unit?: string; // 承辦人所屬單位
@@ -181,6 +189,7 @@ export interface GlobalSettings {
   internet_fee?: number; // V300: Internet Fee
   engineering_version?: string; // V192: Engineer Version
   engineering_date?: string; // V192: Engineer Date
+  latest_news?: string;
   maintenance_mode?: boolean; // V117: System Maintenance Mode
   language?: 'zh' | 'en'; // V410: 全站切換語系
   temple_name: '台北聖殿' | '高雄聖殿' | '台中聖殿';
@@ -205,7 +214,7 @@ export interface GlobalSettings {
   billingConfig?: BillingEngineConfig; // V320: Composite Billing Engine
   system_notice?: string; // V010: 系統公告
   site_announcements?: Record<string, { content: string; isActive: boolean }>; // V405: Announcement Settings
-  translations?: Record<string, string>; // V405: Global Translation Dictionary (Legacy)
+  translations?: Record<string, any>; // V405: Global Translation Dictionary (Legacy)
   dictionary?: DictionaryEntry[]; // V410: 結構化字典表
   sessions: string[]; // V013: 聖殿場次時間表
   stations?: Station[]; // V500: 站點資料庫
@@ -386,6 +395,7 @@ export interface BusConfig {
   driverName2?: string; // V300: Added
   driverPhone2?: string; // V300: Added
   bookingCost?: number; // V080
+  taxCost?: number; // Vxxx: Added taxCost
   driverMealCost?: number; // V080
   parkingCost?: number; // V080
   otherCost?: number; // V225: Added otherCost
@@ -481,6 +491,50 @@ export interface OrdinanceSessionItem {
   capacity: number;
 }
 
+// V600: Registration Engine Types (4D Priority & Progressive Groups)
+export interface PriorityWeights {
+  unit: number;     // W1
+  identity: number; // W2
+  trip: number;     // W3
+  special: number;  // W4
+}
+
+export interface GroupGateConfig {
+  maxGroups: number; // Gmax
+  minCapacity: number; // Nmin
+  maxCapacity: number; // Nmax
+  progressiveOpening: boolean;
+  backtrackLogic: boolean;
+  decisionCondition?: 'minCapacity' | 'minAmount' | 'minCapacityOrAmount' | 'minCapacityAndAmount'; // V600: New
+  minAmount?: number; // V600: 單團最低金額
+}
+
+export interface TimeNodes {
+  regStartTime: string;
+  groupFormationDeadline: string;
+  regularPaymentStartTime: string;
+  regularPaymentDeadline: string;
+  waitlistPaymentStartTime: string;
+  waitlistPaymentDeadline: string; // Changed from RelativeHours
+  cancellationDeadline: string; // New
+  regEndTime: string;
+  showYear?: boolean;
+  showOnPublic?: boolean;
+}
+
+export interface RegistrationEngineConfig {
+  enabled: boolean;
+  weights: PriorityWeights;
+  groupGate: GroupGateConfig;
+  timeNodes: TimeNodes;
+  priorityMappings: {
+    unitScores: Record<string, number>;
+    identityScores: Record<string, number>;
+    tripScores: Record<string, number>;
+    specialScores: Record<string, number>;
+  };
+}
+
 // S1 活動主檔
 export interface EventData {
   event_id: string;
@@ -513,7 +567,9 @@ export interface EventData {
   schedule?: ScheduleItem[]; // V019: 行程表
   bus_statuses?: Record<string, BusStatusType>; // V020: 車輛狀態
   busConfigs?: BusConfig[]; // V073: 車輛詳細設定
-  insuranceCost?: number; // V081: 保險費用總額
+  insuranceCost?: number; // V081: 團保費用 (團體投保時使用)
+  insurance_type?: InsuranceType; // V600: 投保方式
+  self_paid_insurance_amount?: number; // V600: 自費投保金額
   // V086: Added staffRole to unitStaffInfo
   unitStaffInfo?: Record<string, { staff?: string, staffRole?: string }>; // V082: 各單位工作人員名單
   
@@ -524,6 +580,9 @@ export interface EventData {
   servicePersonnel?: ServicePerson[]; // V122: Service Personnel List
   volunteers?: Volunteer[]; // V129: Volunteer list
   paymentDisplayMode?: 'none' | 'forced' | 'confirmed_only'; // V310: Payment display control
+
+  // V600: Registration Engine
+  engineConfig?: RegistrationEngineConfig;
 
   // V088: Session Config (Deprecated field, replaced by below)
   sessionConfig?: {
@@ -619,6 +678,7 @@ export interface FamilyGroup {
     primary_unit: string;
     payment_method: PaymentMethod;
     transfer_last_5?: string;
+    needs_self_paid_insurance?: boolean;
     created_at: string;
 }
 
@@ -702,6 +762,9 @@ export interface Registration {
 
   // V035: Trivia Score
   trivia_score?: number;
+
+  // V600: Insurance
+  needs_self_paid_insurance?: boolean;
 }
 
 // V170: Blacklist Item
@@ -797,6 +860,7 @@ export interface IdentityPricing {
   identity: string;
   price: PricingValue; // Layer 3
   description?: string;
+  hasSubsidy?: boolean; // Vxxx: Added subsidy flag
   sortOrder?: number;
 }
 
@@ -854,6 +918,7 @@ export interface RegistrationMemberInput {
   unit?: string; // V206: Allow per-member unit override
   service_qualification?: string; // V220: Added service_qualification
   is_personal_info_matched?: boolean; // Hide fields if matched
+  needs_self_paid_insurance?: boolean; // V600
 }
 
 export interface FamilyGroupInput {
@@ -863,5 +928,6 @@ export interface FamilyGroupInput {
   primary_unit: string;
   payment_method: PaymentMethod;
   transfer_last_5?: string;
+  needs_self_paid_insurance?: boolean;
   members: RegistrationMemberInput[];
 }

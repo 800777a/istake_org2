@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Row, Col, Radio, Typography, Switch, Button } from 'antd';
-import { NodeIndexOutlined, SafetyOutlined, CalculatorOutlined } from '@ant-design/icons';
+import { Layers, Target, Calculator } from 'lucide-react';
 import { BillingEngineConfig } from '../../../types';
-import { RainbowCard } from './RainbowCard';
+import { RainbowCard, rainbowStyles } from './RainbowCard';
 
 const { Text, Paragraph } = Typography;
 
@@ -13,6 +13,7 @@ interface LogicRoundingStepProps {
   expandedSteps: Record<string, boolean>;
   onToggle: (step: string) => void;
   onOpenSandbox?: () => void;
+  colorIndexStart?: number;
 }
 
 export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({ 
@@ -20,15 +21,16 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
   onConfigChange, 
   expandedSteps, 
   onToggle,
-  onOpenSandbox
+  onOpenSandbox,
+  colorIndexStart = 5
 }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   return (
     <>
       <RainbowCard
-        title={t('stake.fee_config.step5_title', '第5步：折扣設定 (Discounts)')}
-        icon={<NodeIndexOutlined />}
-        colorIndex={5}
+        title={tString('stake.fee_config.step5_title', '第5步：折扣設定 (Discounts)')}
+        icon={<Layers size={20} />}
+        colorIndex={colorIndexStart}
         isExpanded={expandedSteps['step5']}
         onToggle={() => onToggle('step5')}
       >
@@ -53,9 +55,9 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
       </RainbowCard>
 
       <RainbowCard
-        title={t('stake.fee_config.step6_title', '第6步：四捨五入 (Rounding)')}
-        icon={<SafetyOutlined />}
-        colorIndex={6}
+        title={tString('stake.fee_config.step6_title', '第6步：四捨五入 (Rounding)')}
+        icon={<Target size={20} />}
+        colorIndex={colorIndexStart + 1}
         isExpanded={expandedSteps['step6']}
         onToggle={() => onToggle('step6')}
       >
@@ -71,15 +73,12 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
 
       {onOpenSandbox && (
         <div className="mt-4 mb-8 flex justify-center">
-          <Button 
-            type="primary" 
-            size="large"
-            icon={<CalculatorOutlined />} 
+          <button 
             onClick={onOpenSandbox}
-            className="bg-amber-500 border-amber-600 hover:bg-amber-600 h-12 px-8 rounded-full shadow-lg"
+            className="h-12 px-8 bg-amber-500 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
           >
-            {t('stake.fee_config.sandbox_btn', '收費試算 / Fee Calculation Sandbox')}
-          </Button>
+            <Calculator size={20} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Fee Calculation Sandbox')}
+          </button>
         </div>
       )}
     </>

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { 
     FamilyGroupInput, 
     RegistrationMemberInput, 
@@ -16,12 +16,13 @@ import {
     GlobalSettings,
     DietaryType
 } from '../types';
+import { isRegistrationClosed } from '../src/utils/registrationUtils';
 import { validateIdentityId, calculateAge, determineAgeGroup, validateNameFormat } from '../utils/validation';
 import * as sheetService from '../services/sheetService';
 import { calculateStats } from './useStats';
 
 export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
-    const { t } = useTranslation();
+    const { t } = useI18n();
     const [mode, setMode] = useState<'register' | 'lookup'>('register');
     const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
     const [settings, setSettings] = useState<GlobalSettings>(sheetService.getSettings());
@@ -33,7 +34,12 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
     const [ordinanceStats, setOrdinanceStats] = useState<{
         endowment: { capacity: number; occupied: number; waiting: number; remaining: number };
         baptism: { capacity: number; occupied: number; waiting: number; remaining: number };
-    }>();
+        sealing: { capacity: number; occupied: number; waiting: number; remaining: number };
+    }>({
+        endowment: { capacity: 0, occupied: 0, waiting: 0, remaining: 0 },
+        baptism: { capacity: 0, occupied: 0, waiting: 0, remaining: 0 },
+        sealing: { capacity: 0, occupied: 0, waiting: 0, remaining: 0 }
+    });
 
     const [blacklist, setBlacklist] = useState<BlacklistItem[]>([]);
     const [personalInfoList, setPersonalInfoList] = useState<any[]>([]);
@@ -45,10 +51,12 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
     const [primaryUnit, setPrimaryUnit] = useState(''); 
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
     const [transferLast5, setTransferLast5] = useState('');
+    const [needsSelfPaidInsurance, setNeedsSelfPaidInsurance] = useState(false);
     const [members, setMembers] = useState<RegistrationMemberInput[]>([]);
     const hasInitializedMembers = useRef(false);
     
     const [editingFamilyGroupId, setEditingFamilyGroupId] = useState<string | null>(null);
+    const [lookupIntent, setLookupIntent] = useState<'edit' | 'delete'>('edit');
     const [lookupUnit, setLookupUnit] = useState('');
     const [lookupName, setLookupName] = useState('');
     const [lookupPassword, setLookupPassword] = useState('');
@@ -58,7 +66,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
     const [lockCountdown, setLockCountdown] = useState(0);
 
     const addMember = () => {
-        const defaultBoarding = sheetService.getSettings().boarding_places[0] || '';
+        const defaultBoarding = (sheetService.getSettings().boarding_places || [])[0] || '';
         setMembers((prevMembers) => [
           ...prevMembers,
           {
@@ -145,10 +153,10 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
 
     useEffect(() => {
         if (setIsDirty) setIsDirty(isFormDirty());
-    }, [primaryName, primaryPassword, primaryUnit, members, setIsDirty]);
+    }, [primaryName, primaryPassword, primaryUnit, members, needsSelfPaidInsurance, setIsDirty]);
 
     const isFormDirty = () => {
-        if (primaryName.trim() || primaryPassword.trim() || primaryUnit) return true;
+        if (primaryName.trim() || primaryPassword.trim() || primaryUnit || needsSelfPaidInsurance) return true;
         if (members.length > 1) return true;
         if (members.length === 1) {
             const m = members[0];
@@ -197,7 +205,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
             setMsg({ type: 'error', text: t('stake.registration.form.password_format_error') });
             return false;
         }
-        if (!settings.units.includes(primaryUnit)) {
+        if (!(settings.units || []).includes(primaryUnit)) {
             setMsg({ type: 'error', text: t('stake.registration.form.invalid_unit_msg') });
             return false;
         }
@@ -237,7 +245,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
             const age = calculateAge(m.birth_date, activeEvent.event_date); 
             const group = determineAgeGroup(age); 
             if (!group) { setMsg({ type: 'error', text: t('stake.registration.form.invalid_birth_basic', { name: m.name }) }); return false; } 
-            if (m.ordinance_type !== OrdinanceType.NONE && m.ordinance_item === OrdinanceItem.NONE) {
+            if (m.ordinance_type !== OrdinanceType.NONE && m.ordinance_type !== OrdinanceType.CHILD && m.ordinance_item === OrdinanceItem.NONE) {
                 setMsg({ type: 'error', text: t('stake.registration.form.missing_ordinance_msg', { name: m.name }) }); 
                 return false; 
             }
@@ -299,6 +307,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
         setPrimaryUnit(reg.unit);
         setPaymentMethod(reg.payment_method || '');
         setTransferLast5(reg.transfer_last_5 || '');
+        setNeedsSelfPaidInsurance(!!reg.needs_self_paid_insurance);
         
         sheetService.getFamilyMembers(reg.family_group_id || reg.reg_id, activeEvent!.event_id).then((mList: Registration[]) => {
             if (mList && mList.length > 0) {
@@ -342,14 +351,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
     };
 
     const isRegistrationClosedCheck = () => {
-        if (!activeEvent) return true;
-        if (activeEvent.is_registration_open === false) return true;
-        if (activeEvent.is_seat_limited && eventStats && eventStats.occupied >= eventStats.capacity) return true;
-        if (activeEvent.registrationDeadline) {
-            const deadline = new Date(activeEvent.registrationDeadline);
-            if (new Date() > deadline) return true;
-        }
-        return false;
+        return isRegistrationClosed(activeEvent || null, eventStats);
     };
 
     const executeSubmit = async () => {
@@ -362,6 +364,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
             primary_unit: primaryUnit, 
             payment_method: paymentMethod as PaymentMethod, 
             transfer_last_5: paymentMethod === PaymentMethod.TRANSFER ? transferLast5 : '', 
+            needs_self_paid_insurance: needsSelfPaidInsurance,
             members, 
         }; 
         let result;
@@ -400,6 +403,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
         setPrimaryPassword(''); 
         setPrimaryContactPhone(''); 
         setTransferLast5(''); 
+        setNeedsSelfPaidInsurance(false);
         setMembers([]); 
         setEditingFamilyGroupId(null);
         setPaymentMethod(''); 
@@ -479,10 +483,17 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
         return sheetService.calculatePrice(primaryUnit, m.identity_type, m.trip_type, m.is_staff, m.is_new_member); 
     };
     
-    const getTotalFamilyDue = () => members.reduce((sum, m) => sum + calculateMemberPrice(m), 0);
+    const getTotalFamilyDue = () => {
+        const memberPriceTotal = members.reduce((sum, m) => sum + calculateMemberPrice(m), 0);
+        if (needsSelfPaidInsurance && activeEvent?.self_paid_insurance_amount) {
+            return memberPriceTotal + (members.length * activeEvent.self_paid_insurance_amount);
+        }
+        return memberPriceTotal;
+    };
 
     return {
         mode, setMode,
+        lookupIntent, setLookupIntent,
         activeEvent, settings, loading, setLoading, msg, setMsg, weather,
         eventStats, ordinanceStats, blacklist, personalInfoList, representatives,
         primaryName, setPrimaryName,
@@ -491,6 +502,7 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
         primaryUnit, setPrimaryUnit,
         paymentMethod, setPaymentMethod,
         transferLast5, setTransferLast5,
+        needsSelfPaidInsurance, setNeedsSelfPaidInsurance,
         members, setMembers,
         editingFamilyGroupId, setEditingFamilyGroupId,
         lookupUnit, setLookupUnit,

@@ -8,23 +8,23 @@ const LanguageSelector: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const langNames: Record<string, string> = {
-    'en': 'English',
-    'zh-TW': '繁體中文',
-    'ja': '日本語',
-    'ko': '한국어'
+    'en': 'English(EN)',
+    'zh-TW': '繁體中文(ZH)'
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 backdrop-blur-md border border-gray-200 hover:border-blue-400 hover:shadow-md transition-all group"
+        className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/10"
       >
-        <Globe size={18} className="text-gray-500 group-hover:text-blue-500 transition-colors" />
-        <span className="text-sm font-bold text-gray-700 hidden sm:block">
-          {langNames[currentLang] || currentLang}
-        </span>
-        <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white">
+          <Globe size={14} />
+        </div>
+        <div className="bg-white text-indigo-950 flex-1 flex items-center justify-between px-3 text-[10px] font-black whitespace-nowrap">
+          <span>{langNames[currentLang] || currentLang}</span>
+          <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
       </button>
 
       <AnimatePresence>
@@ -33,13 +33,13 @@ const LanguageSelector: React.FC = () => {
             <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
             
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 overflow-hidden"
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="absolute top-full left-0 mt-2 w-full bg-white rounded-md shadow-2xl border border-indigo-100 py-1 z-20 overflow-hidden"
             >
-              <div className="px-4 py-1 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                Select Language
+              <div className="px-3 py-1 text-[9px] font-black text-indigo-300 uppercase tracking-widest border-b border-indigo-50 mb-1 pl-10">
+                Language
               </div>
               {availableLangs.map((lang) => (
                 <button
@@ -49,12 +49,16 @@ const LanguageSelector: React.FC = () => {
                     setIsOpen(false);
                   }}
                   className={`
-                    w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors
-                    ${currentLang === lang ? 'bg-blue-50 text-blue-600 font-bold' : 'text-gray-600 hover:bg-gray-50'}
+                    w-full h-7 flex items-stretch overflow-hidden transition-colors border-b border-indigo-50
+                    ${currentLang === lang ? 'bg-indigo-50' : 'bg-white hover:bg-slate-50'}
                   `}
                 >
-                  {langNames[lang] || lang}
-                  {currentLang === lang && <Check size={14} />}
+                  <div className={`w-7 h-7 flex items-center justify-center shrink-0 border-r border-indigo-100 ${currentLang === lang ? 'text-indigo-900' : 'text-slate-300'}`}>
+                    {currentLang === lang && <Check size={12} />}
+                  </div>
+                  <div className={`flex-1 flex items-center px-3 text-[10px] font-normal ${currentLang === lang ? 'text-indigo-900 font-bold' : 'text-slate-600'}`}>
+                    <span>{langNames[lang] || lang}</span>
+                  </div>
                 </button>
               ))}
             </motion.div>

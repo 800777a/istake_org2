@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { subscribeToEvents, subscribeToRegistrations, subscribeToSettings } from '../services/sheetService';
 import { EventData, Registration, RegStatus, GlobalSettings } from '../types';
 import { BarChart3, AlertCircle, X, Info, Home, ArrowRight, List, CalendarCheck, HeartHandshake, MessageSquare } from 'lucide-react';
@@ -22,16 +22,20 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
      onGoToInstructions?: () => void;
      initialMessage?: string;
      onClearMessage?: () => void;
+     activeTab?: 'list' | 'schedule' | 'service' | 'stats';
+     onTabChange?: (tab: 'list' | 'schedule' | 'service' | 'stats') => void;
  }
  
- const PublicStats: React.FC<PublicStatsProps> = ({ onGoHome, onGoRegister, onGoToInstructions, initialMessage, onClearMessage }) => {
-   const { t } = useTranslation();
+ const PublicStats: React.FC<PublicStatsProps> = ({ onGoHome, onGoRegister, onGoToInstructions, initialMessage, onClearMessage, activeTab: propsActiveTab, onTabChange }) => {
+   const { t, tString } = useI18n();
    const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
   const [allEvents, setAllEvents] = useState<EventData[]>([]);
    const [registrations, setRegistrations] = useState<Registration[]>([]);
    
-   // Tab State
-   const [activeTab, setActiveTab] = useState<'list' | 'schedule' | 'service' | 'stats'>('list');
+   // Tab State - Internal fallback if not provided
+   const [internalActiveTab, setInternalActiveTab] = useState<'list' | 'schedule' | 'service' | 'stats'>('list');
+   const activeTab = propsActiveTab || internalActiveTab;
+   const setActiveTab = onTabChange || setInternalActiveTab;
  
    const [settings, setSettings] = useState<GlobalSettings | null>(null);
   // Removed showRules state as we now redirect
@@ -65,11 +69,18 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
   }, []);
 
   if (!activeEvent || !settings) {
-      return <div className="p-8 text-center text-gray-500">{t('stake.stats.no_data')}</div>;
+      return <div className="p-8 text-center text-slate-500 bg-[#F0F4F8] min-h-screen">{t('stake.stats.no_data')}</div>;
   }
 
+  const tabs = [
+    { id: 'list', label: t('stake.stats.tab_registration'), icon: List },
+    { id: 'schedule', label: t('stake.stats.tab_schedule'), icon: CalendarCheck },
+    { id: 'service', label: t('stake.stats.tab_service'), icon: HeartHandshake },
+    { id: 'stats', label: t('stake.stats.tab_stats'), icon: BarChart3 },
+  ];
+
   return (
-    <div className="p-2 md:p-6 max-w-6xl mx-auto space-y-4 animate-fade-in relative min-h-screen pb-24">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F0F4F8] animate-fade-in">
       {selectedPaymentReg && (
           <PaymentInfoModal 
               key={`${selectedPaymentReg.reg_id}-${Date.now()}`}
@@ -81,97 +92,84 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
           />
       )}
 
-      {/* Header - No wrap on mobile */}
-      <div className="flex flex-row justify-between items-center gap-2 mb-2 whitespace-nowrap">
-          <div className="flex items-center">
-              <BarChart3 className="w-6 h-6 mr-2 text-blue-600" />
-              <h2 className="text-2xl font-bold text-gray-800">{t('stake.stats.page_title')}</h2>
+      {/* Header Area - Indigo-900 Structural Element */}
+      <div className="px-4 py-8 md:px-8 bg-indigo-900 text-white shadow-lg w-full max-w-full overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-7xl mx-auto">
+              <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                      <div className="bg-white/10 p-3 rounded-xl backdrop-blur-md border border-white/20">
+                          <BarChart3 className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <h1 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
+                            {activeTab === 'list' ? '報名' : 
+                             activeTab === 'schedule' ? '行程' : 
+                             activeTab === 'service' ? '服務' : 
+                             activeTab === 'stats' ? '統計' : 
+                             t('stake.stats.page_title')}
+                        </h1>
+                        <p className="text-[10px] text-indigo-300 font-black uppercase tracking-[0.2em] opacity-80">
+                            {t('stake.stats.subtitle', 'Public Inquiry & Analytics')}
+                        </p>
+                      </div>
+                  </div>
+              </div>
+              
+              <div className="flex flex-col items-start md:items-end gap-1">
+              </div>
           </div>
-          {/* Modified Date Display - No background */}
-          <span className="text-base font-medium text-gray-500 truncate">{t('stake.stats.event_date_label')}{activeEvent.event_date}</span>
       </div>
 
-     {/* Tab Navigation */}
-     <div className="flex flex-wrap md:grid md:grid-cols-4 gap-2 md:gap-4 mb-4">
-         <button 
-             onClick={() => setActiveTab('list')}
-             className={`flex-1 md:flex-none py-3 rounded-lg font-bold text-sm md:text-base flex flex-col md:flex-row items-center justify-center transition-all ${activeTab === 'list' ? 'bg-red-300 text-red-900 border-red-400 shadow-md scale-[1.02]' : 'bg-red-50 text-red-900 border border-red-200 hover:bg-red-100'}`}
-         >
-             <List className="w-5 h-5 md:mr-2 mb-1 md:mb-0" /> {t('stake.stats.tab_registration')}
-         </button>
-         <button 
-             onClick={() => setActiveTab('schedule')}
-             className={`flex-1 md:flex-none py-3 rounded-lg font-bold text-sm md:text-base flex flex-col md:flex-row items-center justify-center transition-all ${activeTab === 'schedule' ? 'bg-orange-300 text-orange-900 border-orange-400 shadow-md scale-[1.02]' : 'bg-orange-50 text-orange-900 border border-orange-200 hover:bg-orange-100'}`}
-         >
-             <CalendarCheck className="w-5 h-5 md:mr-2 mb-1 md:mb-0" /> {t('stake.stats.tab_schedule')}
-         </button>
-         <button 
-             onClick={() => setActiveTab('service')}
-             className={`flex-1 md:flex-none py-3 rounded-lg font-bold text-sm md:text-base flex flex-col md:flex-row items-center justify-center transition-all ${activeTab === 'service' ? 'bg-yellow-300 text-yellow-900 border-yellow-400 shadow-md scale-[1.02]' : 'bg-yellow-50 text-yellow-900 border border-yellow-200 hover:bg-yellow-100'}`}
-         >
-             <HeartHandshake className="w-5 h-5 md:mr-2 mb-1 md:mb-0" /> {t('stake.stats.tab_service')}
-         </button>
-         <button 
-             onClick={() => setActiveTab('stats')}
-             className={`flex-1 md:flex-none py-3 rounded-lg font-bold text-sm md:text-base flex flex-col md:flex-row items-center justify-center transition-all ${activeTab === 'stats' ? 'bg-green-300 text-green-900 border-green-400 shadow-md scale-[1.02]' : 'bg-green-50 text-green-900 border border-green-200 hover:bg-green-100'}`}
-         >
-             <BarChart3 className="w-5 h-5 md:mr-2 mb-1 md:mb-0" /> {t('stake.stats.tab_stats')}
-         </button>
-     </div>
+      <div className="max-w-7xl mx-auto px-0 md:px-4 lg:px-8 -mt-6 w-full">
+        {/* Content Area */}
+        <div className="mt-2 md:mt-6 pb-6 w-full max-w-full min-w-0">
+            <div className="bg-white border-none shadow-none rounded-none md:border md:rounded-[8px] md:border-slate-200 md:shadow-sm overflow-hidden min-h-[500px] w-full max-w-full min-w-0">
+                <div className="p-0 md:p-4 lg:p-6 w-full max-w-full min-w-0">
+                    {activeTab === 'list' && (
+                        <PublicRegistrationTab 
+                            registrations={registrations} 
+                            settings={settings} 
+                            eventStatus={activeEvent.status}
+                            activeEvent={activeEvent}
+                            eventStats={eventStats}
+                            busConfigs={activeEvent.busConfigs}
+                        />
+                    )}
 
-      {/* Render Active Tab Component */}
-      {activeTab === 'list' && (
-          <PublicRegistrationTab 
-              registrations={registrations} 
-              settings={settings} 
-              eventStatus={activeEvent.status}
-              activeEvent={activeEvent}
-              eventStats={eventStats}
-              busConfigs={activeEvent.busConfigs}
-          />
-      )}
+                    {activeTab === 'schedule' && (
+                        <PublicScheduleTab activeEvent={activeEvent} />
+                    )}
 
-      {activeTab === 'schedule' && (
-          <PublicScheduleTab activeEvent={activeEvent} />
-      )}
+                    {activeTab === 'service' && (
+                        <PublicServiceTab activeEvent={activeEvent} settings={settings} registrations={registrations} />
+                    )}
 
-      {activeTab === 'service' && (
-          <PublicServiceTab activeEvent={activeEvent} settings={settings} registrations={registrations} />
-      )}
+                    {activeTab === 'stats' && (
+                        <PublicAnalysisTab 
+                            activeEvent={activeEvent} 
+                            registrations={registrations} 
+                            settings={settings} 
+                            allEvents={allEvents}
+                        />
+                    )}
+                </div>
+            </div>
 
-       {activeTab === 'stats' && (
-           <PublicAnalysisTab 
-               activeEvent={activeEvent} 
-               registrations={registrations} 
-               settings={settings} 
-               allEvents={allEvents}
-           />
-       )}
-
-      {/* Footer Actions - Fixed Bottom or Margin Top */}
-      <div className="mt-8 mb-4 border-t pt-4">
-          <div className="flex flex-row gap-2 md:gap-4 justify-between items-center">
-              <button 
-                  onClick={onGoToInstructions}
-                  className="flex-1 py-3 bg-red-100 text-red-700 font-bold rounded-lg shadow-sm hover:bg-red-200 transition-colors text-xs md:text-sm flex items-center justify-center touch-manipulation"
-              >
-                  <Info className="w-4 h-4 mr-1 md:mr-2" /> {t('stake.stats.btn_instructions')}
-              </button>
-              
-              <button 
-                  onClick={onGoHome}
-                  className="flex-1 py-3 bg-green-100 text-green-700 font-bold rounded-lg shadow-sm hover:bg-green-200 transition-colors text-xs md:text-sm flex items-center justify-center touch-manipulation"
-              >
-                  <Home className="w-4 h-4 mr-1 md:mr-2" /> {t('stake.stats.btn_home')}
-              </button>
-
-              <button 
-                  onClick={onGoRegister}
-                  className="flex-1 py-3 bg-blue-100 text-blue-700 font-bold rounded-lg shadow-sm hover:bg-blue-200 transition-colors text-xs md:text-sm flex items-center justify-center touch-manipulation"
-              >
-                  <ArrowRight className="w-4 h-4 mr-1 md:mr-2" /> {t('stake.stats.btn_register')}
-              </button>
-          </div>
+            {/* Subtle Mobile Register CTA */}
+            <div className="mt-12 flex flex-col md:flex-row gap-6 items-center justify-center border-t border-slate-200 pt-12">
+                <div className="text-center md:text-left">
+                    <p className="text-base md:text-lg text-slate-900 font-bold">還沒報名本次聖殿旅行團嗎？</p>
+                    <p className="text-xs md:text-sm text-slate-500 mt-1">立即點擊按鈕，預約您的靈性之旅</p>
+                </div>
+                <button 
+                    onClick={onGoRegister}
+                    className="w-full md:w-auto h-10 md:h-11 lg:h-12 px-10 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group hover:shadow-indigo-200 hover:-translate-y-0.5 active:translate-y-0 text-xs md:text-sm lg:text-base"
+                >
+                    <span>立即前往報名</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
       </div>
     </div>
   );

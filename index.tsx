@@ -3,6 +3,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './i18n'; // Import i18n configuration
+import './src/index.css';
 import { LanguageProvider } from './src/contexts/LanguageContext';
 
 const container = document.getElementById('root');

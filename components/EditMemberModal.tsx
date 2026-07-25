@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../src/contexts/LanguageContext';
 import { Registration, GlobalSettings, IdentityType, TripType, OrdinanceType, OrdinanceItem, PaymentMethod, RegStatus } from '../types';
 import { updateRegistration, deleteRegistration } from '../services/sheetService';
 import { X, Save, Shield, Trash2, FileSearch, RefreshCw, UserCheck, AlertTriangle, User } from 'lucide-react';
@@ -14,7 +14,7 @@ interface EditMemberModalProps {
 }
 
 const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose, onSave, settings, bookingStatus }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const [formData, setFormData] = useState<Registration>({ ...registration });
   const [isSaving, setIsSaving] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<RegStatus | 'HARD_DELETE' | null>(null);
@@ -112,7 +112,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">{t('common.unit', '單位')}</label>
                     <select className="w-full border rounded p-2 text-sm" value={formData.unit} onChange={e => handleChange('unit', e.target.value)}>
-                        {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
+                        {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
                     </select>
                 </div>
                 <div>

@@ -36,7 +36,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ registration, event, unit, 
         <div className="p-10 print:p-0">
             <div className="border-4 border-double border-gray-800 p-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-widest mb-2">聖殿之旅 收據</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-widest mb-2">聖殿旅行團 收據</h1>
                     <p className="text-gray-500 text-sm">Temple Trip Official Receipt</p>
                 </div>
 
@@ -64,7 +64,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ registration, event, unit, 
 
                     <div className="flex items-baseline">
                         <span className="w-24 font-bold">活動項目</span>
-                        <span className="border-b border-black flex-1 px-2">{event.event_date} 聖殿之旅 ({registration.trip_type})</span>
+                        <span className="border-b border-black flex-1 px-2">{event.event_date} 聖殿旅行團 ({registration.trip_type})</span>
                     </div>
                     
                     <div className="flex items-baseline">

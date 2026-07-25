@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Registration, GlobalSettings, PaymentMethod, TripType } from '../types';
-import { updateRegistrationField, calculatePrice } from '../services/sheetService';
+import { updateRegistrationField, calculatePrice, getActiveEvent, batchUpdateRegistrationFields } from '../services/sheetService';
 import { X, Copy, CheckCircle, CreditCard, Users, DollarSign, ArrowRight, Wallet } from 'lucide-react';
 import Toast, { ToastType } from './Toast';
 
@@ -30,7 +30,14 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
   // Find family members
   const familyMembers = allRegistrations.filter(r => r.family_group_id === currentReg.family_group_id);
   const primaryContact = familyMembers.find(r => r.is_primary_contact) || familyMembers[0];
-  const totalDue = familyMembers.reduce((sum, r) => sum + r.amount_due, 0);
+  
+  // V600: Handle Self-paid Insurance in total
+  const eventData = getActiveEvent();
+  const selfPaidInsuranceTotal = (primaryContact.needs_self_paid_insurance && eventData?.self_paid_insurance_amount) 
+    ? (familyMembers.length * eventData.self_paid_insurance_amount)
+    : 0;
+    
+  const totalDue = familyMembers.reduce((sum, r) => sum + r.amount_due, 0) + selfPaidInsuranceTotal;
 
   const showHelp = (field: string, content: string) => {
       setHelpMsg({ field, content });
@@ -68,23 +75,47 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
               }
           }
 
-          // Update Last 5 digits (always save what user typed)
-          await updateRegistrationField(primaryContact.reg_id, 'transfer_last_5', last5);
-          
-          await updateRegistrationField(primaryContact.reg_id, 'payment_method', method);
+          // Prepare batch updates
+          const updates: { regId: string, data: Record<string, any> }[] = [];
+
+          // Update Last 5 digits and phone last 3 for primary contact
+          updates.push({ 
+              regId: primaryContact.reg_id, 
+              data: { 
+                  transfer_last_5: last5,
+                  payment_method: method 
+              } 
+          });
           
           if (method === PaymentMethod.EXTENDED) {
               for (const m of familyMembers) {
-                  await updateRegistrationField(m.reg_id, 'payment_method', method);
-                  await updateRegistrationField(m.reg_id, 'amount_due', 0);
+                  // If it's not the primary contact (already added above), add to updates
+                  if (m.reg_id !== primaryContact.reg_id) {
+                      updates.push({
+                          regId: m.reg_id,
+                          data: { payment_method: method, amount_due: 0 }
+                      });
+                  } else {
+                      // Update existing entry for primary contact
+                      updates[0].data.amount_due = 0;
+                  }
               }
           } else {
               for (const m of familyMembers) {
-                  await updateRegistrationField(m.reg_id, 'payment_method', method);
                   const price = calculatePrice(m.unit, m.identity_type, m.trip_type, m.is_staff, m.is_new_member);
-                  await updateRegistrationField(m.reg_id, 'amount_due', price);
+                  if (m.reg_id !== primaryContact.reg_id) {
+                      updates.push({
+                          regId: m.reg_id,
+                          data: { payment_method: method, amount_due: price }
+                      });
+                  } else {
+                      // Update existing entry for primary contact
+                      updates[0].data.amount_due = price;
+                  }
               }
           }
+          
+          await batchUpdateRegistrationFields(updates);
           
           onRefresh();
           setMsgType('success');
@@ -109,7 +140,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[600px] max-w-full rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-[600px] max-w-full rounded-none md:rounded-[8px] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header - Gold Gradient */}
         <div className="bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 p-4 text-slate-900 flex justify-between items-center shrink-0">
@@ -123,7 +154,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
         <div className="p-6 overflow-y-auto bg-gray-50 flex-1 space-y-6">
             
             {/* 1. Family Summary - Light Red */}
-            <div className="bg-red-50 p-4 rounded-xl shadow-sm border border-red-200">
+            <div className="bg-red-50 p-4 rounded-none md:rounded-[8px] shadow-sm border border-red-200">
                 <div className="flex justify-between items-center mb-2 border-b border-red-200 pb-2">
                     <div className="text-red-800 text-xs font-bold">代表人</div>
                     <div className="text-red-800 text-xs font-bold">應付總額</div>
@@ -145,15 +176,21 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                         {familyMembers.map(m => (
                             <div key={m.reg_id} className="flex justify-between text-sm">
                                 <span className="text-gray-700">{maskName(m.name)}</span>
-                                <span className="font-mono text-gray-600">${m.amount_due}</span>
+                                <span className="font-mono text-gray-600">${m.amount_due.toLocaleString()}</span>
                             </div>
                         ))}
+                        {selfPaidInsuranceTotal > 0 && (
+                            <div className="flex justify-between text-sm border-t border-red-100 pt-1 mt-1">
+                                <span className="text-pink-700 font-bold">自費投保總金額 ({familyMembers.length}人)</span>
+                                <span className="font-mono text-pink-700 font-bold">${selfPaidInsuranceTotal.toLocaleString()}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* 2. Bank Info & Input - Combined Light Green */}
-            <div className="bg-green-50 p-5 rounded-xl border border-green-200">
+            <div className="bg-green-50 p-5 rounded-none md:rounded-[8px] border border-green-200">
                 <h3 className="font-bold text-green-900 mb-4 text-sm flex items-center border-b border-green-200 pb-2">
                     <DollarSign className="w-4 h-4 mr-1 text-green-700" /> 轉帳帳號
                 </h3>
@@ -174,6 +211,10 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                                 </button>
                             </div>
                         </div>
+                        <div className="flex justify-between items-center text-xs">
+                            <span className="text-green-800 font-bold font-sans">帳戶名稱</span>
+                            <span className="font-bold text-gray-800 font-sans">{settings.bank_info.account_name}</span>
+                        </div>
                         <div className="flex flex-col space-y-1">
                             <span className="text-green-800 font-bold font-sans text-xs">帳戶號碼</span>
                             <div className="flex items-center bg-white p-1.5 rounded border border-green-200 shadow-sm overflow-hidden">
@@ -182,10 +223,6 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
-                        </div>
-                        <div className="flex justify-between items-center text-xs">
-                            <span className="text-green-800 font-bold font-sans">帳戶名稱</span>
-                            <span className="font-bold text-gray-800 font-sans">{settings.bank_info.account_name}</span>
                         </div>
                         {settings.bank_info.contact_phone && (
                             <div className="flex flex-col space-y-1 pt-2 border-t border-green-100">
@@ -269,7 +306,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                 {settings.payment_methods?.includes(PaymentMethod.TRANSFER) && (
                     <button 
                         onClick={() => handleUpdatePayment(PaymentMethod.TRANSFER)}
-                        className="flex items-center justify-center p-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-md active:scale-95 font-sans w-full"
+                        className="flex items-center justify-center h-12 md:h-12 rounded-none md:rounded-[8px] bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-md active:scale-95 font-sans w-full"
                     >
                         <ArrowRight className="w-5 h-5 mr-2" />
                         <span className="text-base">轉帳付款</span>
@@ -279,7 +316,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                 {settings.payment_methods?.includes(PaymentMethod.CASH) && (
                     <button 
                         onClick={() => handleUpdatePayment(PaymentMethod.CASH)}
-                        className="flex items-center justify-center p-3 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors shadow-md active:scale-95 font-sans w-full"
+                        className="flex items-center justify-center h-12 md:h-12 rounded-none md:rounded-[8px] bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors shadow-md active:scale-95 font-sans w-full"
                     >
                         <Wallet className="w-5 h-5 mr-2" />
                         <span className="text-base">現金付款</span>

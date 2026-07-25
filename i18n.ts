@@ -14,7 +14,11 @@ i18n
             "save": "儲存",
             "cancel": "取消",
             "edit": "編輯",
-            "delete": "刪除"
+            "delete": "刪除",
+            "hours": "小時",
+            "confirm_logout": "確定要登出系統嗎？",
+            "confirm_save": "確定要儲存目前的變動嗎？",
+            "confirm_load": "確定要讀取存檔嗎？這將會覆蓋目前正在填寫的資料。"
           },
           "engineer": {
             "menuTitle": "資管",
@@ -209,13 +213,33 @@ i18n
                 "refund_list": "退款名單"
               }
             },
+            "fee_config": {
+              "billing_rules_title": "收費邏輯配置 (Billing Rules)",
+              "save_logic_file": "儲存收費邏輯檔",
+              "read_logic_file": "讀取收費邏輯檔",
+              "confirm_save_logic": "確定要儲存收費邏輯檔嗎？",
+              "confirm_read_logic": "確定要讀取收費邏輯檔嗎？",
+              "confirm_read_logic_desc": "這將會覆蓋現有的第1步到第6步設定值。",
+              "invalid_extension": "檔案格式不符 (僅支援 .json)",
+              "invalid_format": "檔案格式不符 (缺少 fee_logic_config)",
+              "import_success": "收費邏輯檔匯入成功",
+              "export_success": "收費邏輯檔已匯出",
+              "logic_filename": "收費邏輯檔.json",
+              "payment_methods_title": "付款方式設定",
+              "payment_methods_hint": "勾選欲開放的付款方式，報名表單將僅顯示已啟用的項目：",
+              "payment_methods": {
+                "cash": "現金 (Cash)",
+                "transfer": "轉帳 (Transfer)",
+                "extended": "留用 (Roll-over)"
+              }
+            },
             "events": {
-              "default_title": "聖殿之旅",
+              "default_title": "聖殿旅行團",
               "title": "活動設定",
               "new_date": "新活動日期",
               "new_name": "新活動名稱",
               "organizer": "主辦人",
-              "title_placeholder": "例如：聖殿之旅",
+              "title_placeholder": "例如：聖殿旅行團",
               "organizer_placeholder": "主辦人姓名",
               "create_button": "建立活動",
               "list_title": "活動列表",
@@ -320,303 +344,284 @@ i18n
                 "month_label": "月",
                 "day_label": "日",
                 "id_label": "身分證/居留證",
-                "id_placeholder": "請輸入號碼",
-                "phone_label": "電話",
-                "cancel_entire_family_registration": "取消全部報名",
-                "guardian_label": "監護人",
-                "guardian_placeholder": "監護人姓名",
-                "guardian_error": "監護人不可與報名成員同名",
-                "ordinance_participation": "參與教儀",
-                "participating_activity": "參與活動",
-                "ordinance_item": "教儀項目",
-                "qualification_label": "服務資格",
-                "select_hint": "請選擇",
-                "trip_label": "行程",
-                "identity_label": "身份",
-                "fee_label": "車資",
-                "delete_member_tooltip": "刪除成員",
-                "insured_cannot_cancel": "已投保無法取消",
-                "lookup_edit_title": "修改報名資料",
-                "lookup_delete_title": "刪除報名資料",
-                "back_to_form": "返回填寫",
-                "temp_locked": "暫時鎖定",
-                "too_many_attempts": "驗證失敗次數過多，請稍後再試。",
-                "unit_label": "單位",
-                "select_unit_hint": "請選擇",
-                "primary_name_placeholder": "代表人姓名",
-                "primary_password_placeholder": "代表人密碼",
-                "verify_btn": "驗證",
-                "phone_placeholder": "請輸入電話",
-                "password_setup_label": "設定密碼 (需要英文及數字混合)",
-                "password_placeholder": "請輸入自定密碼",
-                "discard_btn": "放棄",
-                "lookup_btn": "查詢",
-                "submit_btn": "送出",
-                "processing_label": "處理中...",
-                "confirm_edit_btn": "確認修改",
-                "reg_rules_title": "各單位報名規則",
-                "reg_closed_msg": "報名已截止，無法提交。",
-                "incomplete_primary_msg": "請填寫完整的家庭代表人資料",
-                "missing_phone_msg": "請填寫家庭代表人電話",
-                "name_format_error": "家庭代表人姓名格式錯誤",
-                "name_number_error": "家庭代表人姓名格式錯誤: 不可全為數字",
-                "blacklist_msg": "{{name}} 位於限制名單中，理由：{{reason}}。請聯繫主辦單位。",
-                "duplicate_name_msg": "家庭代表人姓名 {{name}} 已在名單中。若需修改，請使用「修改」。",
-                "password_format_error": "自定密碼格式錯誤：必須包含英文及數字，不能只有數字",
-                "invalid_unit_msg": "所選單位名稱與設定不符，請選擇清單中的單位。",
-                "select_payment_msg": "請選擇付款方式",
-                "missing_fields_msg": "請填寫所有成員的必填欄位 (姓名、生日、證號)",
-                "id_format_error": "成員 {{name}} 的身分證/居留證格式錯誤。請檢查英文字母及數字，或確認檢查碼。",
-                "member_name_error": "成員 {{name}} 姓名格式錯誤",
-                "member_name_number_error": "成員 {{name}} 姓名格式錯誤: 不可全為數字",
-                "member_blacklist_msg": "成員 {{name}} 位於限制名單中，理由：{{reason}}。請聯繫主辦單位。",
-                "invalid_birth_msg": "成員 {{name}} 的生日不合理 ({{month}}月沒有{{day}}日)",
-                "invalid_birth_basic": "成員 {{name}} 的生日不合理",
-                "missing_ordinance_msg": "成員 {{name}} 尚未選擇預約教儀項目",
-                "member_duplicate_name": "成員 {{name}} (姓名) 已在名單中。若需修改，請使用「修改」。",
-                "member_duplicate_id": "成員 {{name}} (證號 {{id}}) 已經報名過。",
-                "transfer_last5_error": "若填寫轉帳末五碼，請填寫完整5碼 (或留空)",
-                "unknown_error": "發生未知錯誤",
-                "edit_success_msg": "修改成功！資料已更新。",
-                "reg_success_msg": "報名完成！",
-                "upload_success_msg": "設定檔已讀取，報名資料已還原。",
-                "upload_format_error": "檔案格式錯誤",
-                "upload_fail_msg": "讀取失敗",
-                "lookup_missing_fields": "請填寫完整的查詢資料 (單位、姓名、密碼)",
-                "lookup_fail_prefix": "查詢失敗：",
-                "verify_delete_confirm": "驗證成功，請確認是否刪除。",
-                "verify_success_msg": "驗證成功，已載入報名資料。",
-                "too_many_attempts_lock": "驗證失敗次數過多，請等待 180 秒後再試。",
-                "lookup_fail_msg": "驗證失敗：找不到符合資料。剩餘嘗試次數: {{count}}",
-                "member_deleted_msg": "成員資料已刪除",
-                "delete_fail_prefix": "刪除失敗：",
-                "family_deleted_msg": "已全部刪除報名資料",
-                "no_active_event": "目前沒有開放報名的活動。",
+                "upload_success_msg": "設定檔已讀取。資料已還原。",
+                "upload_format_error": "檔案格式不符。",
+                "upload_fail_msg": "讀取檔案失敗。",
+                "lookup_missing_fields": "請填寫查詢欄位 (單位、姓名、密碼)。",
+                "lookup_fail_prefix": "查詢失敗: ",
+                "verify_delete_confirm": "驗證成功。確認刪除？",
+                "verify_success_msg": "驗證成功。報名資料已載入。",
+                "too_many_attempts_lock": "嘗試次數過多。請稍候 180 秒。",
+                "lookup_fail_msg": "驗證失敗。剩餘嘗試次數: {{count}}",
+                "member_deleted_msg": "成員已刪除。",
+                "delete_fail_prefix": "刪除失敗: ",
+                "family_deleted_msg": "所有報名記錄已刪除。",
+                "no_active_event": "目前沒有進行中的活動。",
                 "maintenance_label": "系統維護中",
                 "dialogs": {
-                  "locked_title": "操作過於頻繁",
-                  "locked_msg": "驗證碼重試次數過多。為了您的帳號安全，系統已暫時鎖定。請稍候再試。",
+                  "locked_title": "系統暫時鎖定",
+                  "locked_msg": "驗證失敗次數過多，為確保安全系統已暫時鎖定。請稍後再試。",
                   "locked_btn": "我知道了",
-                  "submit_ready_title": "準備送出報名？",
-                  "submit_ready_msg": "請依照以下順序完成存檔與送出，以確保資料安全。",
-                  "continue_edit_btn": "2. 繼續編輯報名檔",
-                  "save_submit_btn": "3. 儲存報名再送出",
+                  "submit_ready_title": "準備好提交了嗎？",
+                  "submit_ready_msg": "請依照步驟儲存並提交您的資料。",
+                  "continue_edit_btn": "2. 繼續修改",
+                  "save_submit_btn": "3. 儲存並提交",
                   "abandon_query_title": "放棄填寫？",
-                  "abandon_query_msg": "您目前填寫的資料將不會被儲存。確定要離開去查詢嗎？",
+                  "abandon_query_msg": "資料將不會儲存，確定要前往「查詢」頁面嗎？",
                   "cancel_btn": "取消",
-                  "leave_btn": "確定離開",
+                  "leave_btn": "離開",
                   "abandon_reg_title": "放棄報名？",
-                  "abandon_reg_msg": "您目前已填寫資料。確定要放棄報名並回到首頁嗎？資料將不會保留。",
+                  "abandon_reg_msg": "資料將不會儲存，確定要回首頁嗎？",
                   "abandon_confirm_btn": "確定放棄",
                   "switch_mode_title": "切換模式",
-                  "switch_mode_msg": "您目前已填寫資料。確定要放棄填寫並切換模式嗎？資料將不會保留。",
-                  "back_to_reg_title": "返回填寫報名",
-                  "back_to_reg_msg": "要放棄 修改/刪除 驗證嗎？",
-                  "back_to_reg_btn": "確定放棄並返回",
+                  "switch_mode_msg": "目前填寫的資料將不會儲存，確定要切換模式嗎？",
+                  "back_to_reg_title": "返回報名",
+                  "back_to_reg_msg": "確定要中斷修改/刪除的驗證程序嗎？",
+                  "back_to_reg_btn": "確定返回",
                   "delete_member_title": "刪除成員確認",
-                  "delete_member_msg": "確定要刪除成員 {{name}} 的報名資料嗎？",
-                  "delete_btn": "確定刪除",
-                  "delete_family_title": "刪除報名資料確認",
-                  "delete_family_msg": "確定要刪除此家庭代表人名下的所有報名資料嗎？此操作不可逆。"
+                  "delete_member_msg": "確定要刪除成員 {{name}} 嗎？",
+                  "delete_btn": "刪除",
+                  "delete_family_title": "刪除全部報名確認",
+                  "delete_family_msg": "確定要刪除此筆報名下的所有成員嗎？此操作不可逆。"
+                }
+              },
+              "login": {
+                "welcome_title": "歡迎使用",
+                "default_event_title": "聖殿旅行團",
+                "instructions": "說明",
+                "search": "查詢",
+                "register": "開始報名",
+                "comments": "留言",
+                "paused": "暫停中",
+                "no_event": "尚無活動",
+                "event_confirmed": "活動確認",
+                "event_cancelled": "活動取消",
+                "event_completed": "活動結案",
+                "open_for_reg": "報名中",
+                "back_btn": "← 返回",
+                "log_visitor_entry": "訪客進入報名系統",
+                "lang_switch": "中文/ENG",
+                "quotes": [
+                  "聖殿是地面上最神聖的地方。",
+                  "在聖殿中，我們獲得來自高天的力量。",
+                  "家庭可以永遠結合在一起。",
+                  "聖殿是天與地接壤之處。",
+                  "配稱進入聖殿是我們靈性力量的來源。",
+                  "讓心轉向祖先，連結永恆家系。"
+                ]
+              },
+              "stats": {
+                "no_data": "目前尚無進行中活動資料。",
+                "page_title": "活動資訊",
+                "event_date_label": "活動日期: ",
+                "tab_registration": "報名狀況",
+                "tab_schedule": "行程安排",
+                "tab_service": "服務指派",
+                "tab_stats": "統計數據",
+                "btn_instructions": "報名須知",
+                "btn_home": "回首頁",
+                "btn_register": "開始報名"
+              },
+              "instructions": {
+                "title": "說明",
+                "event_date_label": "活動日期: ",
+                "loading": "載入中...",
+                "no_rules": "尚無詳細活動辦法。",
+                "loading_billing": "載入收費資訊中...",
+                "tabs": {
+                  "event_rules": "活動辦法",
+                  "general": "如何報名",
+                  "transport": "交通資訊",
+                  "accommodation": "住宿須知",
+                  "handbook": "總指導手冊",
+                  "faq": "常見問題"
                 },
-                "login": {
-                  "welcome_title": "歡迎報名",
-                  "default_event_title": "聖殿之旅",
-                  "instructions": "說明",
-                  "search": "查詢",
-                  "register": "報名",
-                  "comments": "留言",
-                  "paused": "暫停",
-                  "no_event": "目前無活動",
-                  "event_confirmed": "活動成行",
-                  "event_cancelled": "活動取消",
-                  "event_completed": "活動結束",
-                  "open_for_reg": "開放報名中",
-                  "back_btn": "← 返回",
-                  "log_visitor_entry": "訪客進入報名系統",
-                  "lang_switch": "中文/ENG",
-                  "quotes": [
-                    "聖殿是地球上最神聖的地方。",
-                    "在聖殿中，我們獲得來自天上的能力。",
-                    "家庭能永遠在一起。",
-                    "聖殿是天地交會之處。",
-                    "配稱進入聖殿，是我們靈性力量的來源。",
-                    "將心轉向祖先，連結永恆的家系。"
-                  ]
+                "event_rules_content": {
+                  "header": "活動辦法"
                 },
-                "stats": {
-                  "no_data": "目前沒有開放的活動數據。",
-                  "page_title": "查詢",
-                  "event_date_label": "活動日期：",
-                  "tab_registration": "報名",
-                  "tab_schedule": "行程",
-                  "tab_service": "服務",
-                  "tab_stats": "統計",
-                  "btn_instructions": "活動說明",
+                "general_content": {
+                  "header": "如何報名",
+                  "point1": "請以「家庭」為單位進行報名，並推派一位家庭代表人負責填寫資料。",
+                  "point2": "請務必確認所有報名成員的姓名、身分證字號及出生年月日正確無誤，以便辦理旅遊平安險。",
+                  "point3": "報名後若需取消或變更，請盡早使用「修改」功能或聯繫各單位負責人，以免影響車輛調度。",
+                  "point4": "系統設有報名截止日期，請務必在期限內完成報名程序。"
+                },
+                "transport_content": {
+                  "header": "交通資訊"
+                },
+                "accommodation_content": {
+                  "header": "副殿住宿須知",
+                  "section1": {
+                    "title": "1. 資格與預約",
+                    "point1": "副殿住宿優先提供給居住在台北以外地區，且隔日有聖殿預約教儀的成員。",
+                    "point2": "請務必先在聖殿官網預約好教儀，再撥打副殿電話 (02) 2322-4246 預約床位。",
+                    "point3": "住宿對象以成人及 12 歲以上之青少年為主。"
+                  },
+                  "section2": {
+                    "title": "2. 生活規範",
+                    "point1": "進入副殿請保持肅靜，並尊重其他住宿者的安寧。",
+                    "point2": "室內嚴禁吸菸、喝酒或嚼食檳榔。",
+                    "point3": "請維護公共區域的整潔，個人垃圾請自行帶走或分類丟棄。"
+                  },
+                  "section3": {
+                    "title": "3. 門禁與安全",
+                    "point1": "晚上 10:30 後大門將會上鎖，請在此時間前返回。",
+                    "point2": "貴重物品請隨身攜帶，聖殿不負保管責任。",
+                    "point3": "為了安全，請勿邀請未登記住宿的人員進入或使用與會者住宿的房間和設施。"
+                  },
+                  "section4": {
+                    "title": "4. 其他",
+                    "pointA_label": "A. ",
+                    "pointA_desc": "辦理入住登記時間為 14:00 到 21:00 之間，逾時不候；退房時間為當日上午 11:00 前。",
+                    "pointB_label": "B. ",
+                    "pointB_desc": "外出請在 22:30 以前返回。晚上 22:30 到早上 6:00，如需交談或處理事務請輕聲細語。",
+                    "pointC_label": "C. ",
+                    "pointC_desc": "節約能源，隨手關燈、關水、關冷氣。",
+                    "pointD_label": "D. ",
+                    "pointD_desc": "先知勸告我們在舉止和穿著要端莊。儀表整潔、行為 and 穿著端莊就可邀請聖靈同在。去聖殿時，請穿著安息日服裝。"
+                  },
+                  "signature": "台灣台北聖殿 謹啟",
+                  "booking_footer": {
+                    "title": "預約台北聖殿 副殿住宿",
+                    "step1": "在聖殿網站預約好要執行的教儀後",
+                    "step2": "下午 14:00 後打電話到副殿 02-2322-4246 預約住宿",
+                    "step3": "辦理入住登記時間為 14:00 到 21:00 之間，逾時不候；退房時間為隔日上午 11:00 前。",
+                    "step4": "外出請在 22:30 以前返回。晚上 22:30 到早上 6:00，請保持安靜不要影響他人的睡眠。"
+                  }
+                },
+                "handbook_data": {
+                  "header_title": "總指導手冊",
+                  "header_desc": "以下內容擷取自《總指導手冊：在耶穌基督後期聖徒教會裡服務》，供成員與領袖參考。",
+                  "source": "資料來源：General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints",
+                  "source_url": "https://www.churchofjesuschrist.org/study/manual/general-handbook?lang=zho",
+                  "section14_2_1_3": {
+                    "title": "14.2.1.3 活動",
+                    "content": "在支會或支聯會領袖的指導下，年輕單身成人可以策劃與參與特別為他們舉辦的活動。這些活動可以在支會或支聯會層級舉辦。範例可包括：聖殿旅行團，家譜事工。"
+                  },
+                  "section20_2_6": {
+                    "title": "20.2.6 活動的經費來源",
+                    "content": "大部分的活動應當簡單且花費少或沒有花費。任何支出都必須事先獲得主教團或支聯會會長團的核准。\n成員參加活動通常不應付費。有關活動經費來源的政策和指導方針，見20.6。"
+                  },
+                  "section20_5_7": {
+                    "title": "20.5.7 活動中的祈禱和祈禱會",
+                    "content": "所有的活動都應該以祈禱開始，適當的話，也以祈禱結束。可以包括一首聖詩、一個靈修，或一位領袖或參與者的演講。"
+                  },
+                  "section20_6_1": {
+                    "title": "20.6.1 以支會或支聯會經費支付的活動",
+                    "content": "支會或支聯會的經費應當用來支付所有的活動，可能的例外情形列於20.6.2。\n成員不應自付材料、用品、租金或入場費，或是長途交通費。在不會造成負擔的情況下，成員可以提供食物。"
+                  },
+                  "section20_7_4": {
+                    "title": "20.7.4 父母同意",
+                    "content": "未經父母或監護人許可，兒童和青少年不得參加教會活動。若教會活動需要過夜、長途旅行，或有高於一般的風險，則必須取得書面同意。有些活動可能需要更多的規劃以降低風險。安全始終都應該是重要的考量因素，見20.7.6.1。\n父母或監護人要簽署同意書及醫療授權書，以表示同意。帶領活動的人應取得每位參與者所提供的簽名同意書。"
+                  },
+                  "section25_1": {
+                    "title": "25.1 成員和領袖參與聖殿和家譜事工",
+                    "content": "教會成員有此特權和責任，要協助使自己的家人永遠結合在一起。他們要作好準備，在接受聖殿教儀時訂立聖約，並且努力遵守所立的聖約。\n教會成員受到鼓勵，要找出尚未接受聖殿教儀的已逝親人，然後代替這些親人執行教儀（見教義和聖約128：18）。已逝者在靈的世界中，可以選擇接受或拒絕為他們執行的教儀。"
+                  },
+                  "section25_1_2": {
+                    "title": "25.1.2 支會和支聯會聖殿旅行團",
+                    "content": "教會的每個單位都有指定的聖殿地區。教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿旅行團。\n所有支會和支聯會的聖殿旅行團都應與聖殿預約教儀時間。每座聖殿的聯絡資訊，見temples.ChurchofJesusChrist.org"
+                  },
+                  "section25_5": {
+                    "title": "25.5 推薦和召喚聖殿工作人員",
+                    "content": "聖殿工作人員協助執行教儀，或支援聖殿的運作，例如在辦公室、洗衣房、與會者住宿或庭院維護等方面的服務。被召喚擔任聖殿工作人員的成員，是擔任不支薪的義工。\n\n25.5.1 推薦聖殿工作人員\n以下方法能找出有潛力擔任聖殿工作人員的人：\n主教或支會其他領袖找出的成員\n找主教表明願意服務的成員\n由聖殿會長、女監護或聖殿其他領袖推薦的成員\n準備去傳教或剛結束傳教返鄉的成員（見第24章）\n有潛力擔任聖殿工作人員者的姓名，要用「推薦聖殿工作人員」工具來提交。主教、支聯會會長和聖殿會長團都可以使用此項工具。提交姓名的流程概述如下。\n當聖殿會長團成員發現一位有潛力擔任聖殿工作人員的人，他們要用「推薦聖殿工作人員」工具，將此人的姓名提交給主教。\n當主教發現一位有潛力擔任聖殿工作人員的人，或從聖殿會長那裡收到推薦資料時，就要與該成員討論這個服務機會。他要審閱擔任聖殿工作人員的條件（見25.5.2）。如果主教和該成員都覺得這是個適合的機會，主教就要用「推薦聖殿工作人員」工具，填妥並提交推薦資料。該成員應當要了解，將推薦資料提交出去，並不保證會被召喚或被指派擔任聖殿工作人員。\n接下來，由支聯會會長審閱推薦資料。如果支聯會會長核准此項推薦，就要用「推薦聖殿工作人員」工具，將推薦資料提交給聖殿會長審閱。\n被召喚擔任聖殿工作人員的成員，通常會承諾每週於固定時間在聖殿裡服務。領袖應避免發出會妨礙成員到聖殿服務的其他召喚。\n「推薦聖殿工作人員」工具也會讓主教和支聯會會長看到一份清單，上面列出他們的支會或支聯會中，目前擔任聖殿工作人員的所有成員。\n\n25.5.2 擔任聖殿工作人員的條件\n成員若要被推薦擔任聖殿工作人員，必須符合以下資格：\n居住在即將服務的聖殿之聖殿地區內。\n接受過恩道門，遵行聖殿聖約，並持有有效的聖殿推薦書。\n對耶穌基督的復興福音有堅強的見證。\n體能上可以在聖殿中執行受指派的工作。為與會者服務或主理教儀的工作人員，必須在體能上可以勝任而無需協助。\n在教會和社區值得受人敬重。\n與人合作融洽。\n可靠、健康。\n其教籍紀錄目前沒有附註。\n此外，主教應確保下列事項：\n如果一個人的教會成員身分受到正式限制，在這些限制被移除至少五年後，此人才可被推薦擔任聖殿工作人員。（見32.11.3和32.16.1。）\n如果未接受恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在重新加入教會至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9、32.16.1 and 32.16.2。）\n如果接受過恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在接受恢復祝福至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9和32.17.2。）\n\n25.5.3 召喚和按手選派聖殿工作人員\n聖殿會長收到推薦某人擔任聖殿工作人員的推薦資料後，由聖殿會長團的一員或他指定的一人與此人面談。主持面談的人受到聖靈啟發時，就要召喚那些能夠服務的人擔任聖殿工作人員，並按手選派他們。"
+                  },
+                  "section27_2_3_3": {
+                    "title": "27.2.3.3 接受恩道門成員的伴隨者",
+                    "content": "接受個人恩道門的成員，可以邀請一位相同性別且已接受恩道門的成員擔任伴隨者，在恩道門場次裡給予協助。伴隨者必須持有有效的聖殿推薦書。必要時，聖殿可以提供伴隨者。"
+                  },
+                  "section20_5_10": {
+                    "title": "20.5.10 聖殿旅行團",
+                    "content": "支會或支聯會可以規劃在指定的聖殿地區內進行聖殿旅行團。\n教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿旅行團，這類行程需獲得支聯會會長團的核准。需要過夜的聖殿旅行團也需獲得支聯會會長團的核准。\n聖殿旅行團必須遵守20.7.7裡的旅行政策。需過夜的聖殿旅行團也必須遵守20.5.5裡的政策。"
+                  },
+                  "section20_7_7": {
+                    "title": "20.7.7 旅行",
+                    "content": "教會活動的交通旅行應由主教或支聯會會長核准，這類交通旅行不應對成員造成過多負擔。\n參與者不應為參加活動作長途旅行（超過幾個小時），任何例外情形都須取得區域會長團的核准；若區域會長團核准這樣的旅行，則成員不應自付旅費（見20.6）。\n對於旅行的做法和應用本節內指導方針的方式，同一個區域或參加同一個協調議會的各單位應當一致。支聯會會長們可以在協調議會會議中討論對於旅行的做法，並達成共識。\n領袖要為需要長途旅行的活動填寫活動計畫書。\n教會的青少年活動若需要長途旅行或過夜，父母或監護人必須提供書會同意才能讓子女參與（見20.7.4）。必須有負責可靠的成人隨同督導（見20.7.1）。\n可行的話，教會團體應搭乘商業運輸工具進行長途旅行，該運輸工具應有執照，並已投保責任險。\n教會團體搭乘私人車輛旅行時，每輛車都必須處於安全的運作狀態。每位乘客都應繫上安全帶。每位駕駛員都應當持有駕照，而且是負責可靠的成人。所有的車輛與駕駛員都應投保合理額度的汽車責任保險。應訂立計畫，確保駕駛員保持清醒和警覺。要盡可能地做到，一位成人不應單獨與一位青少年在車上，除非該名青少年是其子女。\n教會組織不可擁有或購置汽車或巴士作為團體旅行之用。\n除非是夫妻或彼此皆為單身，否則一男一女不應單獨結伴同行，參加教會活動、聚會或從事指派工作。\n如需更多資料，見ChurchofJesusChrist.org上的「常見問題——我該怎麼辦？」。"
+                  }
+                },
+                "driving": {
+                  "header": "路線停車",
+                  "address_title": "聖殿地址",
+                  "address": "台北市大安區愛國東路256號",
+                  "google_maps_btn": "開啟 Google Maps 導航",
+                  "parking": {
+                    "header": "停車資訊",
+                    "intro": "教會的台北綜合大樓（Taipei Service Center）設有地下停車場，主要提供給前來參加教會活動、聖殿教儀或前往發行中心的成員與訪客使用。",
+                    "center_parking_title": "台北綜合大樓 停車場資訊",
+                    "location_label": "地點：",
+                    "location_desc": "台北市大安區金華街 193 與 199 巷 的交叉路口（地下停車場入口位於大樓內部）。",
+                    "hours_label": "開放時間：",
+                    "hours_tue_sun": "週二至週日：05:30 – 22:30。",
+                    "hours_mon": "週一：05:30 – 18:00（配合教會辦公時間提早關閉）。",
+                    "rules_label": "停車規範：",
+                    "rules_member_label": "成員：",
+                    "rules_member_desc": "需向主教或分會會長申請並張貼「停車許可證」方可進入。",
+                    "rules_visitor_label": "訪客/教友：",
+                    "rules_visitor_desc": "若無許可證，需在入口處以「駕照」換取臨時停車證並簽名登記。",
+                    "limit_label": "限制：",
+                    "limit_desc": "禁止隔夜停車（除事先申請核准之公務車外）。",
+                    "nearby_title": "周邊替代停車場建議",
+                    "nearby_intro": "若大樓停車位已滿，附近金山南路二段及永康街周邊有數個付費停車場：",
+                    "nearby_option1_title": "金山停車場 (Jinshan Parking)",
+                    "nearby_option1_addr": "地址：台北市大安區金山南路二段 33 號。",
+                    "nearby_option1_rate": "費率：每小時約 80 元（假日 24 小時營業，最高上限 240 元）。",
+                    "nearby_option1_feature": "特色：電梯式平面停車，距離教堂步行約 3-5 分鐘。",
+                    "nearby_option2_title": "Times 金山南路停車場",
+                    "nearby_option2_addr": "地址：台北市大安區金山南路二段 31 巷 25 號。",
+                    "nearby_option2_rate": "費率：每 30 分鐘 70 元（費率較高，每小時約 140 元）。",
+                    "nearby_option2_note": "備註：採車牌辨識，無柵欄設計。",
+                    "reminder_label": "💡 交通提醒：",
+                    "reminder_desc": "該區域位於熱鬧的東門/永康商圈，巷弄較窄且車位競爭激烈。建議多利用大眾運輸，從捷運東門站步行約 3-5 分鐘即可抵達綜合大樓。"
+                  }
+                },
+                "transit": {
+                  "header": "轉乘指南",
+                  "mrt": {
+                    "title": "捷運 (MRT)",
+                    "route_label": "搭乘路線：",
+                    "route_line": "於捷運台北車站搭乘 淡水信義線（紅線），往「象山」或「廣慈/奉天宮」方向。",
+                    "route_stop": "在 東門站 下車。",
+                    "walk_label": "步行指南：",
+                    "walk_point1": "從 3 號 或 5 號 出口 出站。",
+                    "walk_point2": "沿著金山南路二段步行，到愛國東路，步行約 4-6 分鐘即可抵達聖殿。",
+                    "note_label": "備註：",
+                    "note_desc": "若您從 台北捷運 M8 入口 進入捷運站會比較接近 紅線月台。",
+                    "alert_2026_label": "📢 2026 年最新提醒：",
+                    "alert_2026_p1": "捷運信義線東延段（廣慈/奉天宮站）預計於 2026 年第一季通車，屆時搭乘紅線往東向的班次將更加頻繁。",
+                    "alert_2026_p2": "台北捷運營運時間為每日 06:00 至 24:00。"
+                  },
+                  "bus": {
+                    "title": "公車 (Bus)",
+                    "intro": "若您想搭乘公車，可由台北車站周邊搭乘以下路線：",
+                    "line606_title": "606 路",
+                    "line606_desc": "於「台北車站(忠孝)」站牌搭乘，至「金山潮州街口」站下車，下車後步行約 2 分鐘即可抵達。",
+                    "line237_title": "237 路",
+                    "line237_desc": "於「台北車站(忠孝)」搭乘，至「金山南路站」或「公教住宅站」下車。"
+                  },
+                  "warm_tip_label": "💡 溫馨提醒：",
+                  "warm_tip_desc": "台北市區交通繁忙，建議優先使用捷運前往，以免塞車延誤教儀時間。"
+                },
+                "busRules": {
+                  "header": "遊覽車司機工時規定",
+                  "subheader": "租用遊覽車使用應注意重要安全規定事項",
+                  "point1": "遊覽車駕駛員每日駕駛車輛時間不可超過 10 小時，駕車 4 小時應休息 30 分鐘以上。",
+                  "point2": "單日出租車輛自車輛報到起至行程結束，調派單一駕駛人勤務不得逾 11 小時。",
+                  "point3": "到達各旅遊景點或目的地下車結束後，應屬駕駛員休息時間，務必讓駕駛員充分休息，不可隨意打擾駕駛員。",
+                  "point4": "駕駛員必須遵守交通安全規範行駛；未經與遊覽車公司協調同意，旅客不可任意變更或增加行程，避免造成駕駛員疲勞駕駛或工時超過規定，也不得要求駕駛員違規超速趕行程。",
+                  "point5": "兩日以上行程，駕駛員隔日出勤需休息 10 小時以上，請提供駕駛員 1 人 1 室妥善的夜間休息環境。",
+                  "point6": "違反工時規定者，公路主管機關可依規定處分業者，最高可處新臺幣 9 萬元罰鍰。",
+                  "footer_note": "＊再次提醒租車消費者，唯有注意及遵守遊覽車安全規定事項，才能保障旅遊品質與行程安全，不要讓遊覽車公司及駕駛員因您違反規定而受罰。 規劃行程時應將駕駛休息時間納入，避免要求司機超時工作，保障旅遊安全。"
+                },
+                "footer": {
                   "btn_home": "回到首頁",
-                  "btn_register": "開始報名"
-                },
-                "instructions": {
-                  "title": "說明",
-                  "event_date_label": "活動日期：",
-                  "loading": "載入中...",
-                  "no_rules": "目前尚未發布詳細活動辦法。",
-                  "loading_billing": "載入收費資訊中...",
-                  "tabs": {
-                    "event_rules": "活動辦法",
-                    "general": "報名須知",
-                    "housing": "副殿住宿",
-                    "driving": "開車前往",
-                    "transit": "大眾運輸",
-                    "handbook": "手冊擷選"
-                  },
-                  "eventRules": {
-                    "header": "辦法內容"
-                  },
-                  "general": {
-                    "registration": {
-                      "header": "如何報名",
-                      "point1": "請以「家庭」為單位進行報名，並推派一位家庭代表人負責填寫資料。",
-                      "point2": "請務必確認所有報名成員的姓名、身分證字號及出生年月日正確無誤，以便辦理旅遊平安險。",
-                      "point3": "報名後若需取消或變更，請盡早使用「修改」功能或聯繫各單位負責人，以免影響車輛調度。",
-                      "point4": "系統設有報名截止日期，請務必在期限內完成報名程序。"
-                    },
-                    "recommend": {
-                      "header": "聖殿推薦書",
-                      "adult_label": "成人成員：",
-                      "adult_desc": "需持有有效的聖殿推薦書。請提前檢查推薦書是否過期，若已過期，請儘早與主教/分會會長面談。",
-                      "youth_label": "青少年 (12歲以上)：",
-                      "youth_desc": "需持有有效的「限用途」聖殿推薦書，方可參與代替死者洗禮教儀。",
-                      "new_member_hint": "新成員或首次前往聖殿者，請先與聖職領袖諮詢相關準備事項。"
-                    },
-                    "clothing": {
-                      "header": "服裝與儀容",
-                      "point1": "前往聖殿時，請穿著安息日服裝（弟兄穿著白襯衫、領帶；姊妹穿著裙裝或端莊褲裝）。",
-                      "point2": "參與洗禮教儀者，請自備一套換洗衣物（內衣褲），聖殿提供連身洗禮服。",
-                      "point3": "參與恩道門或印證教儀者，請攜帶完整的聖殿服裝。若需租借，請確認聖殿服裝租借處的開放狀況。"
-                    },
-                    "transport": {
-                      "header": "交通與集合",
-                      "point1": "請依照各車次公告的集合時間準時抵達上車地點，逾時不候。",
-                      "point2": "各車設有領車人員，請配合領車人員的引導與點名。",
-                      "point3": "遊覽車座位依系統分配或現場協調，請發揮愛心，優先禮讓長輩或有需要的成員。",
-                      "point4": "車上冷氣較強，建議攜帶薄外套。"
-                    },
-                    "fees": {
-                      "header": "費用與繳費",
-                      "point1": "請依據您的身分（成人、青少年、兒童等）繳交相應的報名費。",
-                      "payment_methods": "付款方式：",
-                      "cash_label": "現金：",
-                      "cash_desc": "請將車資交給各單位的負責人。",
-                      "transfer_label": "轉帳：",
-                      "transfer_desc": "請轉帳或匯款至指定帳號，並在填寫或修改報名中填寫 帳號末五碼。",
-                      "rollover_label": "留用：",
-                      "rollover_desc": "若您已繳費 但無法參加 或 來不及上車，請選擇此項，可將您的費用 保留 到下次使用，僅限一次。",
-                      "arrears_label": "欠費：",
-                      "arrears_desc": "報名成功後，不繳費也不取消，補繳之前會被暫停報名的權利。"
-                    }
-                  },
-                  "housing": {
-                    "header": "副殿住宿規定",
-                    "subheader": "台灣台北聖殿與會者住房住宿規定",
-                    "effective_date": "(2023年9月1日起開始實施)",
-                    "intro_greeting": "親愛的弟兄姊妹：",
-                    "intro_welcome": "歡迎入住副殿，請您留意：",
-                    "intro_purpose": "與會者住房的服務是為了讓前來聖殿的人們能感受到聖靈和美好的聖殿經驗，並專注在參與聖殿教儀。因此，副殿主要是讓每日有意參與聖殿教儀的與會者入住。如需咨詢附近住宿資訊，可詢問副殿以供參考。",
-                    "section1": {
-                      "title": "1. 訂房事宜",
-                      "pointA_label": "A. 聖殿推薦書：",
-                      "pointA_desc": "須持有效聖殿推薦書方可入住。除參與印證教儀外，與會者住房不提供12歲以下兒童住宿。12 歲以下的兒童在聖殿廣場的任何地方活動，或是在使用副殿設施時，都必須一直有一位負責的成人全程在場。",
-                      "pointB_label": "B. 預約訂房：",
-                      "pointB_desc": "服務人員、年長者及行動不便者，與遠道而來的成員與家庭將優先安排。由於床位有限及特殊情況的需求，聖殿保留取消預約的權利，如需調整副殿會於七日前通知。訂房預約專線：02-2322-4246 或 E-mail: taipe-tho@churchofjesuschrist.org，務必註明姓名、電話、性別 及住宿日期。",
-                      "pointC_label": "C. 確認訂房：",
-                      "pointC_desc": "副殿將會在入住日當天下午四點半前再次與您確認入住與否，如果您臨時無法入住，或是需要調整，請提前告知，若副殿當天聯絡不到您，我們將取消您的訂房。",
-                      "pointD_label": "D. 費用：",
-                      "pointD_desc": "自 2021 年 12 月 6 日起不收取住宿費用，不提供盥洗用具、沐浴乳和洗髮精。",
-                      "pointE_label": "E. 床位：",
-                      "pointE_desc": "請依照排定的床位號碼住宿，勿隨意更換。"
-                    },
-                    "section2": {
-                      "title": "2. 生活環境",
-                      "pointA_label": "A. 飲食：",
-                      "pointA_desc": "請在一樓餐廳開放時間內（每日6:00-20:00）用餐，勿在客廳或寢室用餐。使用廚房設備後，請清潔並將物品歸位。",
-                      "pointB_label": "B. 冰箱：",
-                      "pointB_desc": "退房時請將個人物品帶走，未貼標籤物品（未註明擁有人）將定時清除。",
-                      "pointC_label": "C. 清潔：",
-                      "pointC_desc": "住宿時請使用床單、床罩和枕頭套；退房前請取下枕頭套、床單和床罩，依照分類放在一樓餐廳後方洗衣籃內，並將枕頭及被子放回衣櫃內，房間及廁所請保持整潔。垃圾請放置在一樓客廳垃圾桶。",
-                      "pointD_label": "D. 洗衣房：",
-                      "pointD_desc": "僅做公務使用。櫃檯有鄰近洗衣房或自助洗衣店的資訊可提供查詢。"
-                    },
-                    "section3": {
-                      "title": "3. 安全規範",
-                      "pointA_label": "A. ",
-                      "pointA_desc": "副殿不負責個人物品和財物保管的責任，務必妥善保管貴重物品與個人財物。",
-                      "pointB_label": "B. ",
-                      "pointB_desc": "請妥善保管鑰匙（若遺失需負擔換鎖工本費NT$500）。基於安全考量鑰匙請勿外借，退房時將鑰匙歸還櫃檯；並注意個人衣櫃及門戶，隨手關門及上鎖。",
-                      "pointC_label": "C. ",
-                      "pointC_desc": "安全考量下請勿邀請未登記住宿的人員進入或使用與會者住宿的房間和設施。"
-                    },
-                    "section4": {
-                      "title": "4. 其他",
-                      "pointA_label": "A. ",
-                      "pointA_desc": "辦理入住登記時間為 14:00 到 21:00 之間，逾時不候；退房時間為當日上午 11:00 前。",
-                      "pointB_label": "B. ",
-                      "pointB_desc": "外出請在 22:30 以前返回。晚上 22:30 到早上 6:00，如需交談或處理事務請輕聲細語。",
-                      "pointC_label": "C. ",
-                      "pointC_desc": "節約能源，隨手關燈、關水、關冷氣。",
-                      "pointD_label": "D. ",
-                      "pointD_desc": "先知勸告我們在舉止和穿著要端莊。儀表整潔、行為和穿著端莊就可邀請聖靈同在。去聖殿時，請穿著安息日服裝。"
-                    },
-                    "signature": "台灣台北聖殿 謹啟",
-                    "booking_footer": {
-                      "title": "預約台北聖殿 副殿住宿",
-                      "step1": "在聖殿網站預約好要執行的教儀後",
-                      "step2": "下午 14:00 後打電話到副殿 02-2322-4246 預約住宿",
-                      "step3": "辦理入住登記時間為 14:00 到 21:00 之間，逾時不候；退房時間為隔日上午 11:00 前。",
-                      "step4": "外出請在 22:30 以前返回。晚上 22:30 到早上 6:00，請保持安靜不要影響他人的睡眠。"
-                    }
-                  },
-                  "handbook_data": {
-                    "section25_1": {
-                      "title": "25.1 成員和領袖參與聖殿和家譜事工",
-                      "content": "教會成員有此特權和責任，要協助使自己的家人永遠結合在一起。他們要作好準備，在接受聖殿教儀時訂立聖約，並且努力遵守所立的聖約。\n教會成員受到鼓勵，要找出尚未接受聖殿教儀的已逝親人，然後代替這些親人執行教儀（見教義和聖約128：18）。已逝者在靈的世界中，可以選擇接受或拒絕為他們執行的教儀。"
-                    },
-                    "section25_1_1": {
-                      "title": "25.1.1 聖殿出席的個人責任",
-                      "content": "成員要自行決定去聖殿崇拜的時間和頻率。領袖不可為成員的聖殿出席情況設定配額或回報機制。"
-                    },
-                    "section26_4_2": {
-                      "title": "26.4.2 新受洗成員的聖殿推薦書",
-                      "content": "主教要與適齡的新成員面談，讓他們取得聖殿推薦書，可以代理死者接受洗禮和證實。他要在該成員接受證實後不久，通常在一個星期內，進行這項面談（見26.4.1）。對於弟兄來說，這項面談可以作為接受亞倫聖職面談的一部分。"
-                    },
-                    "section27_0": {
-                      "title": "27.0 導言",
-                      "content": "聖殿是主的屋宇，指引我們歸向救主耶穌基督。我們在聖殿裡參與神聖教儀，並與天父立下聖約，使我們與祂和救主緊密相連。這些聖約和教儀幫助我們準備好回到天父身邊，並印證在一起成為永恆家庭。\n在聖殿的各項聖約和教儀中，「都顯示了神性的能力」（教義和聖約約84：20）。\n聖殿的聖約和教儀是神聖的。與聖殿聖約有關的象徵，不應該在聖殿以外的地方討論。我們也不該討論我們在聖殿內承諾不會透露的神聖資料。然而，我們可以討論聖殿聖約和教儀的基本目的和教義，以及我們在聖殿裡所享有的靈性感覺。"
-                    },
-                    "section27_1_7": {
-                      "title": "27.1.7 在成員接受聖殿教儀後與他們見面",
-                      "content": "成員在接受聖殿教儀後，往往會有些疑問。接受過恩道門的家人、主教、支會其他領袖、弟兄施助者和姊妹施助者，可以和成員見面，討論他們的聖殿經驗。\n協助解答問題的資源，可在temples.ChurchofJesusChrist.org取得。"
-                    },
-                    "section27_2_1_1": {
-                      "title": "27.2.1.1 新受洗的成員",
-                      "content": "配稱的成年新成員，要在他們接受證實的日期至少滿一年後，才可以接受個人恩道門。"
-                    },
-                    "section27_2_3_3": {
-                      "title": "27.2.3.3 接受恩道門成員的伴隨者",
-                      "content": "接受個人恩道門的成員，可以邀請一位相同性別且已接受恩道門的成員擔任伴隨者，在恩道門場次裡給予協助。伴隨者必須持有有效的聖殿推薦書。必要時，聖殿可以提供伴隨者。"
-                    },
-                    "section20_5_10": {
-                      "title": "20.5.10 聖殿之旅",
-                      "content": "支會或支聯會可以規劃在指定的聖殿地區內進行聖殿之旅。\n教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿之旅，這類行程需獲得支聯會會長團的核准。需要過夜的聖殿之旅也需獲得支聯會會長團的核准。\n聖殿之旅必須遵守20.7.7裡的旅行政策。需過夜的聖殿之旅也必須遵守20.5.5裡的政策。"
-                    },
-                    "section20_7_7": {
-                      "title": "20.7.7 旅行",
-                      "content": "教會活動的交通旅行應由主教或支聯會會長核准，這類交通旅行不應對成員造成過多負擔。\n參與者不應為參加活動作長途旅行（超過幾個小時），任何例外情形都須取得區域會長團的核准；若區域會長團核准這樣的旅行，則成員不應自付旅費（見20.6）。\n對於旅行的做法和應用本節內指導方針的方式，同一個區域或參加同一個協調議會的各單位應當一致。支聯會會長們可以在協調議會會議中討論對於旅行的做法，並達成共識。\n領袖要為需要長途旅行的活動填寫活動計畫書。\n教會的青少年活動若需要長途旅行或過夜，父母或監護人必須提供書面同意才能讓子女參與（見20.7.4）。必須有負責可靠的成人隨同督導（見20.7.1）。\n可行的話，教會團體應搭乘商業運輸工具進行長途旅行，該運輸工具應有執照，並已投保責任險。\n教會團體搭乘私人車輛旅行時，每輛車都必須處於安全的運作狀態。每位乘客都應繫上安全帶。每位駕駛員都應當持有駕照，而且是負責可靠的成人。所有的車輛與駕駛員都應投保合理額度的汽車責任保險。應訂立計畫，確保駕駛員保持清醒和警覺。要盡可能地做到，一位成人不應單獨與一位青少年在車上，除非該名青少年是其子女。\n教會組織不可擁有或購置汽車或巴士作為團體旅行之用。\n除非是夫妻或彼此皆為單身，否則一男一女不應單獨結伴同行，參加教會活動、聚會或從事指派工作。\n如需更多資料，見ChurchofJesusChrist.org上的「常見問題——我該怎麼辦？」。"
-                    },
-                    "header_title": "總指導手冊",
-                    "header_desc": "以下內容擷取自《總指導手冊：在耶穌基督後期聖徒教會裡服務》，供成員與領袖參考。",
-                    "source": "資料來源：General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints"
-                  },
+                  "btn_register": "開始報名",
+                  "fee_sandbox_title": "收費試算 (Fee Calculation Sandbox)",
+                  "btn_close": "關閉 (Close)"
+                }
+              },
+              "reg_closed_label": "本次活動報名已關閉，如有疑問請聯繫主辦人。",
+              "insured_not_cancel_hint": "本次活動已投保無法取消，如有疑問請聯繫主辦人。",
+              "payment_info_title": "付款資訊",
                   "driving": {
                     "header": "路線停車",
                     "address_title": "聖殿地址",
@@ -700,6 +705,16 @@ i18n
                 "reg_closed_label": "本次活動報名已關閉，如有疑問請聯繫主辦人。",
                 "insured_not_cancel_hint": "本次活動已投保無法取消，如有疑問請聯繫主辦人。",
                 "dashboard": {
+                  "time_nodes_title": "報名時間節點",
+                  "node": {
+                    "reg_start": "報名開始",
+                    "group_deadline": "成團截止",
+                    "reg_pay_start": "正取繳費開始",
+                    "reg_pay_deadline": "正取繳費截止",
+                    "wait_pay_start": "備取繳費開始",
+                    "wait_pay_limit": "備取繳費時限",
+                    "reg_end": "報名結束"
+                  },
                   "seat_reservation": "車位預約",
                   "assign_vehicle_numbers": "產生車號",
                   "total_seats": "總座位",
@@ -772,9 +787,7 @@ i18n
                 }
               }
             }
-          }
-        },
-      },
+          },
       en: {
         translation: {
           "common": {
@@ -782,7 +795,11 @@ i18n
             "cancel": "Cancel",
             "edit": "Edit",
             "delete": "Delete",
-            "loading": "Loading..."
+            "loading": "Loading...",
+            "hours": "hours",
+            "confirm_logout": "Are you sure you want to log out?",
+            "confirm_save": "Are you sure you want to save current changes?",
+            "confirm_load": "Are you sure you want to load the saved file? This will overwrite your current progress."
           },
           "engineer": {
             "menuTitle": "System Management",
@@ -975,6 +992,26 @@ i18n
                 "payment_audit": "Payment Audit",
                 "retention_list": "Retention",
                 "refund_list": "Refunds"
+              }
+            },
+            "fee_config": {
+              "billing_rules_title": "Billing Rules Configuration",
+              "save_logic_file": "Save Logic File",
+              "read_logic_file": "Load Logic File",
+              "confirm_save_logic": "Are you sure you want to save the logic file?",
+              "confirm_read_logic": "Are you sure you want to load the logic file?",
+              "confirm_read_logic_desc": "This will overwrite all settings from Step 1 to Step 6.",
+              "invalid_extension": "Invalid file format (Only .json supported)",
+              "invalid_format": "Invalid format (fee_logic_config missing)",
+              "import_success": "Billing logic imported successfully",
+              "export_success": "Billing logic exported",
+              "logic_filename": "BillingLogicFile.json",
+              "payment_methods_title": "Payment Method Settings",
+              "payment_methods_hint": "Check the methods you want to enable. The registration form will only show the enabled items:",
+              "payment_methods": {
+                "cash": "Cash",
+                "transfer": "Transfer",
+                "extended": "Roll-over"
               }
             },
             "events": {
@@ -1345,9 +1382,40 @@ i18n
                     }
                   },
                   "handbook_data": {
+                    "header_title": "General Handbook",
+                    "header_desc": "The following content is extracted from 'General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints' for member and leader reference.",
+                    "source": "Source: General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints",
+                    "section14_2_1_3": {
+                      "title": "14.2.1.3 Activities",
+                      "content": "在支會或支聯會領袖的指導下，年輕單身成人可以策劃與參與特別為他們舉辦的活動。這些活動可以在支會或支聯會層級舉辦。範例可內容：聖殿旅行團，家譜事工。"
+                    },
+                    "section20_2_6": {
+                      "title": "20.2.6 Funding for Activities",
+                      "content": "Most activities should be simple and have little or no cost. Any expenses must be approved in advance by the bishopric or stake presidency.\nMembers should not usually pay to participate in activities. For policies and guidelines on funding activities, see 20.6."
+                    },
+                    "section20_5_7": {
+                      "title": "20.5.7 Prayers and Devotionals at Activities",
+                      "content": "All activities should begin and, where appropriate, end with prayer. A hymn, a devotional, or a talk by a leader or participant may be included."
+                    },
+                    "section20_6_1": {
+                      "title": "20.6.1 Activities Funded by the Ward or Stake",
+                      "content": "Ward or stake funds should be used to pay for all activities, with possible exceptions listed in 20.6.2.\nMembers should not pay for materials, supplies, rental or admission fees, or long-distance transportation. Members may provide food if it is not a burden."
+                    },
+                    "section20_7_4": {
+                      "title": "20.7.4 Parental Permission",
+                      "content": "Children and youth may not participate in a Church activity without permission from their parents or guardians. Written consent is required if an activity involves an overnight stay, long-distance travel, or higher-than-ordinary risks. Some activities may require additional planning to reduce risks. Safety should always be an important consideration; see 20.7.6.1.\nParents or guardians give their consent by signing the Parental or Guardian Permission and Medical Release form. The person leading the activity should obtain signed consent forms for each participant."
+                    },
                     "section25_1": {
                       "title": "25.1 Member and Leader Participation in Temple and Family History Work",
                       "content": "Church members have the privilege and responsibility to help their families be joined together forever. They prepare to receive temple ordinances, make covenants, and strive to keep those covenants.\nMembers are encouraged to identify deceased relatives who have not received temple ordinances and then perform ordinances in their behalf (see Doctrine and Covenants 128:18). Deceased individuals in the spirit world can choose to accept or reject the ordinances performed for them."
+                    },
+                    "section25_1_2": {
+                      "title": "25.1.2 Ward and Stake Temple Trips",
+                      "content": "教會的每個單位都有指定的聖殿地區。教會不鼓勵支會或支聯會規劃在指定的聖殿地區以外進行聖殿旅行團。\n所有支會和支聯會的聖殿旅行團都應與聖殿預約教儀時間。每座聖殿的聯絡資訊，見temples.ChurchofJesusChrist.org"
+                    },
+                    "section25_5": {
+                      "title": "25.5 Recommending and Calling Temple Workers",
+                      "content": "聖殿工作人員協助執行教儀，或支援聖殿的運作，例如在辦公室、洗衣房、與會者住宿或庭院維護等方面的服務。被召喚擔任聖殿工作人員的成員，是擔任不支薪的義工。\n\n25.5.1 推薦聖殿工作人員\n以下方法能找出有潛力擔任聖殿工作人員的人：\n主教或支會其他領袖找出的成員\n找主教表明願意服務的成員\n由聖殿會長、女監護或聖殿其他領袖推薦的成員\n準備去傳教或剛結束傳教返鄉的成員（見第24章）\n有潛力擔任聖殿工作人員者的姓名，要用「推薦聖殿工作人員」工具來提交。主教、支聯會會長和聖殿會長團都可以使用此項工具。提交姓名的流程概述如下。\n當聖殿會長團成員發現一位有潛力擔任聖殿工作人員的人，他們要用「推薦聖殿工作人員」工具，將此人的姓名提交給主教。\n當主教發現一位有潛力擔任聖殿工作人員的人，或從聖殿會長那裡收到推薦資料時，就要與該成員討論這個服務機會。他要審閱擔任聖殿工作人員的條件（見25.5.2）。如果主教和該成員都覺得這是個適合的機會，主教就要用「推薦聖殿工作人員」工具，填妥並提交推薦資料。該成員應當要了解，將推薦資料提交出去，並不保證會被召喚或被指派擔任聖殿工作人員。\n接下來，由支聯會會長審閱推薦資料。如果支聯會會長核准此項推薦，就要用「推薦聖殿工作人員」工具，將推薦資料提交給聖殿會長審閱。\n被召喚擔任聖殿工作人員的成員，通常會承諾每週於固定時間在聖殿裡服務。領袖應避免發出會妨礙成員到聖殿服務的其他召喚。\n「推薦聖殿工作人員」工具也會讓主教和支聯會會長看到一份清單，上面列出他們的支會或支聯會中，目前擔任聖殿工作人員的所有成員。\n\n25.5.2 擔任聖殿工作人員的條件\n成員若要被推薦擔任聖殿工作人員，必須符合以下資格：\n居住在即將服務的聖殿之聖殿地區內。\n接受過恩道門，遵行聖殿聖約，並持有有效的聖殿推薦書。\n對耶穌基督的復興福音有堅強的見證。\n體能上可以在聖殿中執行受指派的工作。為與會者服務或主理教儀的工作人員，必須在體能上可以勝任而無需協助。\n在教會和社區值得受人敬重。\n與人合作融洽。\n可靠、健康。\n其教籍紀錄目前沒有附註。\n此外，主教應確保下列事項：\n如果一個人的教會成員身分受到正式限制，在這些限制被移除至少五年後，此人才可被推薦擔任聖殿工作人員。（見32.11.3和32.16.1。）\n如果未接受恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在重新加入教會至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9、32.16.1和32.16.2。）\n如果接受過恩道門之人的教會成員身分被取消，或是此人放棄成員身分，他／她要在接受恢復祝福至少五年後，才可被推薦擔任聖殿工作人員。（見32.11.4、32.14.9和32.17.2。）\n\n25.5.3 召喚和按手選派聖殿工作人員\n聖殿會長收到推薦某人擔任聖殿工作人員的推薦資料後，由聖殿會長團的一員或他指定的一人與此人面談。主持面談的人受到聖靈啟發時，就要召喚那些能夠服務的人擔任聖殿工作人員，並按手選派他們。"
                     },
                     "section25_1_1": {
                       "title": "25.1.1 Individual Responsibility for Temple Attendance",
@@ -1380,10 +1448,7 @@ i18n
                     "section20_7_7": {
                       "title": "20.7.7 Travel",
                       "content": "Travel for Church activities should be approved by the bishop or stake president. This travel should not place an undue burden on members.\nParticipants should not travel long distances (more than a few hours) for an activity unless approved by the Area Presidency. If the Area Presidency approves such travel, members should not pay their own travel expenses (see 20.6).\nUnits in the same area or coordinating council should be consistent in their travel practices and in applying the guidelines in this section. Stake presidents may discuss and reach a consensus on travel practices in coordinating council meetings.\nLeaders fill out an Activity Plan for activities that require long-distance travel.\nWhen a Church activity for youth involves long-distance travel or staying overnight, parents or guardians must give written consent for their children to participate (see 20.7.4). Responsible adult supervision must be provided (see 20.7.1).\nWhen feasible, Church groups should use commercial transportation for long-distance travel. This transportation should be licensed and protected by liability insurance.\nWhen Church groups travel in private vehicles, each vehicle must be in safe operating condition. Each person should use a seat belt. Each driver should be a licensed, responsible adult. All vehicles and drivers should be covered by reasonable amounts of automobile liability insurance. Plans should be made to ensure that drivers remain alert. As much as possible, an adult should not be alone in a vehicle with a youth unless the youth is his or her child.\nChurch organizations may not own or acquire automobiles or buses for group travel.\nA man and a woman should not travel alone together for Church activities, meetings, or assignments unless they are married to each other or are both single.\nFor more information, see 'Frequently Asked Questions—What Should I Do?' on ChurchofJesusChrist.org."
-                    },
-                    "header_title": "General Handbook",
-                    "header_desc": "The following content is excerpted from 'General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints' for reference by members and leaders.",
-                    "source": "Source: General Handbook: Serving in The Church of Jesus Christ of Latter-day Saints"
+                    }
                   },
                   "driving": {
                     "header": "Driving & Parking",
@@ -1468,6 +1533,16 @@ i18n
                 "reg_closed_label": "Registration Closed",
                 "insured_not_cancel_hint": "This event is insured and cannot be cancelled.",
                 "dashboard": {
+                  "time_nodes_title": "Time Nodes",
+                  "node": {
+                    "reg_start": "Reg. Start",
+                    "group_deadline": "Group Deadline",
+                    "reg_pay_start": "Pay. Start (Reg.)",
+                    "reg_pay_deadline": "Pay. Deadline (Reg.)",
+                    "wait_pay_start": "Pay. Start (Wait.)",
+                    "wait_pay_limit": "Pay. Limit (Wait.)",
+                    "reg_end": "Reg. End"
+                  },
                   "seat_reservation": "Seat Reservation",
                   "assign_vehicle_numbers": "Assign Vehicle Numbers",
                   "total_seats": "Total Seats",
@@ -1541,7 +1616,7 @@ i18n
               }
             }
           }
-        },
+        }
       },
     },
     lng: 'zh',

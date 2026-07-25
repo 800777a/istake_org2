@@ -1,17 +1,19 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Registration, GlobalSettings, RegStatus, PaymentMethod, BlacklistItem, EventData, TripType } from '../../types';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Registration, GlobalSettings, RegStatus, PaymentMethod, BlacklistItem, EventData, TripType, OrdinanceType, OrdinanceItem, DietaryType } from '../../types';
+import { isPaymentOverdue } from '../../src/utils/registrationUtils';
 import { deleteRegistration, batchImportRegistrations, subscribeToBlacklist, addBlacklistItem, deleteBlacklistItem, batchAddToBlacklist, assignMissingSerialNumbers } from '../../services/registrationService';
+import { maskName } from '../../utils/maskUtils';
 import { updateEvent } from '../../services/eventService';
-import { Users, Download, Upload, Trash2, Search, Edit2, Clock, CheckCircle, ShieldAlert, AlertTriangle, UserX, Plus, ListOrdered, Power, Save } from 'lucide-react';
+import { Users, Download, Upload, Trash2, Search, Edit2, Clock, CheckCircle, ShieldAlert, AlertTriangle, UserX, Plus, ListOrdered, Power, Save, ChevronUp, ChevronDown, Activity, DollarSign, LayoutList, UserPlus, Info, LayoutDashboard, List, ChevronLeft, ChevronRight, PlusCircle, ArrowUpDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { RainbowCard, rainbowStyles } from './fee-config/RainbowCard';
 import ConfirmDialog from '../ConfirmDialog';
 import ExportChoiceModal from '../ExportChoiceModal';
 import EditMemberModal from '../EditMemberModal';
 import Toast, { ToastType } from '../Toast';
-import RegistrationDashboard from '../../src/components/registration/RegistrationDashboard';
 import { useStats, useRanks } from '../../hooks/useStats';
-import RegistrationSwitch from './RegistrationSwitch';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 
 interface RegistrationTabProps {
     registrations: Registration[];
@@ -23,30 +25,79 @@ interface RegistrationTabProps {
     onPushToEditor?: (content: string) => void;
 }
 
-// Rainbow Themes Definition
-const RAINBOW_THEMES = [
-    { name: 'red', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', headerBg: 'bg-red-100', rowHover: 'group-hover:bg-red-50', badge: 'text-red-800 bg-red-100 border-red-200', highlight: 'text-red-700', divide: 'divide-red-200' },
-    { name: 'orange', bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', headerBg: 'bg-orange-100', rowHover: 'group-hover:bg-orange-50', badge: 'text-orange-800 bg-orange-100 border-orange-200', highlight: 'text-orange-700', divide: 'divide-orange-200' },
-    { name: 'yellow', bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-900', headerBg: 'bg-yellow-100', rowHover: 'group-hover:bg-yellow-50', badge: 'text-yellow-800 bg-yellow-100 border-yellow-200', highlight: 'text-yellow-700', divide: 'divide-yellow-200' },
-    { name: 'green', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', headerBg: 'bg-green-100', rowHover: 'group-hover:bg-green-50', badge: 'text-green-800 bg-green-100 border-green-200', highlight: 'text-green-700', divide: 'divide-green-200' },
-    { name: 'blue', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', headerBg: 'bg-blue-100', rowHover: 'group-hover:bg-blue-50', badge: 'text-blue-800 bg-blue-100 border-blue-200', highlight: 'text-blue-700', divide: 'divide-blue-200' },
-    { name: 'indigo', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', headerBg: 'bg-indigo-100', rowHover: 'group-hover:bg-indigo-50', badge: 'text-indigo-800 bg-indigo-100 border-indigo-200', highlight: 'text-indigo-700', divide: 'divide-indigo-200' },
-    { name: 'purple', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', headerBg: 'bg-purple-100', rowHover: 'group-hover:bg-purple-50', badge: 'text-purple-800 bg-purple-100 border-purple-200', highlight: 'text-purple-700', divide: 'divide-purple-200' },
-];
+// Enterprise Light/High-Contrast Theme definitions
+const THEME = {
+    canvas: 'bg-[#F0F4F8]',
+    card: 'bg-white rounded-[8px] shadow-sm border border-slate-200 overflow-hidden',
+    header: 'bg-indigo-900 text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
+    sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
+    pageTitle: 'text-base md:text-lg lg:text-xl font-bold tracking-tight',
+    bodyText: 'text-sm text-slate-600',
+    tableText: 'text-[11px] md:text-xs lg:text-sm text-slate-900',
+    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    input: 'w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10',
+    badge: {
+        paid: 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 px-2 py-0.5 rounded text-[10px]',
+        pending: 'bg-amber-100 text-amber-900 font-bold border border-amber-200 px-2 py-0.5 rounded text-[10px]',
+        failed: 'bg-rose-100 text-rose-900 font-bold border border-rose-200 px-2 py-0.5 rounded text-[10px]',
+        muted: 'bg-slate-100 text-slate-700 font-bold border border-slate-200 px-2 py-0.5 rounded text-[10px]'
+    }
+};
 
 const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settings, currentEventId, activeEvent, onRefresh, onUpdateEvent, onPushToEditor }) => {
-    const { t, i18n } = useTranslation();
+    const { t, tString, currentLang: langCode } = useI18n();
+    const i18n = { language: langCode }; 
     const [searchUnit, setSearchUnit] = useState('');
     const [searchName, setSearchName] = useState('');
     const [editTarget, setEditTarget] = useState<Registration | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
     
+    const [isStatsOpen, setIsStatsOpen] = useState(true);
+    const [isFilterOpen, setIsFilterOpen] = useState(true);
+    const [isBlacklistOpen, setIsBlacklistOpen] = useState(false);
+    const [collapsedUnits, setCollapsedUnits] = useState<Record<string, boolean>>({});
+    
+    // View mode and RWD
+    const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [remountKey, setRemountKey] = useState(0);
+    const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    const scrollTable = (unit: string, direction: 'left' | 'right') => {
+        const wrapper = wrapperRefs.current[unit];
+        if (wrapper) {
+            const scrollAmount = 200;
+            wrapper.scrollBy({
+                left: direction === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('orientationchange', handleResize);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    // Auto-switch to card view on very small screens (portrait mobile)
+    useEffect(() => {
+        const checkMobile = () => {
+            if (window.innerWidth < 768 && window.innerHeight > window.innerWidth) {
+                setViewMode('card');
+            }
+        };
+        checkMobile();
+    }, []);
+
     // Sort State
     const [sortKey, setSortKey] = useState<string>('created_at');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    // Retained Management State
-    const [pendingRetainedImport, setPendingRetainedImport] = useState<Registration[] | null>(null);
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
 
@@ -75,7 +126,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     const [blacklistDeleteId, setBlacklistDeleteId] = useState<string | null>(null);
 
     // Dialog Action
-    const [confirmAction, setConfirmAction] = useState<{ type: 'exportRetained' | 'importUnpaidToBlacklist' } | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{ type: 'importUnpaidToBlacklist' } | null>(null);
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     const { vehicleRanks } = useRanks(registrations);
@@ -115,7 +166,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     // Group by Unit
     const groupedRegs = useMemo(() => {
         const groups: Record<string, Registration[]> = {};
-        settings.units.forEach(u => groups[u] = []);
+        (settings.units || []).forEach(u => groups[u] = []);
         
         // Apply Sorting
         const sorted = [...filteredRegs].sort((a, b) => {
@@ -167,7 +218,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             });
         }
         return groups;
-    }, [filteredRegs, settings.units, searchUnit, searchName, sortKey, sortOrder, primaryContactMap]);
+    }, [filteredRegs, (settings.units || []), searchUnit, searchName, sortKey, sortOrder, primaryContactMap]);
 
     const toggleSort = (key: string) => {
         if (sortKey === key) {
@@ -220,30 +271,11 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
 
         // Metadata
         const appVer = settings.app_version || 'V205';
-        const stakeTitle = settings.stake_name || t('common.stake_name_default', '嘉義支聯會');
-        const eventTitle = activeEvent.event_title || t('common.event_title_default', '聖殿之旅');
+        const stakeTitle = settings.stake_name || tString('common.stake_name_default', '嘉義支聯會');
+        const eventTitle = activeEvent.event_title || tString('common.event_title_default', '聖殿旅行團');
         const eventDateStr = activeEvent.event_date.replace(/-/g, '');
 
-        // Name Masking Helper
-        const maskName = (name: string) => {
-            if (!name) return "";
-            if (!shouldMask) return name; // Skip masking if chosen
-            const isEnglish = /^[A-Za-z\s.-]+$/.test(name);
-            if (isEnglish) {
-                const firstPart = name.trim().split(/\s+/)[0];
-                return `${firstPart} Ｏ`;
-            } else {
-                // Chinese names
-                const cleanName = name.trim();
-                if (cleanName.length <= 1) return cleanName;
-                if (cleanName.length === 2) return cleanName[0] + "Ｏ";
-                const first = cleanName[0];
-                const last = cleanName[cleanName.length - 1];
-                return `${first}Ｏ${last}`;
-            }
-        };
-
-        let content = `${activeEvent.event_date}\n${eventTitle} ${t('stake.registration.export.list_suffix', '報名名單')}\n`;
+        let content = `${activeEvent.event_date}\n${eventTitle} ${tString('stake.registration.export.list_suffix', '報名名單')}\n`;
 
         // Calculate Totals Across All Units
         let totalGo = 0;
@@ -251,7 +283,9 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
         let totalSelf = 0;
 
         const allValidRegs = registrations.filter(r => r.status !== RegStatus.CANCELLED);
-        const validRegs = allValidRegs.filter(r => !getBookingStatus(r).isWaitingLocal);
+        // Vxxx: Include waitlisted members in export, but we can separate them if needed. 
+        // For now, let's keep them all to avoid empty list issues.
+        const validRegs = allValidRegs; 
 
         totalGo = validRegs.filter(r => r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_TO).length;
         totalBack = validRegs.filter(r => r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_BACK).length;
@@ -259,9 +293,10 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
 
         content += `${t('common.trip.outbound', '去程')}:${totalGo}${t('common.unit.people', '人')} ${t('common.trip.return', '回程')}:${totalBack}${t('common.unit.people', '人')} ${t('common.trip.self', '自理')}:${totalSelf}${t('common.unit.people', '人')}\n\n`;
 
-        // Sort units by stroke count
+        // Sort units by stroke count using short names from billing config
+        const billingUnits = (settings.billingConfig?.units || []).map(u => u.shortName);
         const strokeSorter = new Intl.Collator('zh-Hant-TW-u-co-stroke').compare;
-        const sortedUnits = [...settings.units].sort(strokeSorter);
+        const sortedUnits = [...billingUnits].sort(strokeSorter);
 
         sortedUnits.forEach(unit => {
             const unitRegs = validRegs.filter(r => r.unit === unit);
@@ -285,14 +320,14 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
 
             sortedInUnit.forEach(r => {
                 let tripLabel = r.trip_type as string;
-                if (r.trip_type === TripType.ROUND_TRIP) tripLabel = t('common.trip.round_trip', '來回');
-                else if (r.trip_type === TripType.ONE_WAY_TO) tripLabel = t('common.trip.outbound', '去程');
-                else if (r.trip_type === TripType.ONE_WAY_BACK) tripLabel = t('common.trip.return', '回程');
-                else if (r.trip_type === TripType.SELF_MANAGED) tripLabel = t('common.trip.self', '自理');
+                if (r.trip_type === TripType.ROUND_TRIP) tripLabel = tString('common.trip.round_trip', '來回');
+                else if (r.trip_type === TripType.ONE_WAY_TO) tripLabel = tString('common.trip.outbound', '去程');
+                else if (r.trip_type === TripType.ONE_WAY_BACK) tripLabel = tString('common.trip.return', '回程');
+                else if (r.trip_type === TripType.SELF_MANAGED) tripLabel = tString('common.trip.self', '自理');
 
                 const { isWaitingLocal } = getBookingStatus(r);
-                const waitlistSuffix = isWaitingLocal ? ` ${t('common.status.waitlist', '候補')}` : '';
-                const masked = maskName(r.name);
+                const waitlistSuffix = isWaitingLocal ? ` (${tString('common.status.waitlist', '候補')})` : '';
+                const masked = maskName(r.name, shouldMask);
 
                 content += `${masked} ${tripLabel} ${r.amount_due} ${r.ordinance_item || ''}${waitlistSuffix}\n`;
             });
@@ -300,7 +335,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             content += `\n`;
         });
 
-        content += `${t('stake.registration.export.footer_url', '網址 https://istake.org/')} \n${t('stake.registration.export.footer_msg', '如需服務, 系統可留言, 感謝您.')}`;
+        content += `${tString('stake.registration.export.footer_url', '網址 https://istake.org/')} \n${tString('stake.registration.export.footer_msg', '如需服務, 系統可留言, 感謝您.')}`;
 
         // Construct filename and download
         if (toEditor && onPushToEditor) {
@@ -309,7 +344,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             return;
         }
         
-        const filename = `${appVer}_${stakeTitle}_${eventDateStr}_${eventTitle}_${t('stake.registration.export.list_suffix', '報名名單')}.txt`;
+        const filename = `${appVer}_${stakeTitle}_${eventDateStr}_${eventTitle}_${tString('stake.registration.export.list_suffix', '報名名單')}.txt`;
         const blob = new Blob(['\uFEFF' + content], { type: 'text/plain;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -335,73 +370,6 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
         onRefresh();
         setDeleteTarget(null);
     };
-
-    // --- Retained Management Handlers ---
-
-    const handleExportRetained = () => {
-        setConfirmAction({ type: 'exportRetained' });
-    };
-
-    const executeExportRetained = () => {
-        const retainedList = registrations.filter(r => r.trip_type === TripType.RETAINED && r.status === RegStatus.NORMAL);
-        if (retainedList.length === 0) {
-            setMsgType('info');
-            setMsg(t('stake.registration.alerts.no_retained_to_export', '目前無「Roll over」成員可匯出'));
-            setConfirmAction(null);
-            return;
-        }
-
-        const json = JSON.stringify(retainedList, null, 2);
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const dateStr = new Date().toISOString().split('T')[0];
-        a.download = `retained_members_${dateStr}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        setConfirmAction(null);
-    };
-
-    const handleImportRetainedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            try {
-                const data = JSON.parse(evt.target?.result as string);
-                if (Array.isArray(data)) {
-                    setPendingRetainedImport(data);
-                } else {
-                    setMsgType('error');
-                    setMsg(t('stake.registration.alerts.invalid_json_array', '格式錯誤：需為 JSON 陣列'));
-                }
-            } catch (err) {
-                setMsgType('error');
-                setMsg(t('stake.registration.alerts.file_read_failed', '檔案讀取失敗'));
-            }
-        };
-        reader.readAsText(file);
-        e.target.value = '';
-    };
-
-    const executeImportRetained = async () => {
-        if (!pendingRetainedImport) return;
-        const result = await batchImportRegistrations(pendingRetainedImport, currentEventId);
-        if (result.success) {
-            setMsgType('success');
-            setMsg(t('stake.registration.alerts.import_success', { count: result.count, defaultValue: `成功匯入 ${result.count} 筆資料。\n付款狀態已設為「延用」且「已繳」。` }));
-            onRefresh();
-        } else {
-            setMsgType('error');
-            setMsg(t('stake.registration.alerts.import_failed', { message: result.message, defaultValue: `匯入失敗: ${result.message}` }));
-        }
-        setPendingRetainedImport(null);
-    };
-
-    // --- Blacklist Handlers ---
 
     const handleImportUnpaidToBlacklist = () => {
         setConfirmAction({ type: 'importUnpaidToBlacklist' });
@@ -464,34 +432,30 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     };
 
     const getMethodBadge = (reg: Registration) => {
-        if (reg.amount_due === 0) return <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 font-bold border border-gray-200">{t('stake.registration.badge_free', '免付')}</span>;
+        if (reg.payment_method === PaymentMethod.EXTENDED) {
+            return <span className={THEME.badge.muted}>{t('stake.registration.badge_extended', '延用')}</span>;
+        }
+        if (reg.amount_due === 0) return <span className={THEME.badge.muted}>{t('stake.registration.badge_free', '免付')}</span>;
         
         switch (reg.payment_method) {
             case PaymentMethod.CASH:
-                return <span className="px-2 py-0.5 rounded text-[10px] bg-yellow-100 text-yellow-800 font-bold border border-yellow-200">{t('stake.registration.badge_cash', '現金')}</span>;
+                return <span className={THEME.badge.pending}>{t('stake.registration.badge_cash', '現金')}</span>;
             case PaymentMethod.TRANSFER:
-                return <span className="px-2 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700 font-bold border border-blue-200">{t('stake.registration.badge_transfer', '轉帳')}</span>;
-            case 'RETAINED' as any: 
-                return <span className="px-2 py-0.5 rounded text-[10px] bg-purple-100 text-purple-700 font-bold border border-purple-200">Roll over</span>;
-            case PaymentMethod.EXTENDED:
-                return <span className="px-2 py-0.5 rounded text-[10px] bg-gray-200 text-gray-700 font-bold border border-gray-300">{t('stake.registration.badge_extended', '延用')}</span>;
+                return <span className="bg-blue-100 text-blue-900 font-semibold border border-blue-300 px-2 py-0.5 rounded text-[10px]">{t('stake.registration.badge_transfer', '轉帳')}</span>;
             default:
-                return <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 border border-gray-200">{reg.payment_method}</span>;
+                return <span className={THEME.badge.muted}>{reg.payment_method}</span>;
         }
     };
 
     const getStatusBadge = (reg: Registration) => {
-        if (reg.amount_due === 0 || reg.payment_method === PaymentMethod.EXTENDED) return <span className="px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 font-bold border border-gray-200">{t('stake.registration.badge_waived', '免收')}</span>;
+        if (reg.amount_due === 0 || reg.payment_method === PaymentMethod.EXTENDED) return <span className={THEME.badge.muted}>{t('stake.registration.badge_waived', '免收')}</span>;
         
         if (reg.is_paid) {
-            return <span className="px-2 py-0.5 rounded text-[10px] bg-green-100 text-green-700 font-bold border border-green-200">{t('stake.registration.badge_paid', '已收')}</span>;
+            return <span className={THEME.badge.paid}>{t('stake.registration.badge_paid', '已收')}</span>;
         } else {
-            return <span className="px-2 py-0.5 rounded text-[10px] bg-red-100 text-red-700 font-bold border border-red-200">{t('stake.registration.badge_unpaid', '未收')}</span>;
+            return <span className={THEME.badge.failed}>{t('stake.registration.badge_unpaid', '未收')}</span>;
         }
     };
-
-    // Calculate retained count for display
-    const retainedCount = registrations.filter(r => r.trip_type === TripType.RETAINED && r.status === RegStatus.NORMAL).length;
 
     const { vehicleStats: eventStats, ordinanceStats } = useStats(activeEvent, registrations);
 
@@ -522,7 +486,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             bookingColor = 'bg-gray-100 text-gray-800 border-gray-200 text-[10px] font-normal';
         } else {
             const capacity = (activeEvent?.busConfigs && activeEvent.busConfigs.length > 0) ? activeEvent.busConfigs.reduce((sum, b) => sum + (b.capacity || 42), 0) : ((activeEvent?.bus_count || 0) * 42);
-            const isOverduePayment = !reg.is_paid && activeEvent?.paymentDeadlineDays && new Date(reg.created_at).getTime() + (activeEvent.paymentDeadlineDays * 86400000) < Date.now();
+            const isOverduePayment = isPaymentOverdue(reg, activeEvent);
             const isOverdueReg = activeEvent?.registrationDeadline && new Date(activeEvent.registrationDeadline).getTime() < Date.now();
 
             const rank = vehicleRanks.get(reg.reg_id);
@@ -551,13 +515,150 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
         return { bookingStatus, bookingColor, isWaitingLocal };
     };
 
+    const statsOverview = useMemo(() => {
+        const active = registrations.filter(r => r.status === RegStatus.NORMAL);
+        const paidCount = active.filter(r => r.is_paid).length;
+        const total = active.length;
+        const amount = active.reduce((sum, r) => sum + r.amount_due, 0);
+        return { total, paid: paidCount, unpaid: total - paidCount, amount };
+    }, [registrations]);
+
+    const handleAddMember = () => {
+        if (!activeEvent) return;
+        const newReg: Registration = {
+            reg_id: `NEW-${Date.now()}`,
+            event_id: activeEvent.event_id,
+            family_group_id: `FAM-NEW-${Date.now()}`,
+            is_primary_contact: true,
+            primary_contact_name: '',
+            name: '',
+            phone: '',
+            identity_id: '',
+            birth_date: '',
+            unit: settings.units?.[0] || '',
+            identity_type: '成人',
+            trip_type: TripType.ROUND_TRIP,
+            ordinance_type: OrdinanceType.PROXY,
+            ordinance_item: OrdinanceItem.ENDOWMENT,
+            ceremony_session: '',
+            payment_method: PaymentMethod.CASH,
+            amount_due: 0,
+            is_paid: false,
+            is_staff: false,
+            is_new_member: false,
+            is_checked_in: false,
+            status: RegStatus.NORMAL,
+            created_at: new Date().toISOString()
+        };
+        setEditTarget(newReg);
+    };
+
     return (
-        <div className="space-y-6 animate-fade-in pb-20">
+        <div key={remountKey} className={`space-y-6 ${THEME.canvas} min-h-screen pb-24 animate-fade-in`}>
             <Toast 
                 message={msg} 
                 type={msgType} 
                 onClose={() => setMsg(null)} 
             />
+            {/* Level 1: Page Title Header */}
+            <div className="bg-indigo-900 text-white px-4 py-5 md:px-6 md:py-6 shadow-lg flex items-center justify-between mx-1 md:mx-6 rounded-b-xl">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/10 rounded-lg border border-white/10">
+                        <Users className="text-blue-300" size={20} />
+                    </div>
+                    <h2 className="text-base md:text-lg lg:text-xl font-bold tracking-tight">
+                        {t('stake.registration.title', '成員名單管理系統')}
+                    </h2>
+                </div>
+            </div>
+
+            {/* Level 2: Action Row & View Switcher */}
+            <div className="bg-indigo-200 text-indigo-900 px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 mx-1 md:mx-6 rounded-xl border border-indigo-300/30">
+                <div className="flex flex-wrap items-center gap-2">
+                    <button 
+                        onClick={handleAddMember}
+                        className={THEME.btnPrimary}
+                    >
+                        <PlusCircle size={16} /> {t('common.add_member', '新增成員')}
+                    </button>
+                    <button 
+                        onClick={() => setIsExportModalOpen(true)}
+                        className={THEME.btnSecondary}
+                    >
+                        <ListOrdered size={16} /> {t('stake.registration.export_txt', '匯出純文字')}
+                    </button>
+                    <button 
+                        onClick={handleExportRegistrations}
+                        className={THEME.btnSecondary}
+                    >
+                        <Download size={16} /> CSV 報表
+                    </button>
+                    <label className={`${THEME.btnSecondary} cursor-pointer`}>
+                        <Upload size={16} /> JSON 匯入
+                        <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange}/>
+                    </label>
+                </div>
+
+                <div className="flex items-center bg-white/50 rounded-lg p-1 border border-indigo-300/20">
+                    <button 
+                        onClick={() => setViewMode('table')}
+                        className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:bg-indigo-100'}`}
+                        title="表格模式"
+                    >
+                        <List size={18} />
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('card')}
+                        className={`p-2 rounded-md transition-all ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:bg-indigo-100'}`}
+                        title="卡片模式"
+                    >
+                        <LayoutDashboard size={18} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Step 1: Statistics Overview (Rainbow: Red) */}
+            <div className="px-1 md:px-6">
+                <RainbowCard
+                    title={t('stake.registration.stats_title', '數據概覽 (Statistics Overview)')}
+                    icon={<Activity size={20} />}
+                    colorIndex={0}
+                    isExpanded={isStatsOpen}
+                    onToggle={() => setIsStatsOpen(!isStatsOpen)}
+                >
+                    <div className="space-y-6">
+                        {/* Move Info/Badges here (below title, right aligned) */}
+                        <div className="w-full flex justify-end gap-2 px-1">
+                             <span className="text-[10px] font-black text-rose-700 bg-white/60 px-3 py-1 rounded-full border border-rose-300 uppercase tracking-widest">
+                                Live Metrics
+                             </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: '總報名人數', val: statsOverview.total, unit: '人', color: 'text-rose-600', icon: Users },
+                                { label: '已繳費人數', val: statsOverview.paid, unit: '人', color: 'text-emerald-600', icon: CheckCircle },
+                                { label: '待繳費人數', val: statsOverview.unpaid, unit: '人', color: 'text-amber-600', icon: Clock },
+                                { label: '應收總金額', val: statsOverview.amount.toLocaleString(), unit: '元', color: 'text-blue-600', icon: DollarSign }
+                            ].map((s, i) => (
+                                <div key={i} className="bg-white/40 p-4 rounded-lg shadow-sm border border-white/20 flex items-center gap-3 backdrop-blur-sm">
+                                    <div className={`p-2 rounded-lg ${s.color.replace('text-', 'bg-').replace('-600', '-50')}`}>
+                                        <s.icon size={18} className={s.color} />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{s.label}</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-base md:text-lg font-bold text-slate-900">{s.val}</span>
+                                            <span className="text-[10px] font-medium text-slate-400">{s.unit}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </RainbowCard>
+            </div>
+
             {editTarget && (
                 <EditMemberModal 
                     registration={editTarget} 
@@ -568,7 +669,6 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 />
             )}
 
-            {/* Export Selection Modal */}
             <ExportChoiceModal 
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
@@ -582,25 +682,6 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 confirmText={t('common.delete', "刪除")}
                 onConfirm={executeDelete}
                 onCancel={() => setDeleteTarget(null)}
-                isDangerous={true}
-            />
-
-            <ConfirmDialog 
-                isOpen={confirmAction?.type === 'exportRetained'}
-                title={t('stake.registration.export_retained_title', "匯出 Roll over 名單")}
-                message={t('stake.registration.export_retained_msg', { count: retainedCount, defaultValue: `確定要匯出所有「Roll over」成員的資料嗎？(共 ${retainedCount} 人)\n此檔案可用於下次活動匯入。` })}
-                confirmText={t('stake.registration.export_retained_btn', "匯出存檔")}
-                onConfirm={executeExportRetained}
-                onCancel={() => setConfirmAction(null)}
-            />
-
-            <ConfirmDialog 
-                isOpen={!!pendingRetainedImport}
-                title={t('stake.registration.import_retained_title', "匯入 Roll over 名單")}
-                message={t('stake.registration.import_retained_msg', { count: pendingRetainedImport?.length, defaultValue: `讀取到 ${pendingRetainedImport?.length} 筆資料。\n確定要匯入並重建為本次活動的「Roll over」名單嗎？\n匯入後付款狀態將自動設為「Roll over / 已繳」。` })}
-                confirmText={t('stake.registration.import_retained_confirm_btn', "確認匯入")}
-                onConfirm={executeImportRetained}
-                onCancel={() => setPendingRetainedImport(null)}
                 isDangerous={true}
             />
 
@@ -623,322 +704,406 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 onCancel={() => setBlacklistDeleteId(null)}
             />
 
-            {activeEvent && (
-                <>
-                    {/* Announcement Block - Blue */}
-                    {!isRegOpen && (
-                        <div id="reg-closed-alert" className="bg-blue-600 border border-blue-700 text-white p-6 rounded-2xl shadow-lg mb-8 animate-fade-in ring-4 ring-blue-500/20">
-                            <div className="flex items-start gap-4">
-                                <div className="bg-white/20 p-2 rounded-xl mt-1">
-                                    <ShieldAlert className="w-6 h-6 text-white" />
-                                </div>
-                                <div className="flex-1 space-y-3">
-                                    <div className="space-y-2">
-                                        <p className="text-lg font-black leading-tight tracking-wide">
-                                            {t('stake.registration.contact_organizer', '如有任何報名問題，請連繫主辦人。')}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    <RegistrationDashboard 
-                        activeEvent={activeEvent}
-                        eventStats={eventStats}
-                        ordinanceStats={ordinanceStats}
-                        deadlineDisplay={activeEvent.registrationDeadline ? new Date(activeEvent.registrationDeadline).toLocaleString(i18n.language === 'zh' ? 'zh-TW' : 'en-US') : t('stake.registration.not_set', '未設定')}
-                        isClosed={activeEvent.status === 'cancelled' || activeEvent.is_registration_open === false}
-                        lang={i18n.language as any}
-                        onAssignOrdinanceSerials={handleAssignOrdinanceSerials}
-                        onAssignVehicleSerials={handleAssignSerials}
-                    />
-
-                    {/* 1. Registration Switch Block - RED */}
-                    <div id="reg-switch-block" className="bg-red-50 p-6 rounded-2xl shadow-sm border-2 border-red-200 mb-8 animate-fade-in">
-                        <div className="flex flex-col mb-6 border-b border-red-100 pb-4">
-                            <h3 className="font-black text-red-900 flex items-center text-xl">
-                                <Power className="w-6 h-6 mr-3 text-red-700" /> {t('stake.registration.system_switch', '報名系統開關')}
-                            </h3>
-                        </div>
-                        <div className="flex items-center gap-2 mb-4">
-                            {msg && (
-                                <div className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-lg border border-green-200 flex items-center font-black animate-pulse">
-                                    <CheckCircle className="w-4 h-4 mr-2" /> {msg}
-                                </div>
-                            )}
-                        </div>
-                        <RegistrationSwitch 
-                            isRegOpen={isRegOpen}
-                            onToggle={(val) => {
-                                setIsRegOpen(val);
-                                handleUpdateRegField('is_registration_open', val);
-                            }}
-                            regDeadlineInput={regDeadlineInput}
-                            onDeadlineChange={(val) => {
-                                setRegDeadlineInput(val);
-                                handleUpdateRegField('registrationDeadline', val);
-                            }}
-                            isDeadlinePassed={regDeadlineInput ? new Date(regDeadlineInput) < new Date() : false}
-                            stopCancellation={stopCancellation}
-                            onStopCancellationToggle={(val) => {
-                                setStopCancellation(val);
-                                handleUpdateRegField('stop_cancellation', val);
-                            }}
-                            paymentDeadlineDays={activeEvent.paymentDeadlineDays || 0}
-                            onPaymentDeadlineChange={(val) => {
-                                handleUpdateRegField('paymentDeadlineDays', val);
-                            }}
-                        />
+            {/* Announcement Block */}
+            {activeEvent && !activeEvent.is_registration_open && (
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg shadow-sm flex items-center gap-4 mx-4 md:mx-6">
+                    <div className="bg-amber-100 p-2 rounded-full text-amber-600">
+                        <ShieldAlert size={20} />
                     </div>
-                </>
+                    <div>
+                        <h4 className="text-sm font-bold text-amber-900">{t('stake.registration.closed_alert_title', '報名窗口已關閉')}</h4>
+                        <p className="text-xs text-amber-700">{t('stake.registration.closed_alert_msg', '窗口目前已鎖定。僅供查看名單。')}</p>
+                    </div>
+                </div>
             )}
 
-            {/* Retained Management Block - Orange */}
-            <div id="retained-mgmt-block" className="bg-orange-50 p-6 rounded-2xl shadow-sm border-2 border-orange-200 mb-8 animate-fade-in">
-                <div className="flex flex-col mb-6 border-b border-orange-100 pb-4">
-                    <h3 className="font-black text-orange-900 flex items-center text-xl">
-                        <Clock className="w-6 h-6 mr-3 text-orange-700" /> {t('stake.registration.retained_mgmt', '留用管理 (Roll over Management)')}
-                        <span className="ml-4 text-xs bg-orange-200 text-orange-900 px-3 py-1 rounded-xl border border-orange-300 font-black">
-                            {t('stake.registration.retained_count_badge', { count: retainedCount, defaultValue: `目前累積 Roll over: ${retainedCount} 人` })}
-                        </span>
-                    </h3>
-                </div>
-                <div className="flex gap-4 flex-wrap">
-                    <button 
-                        id="export-retained-btn"
-                        onClick={handleExportRetained}
-                        className="bg-white border-2 border-orange-200 text-orange-900 px-6 py-3 rounded-xl text-sm flex items-center hover:bg-orange-100 font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                    >
-                        <Download className="w-4 h-4 mr-2"/> {t('stake.registration.export_retained_btn_text', '匯出 Roll over 名單')}
-                    </button>
-                    <label id="import-retained-label" className="bg-white border-2 border-orange-200 text-orange-900 px-6 py-3 rounded-xl text-sm flex items-center hover:bg-orange-100 cursor-pointer font-black shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                        <Upload className="w-4 h-4 mr-2"/> {t('stake.registration.import_retained_btn_text', '匯入 Roll over 名單')}
-                        <input type="file" className="hidden" accept=".json" onChange={handleImportRetainedChange}/>
-                    </label>
-                </div>
-                <div className="mt-2 text-xs text-indigo-800/70 font-bold leading-relaxed bg-white/50 p-4 rounded-xl border border-indigo-100">
-                    {t('stake.registration.retained_desc', '💡 說明：當活動結束時，可將「留用」名單匯出存檔。在下次活動開始時，使用匯入功能讀取該檔案，系統會自動建立新的報名資料，並將付款方式設為「延用」，且標記為已繳費。')}
-                </div>
-            </div>
-
-            {/* Header & Search - Yellow */}
-            <div id="list-mgmt-block" className="bg-yellow-50 p-6 rounded-2xl shadow-sm border-2 border-yellow-200 mb-8 animate-fade-in">
-                <div className="flex flex-col mb-8 border-b border-yellow-100 pb-4">
-                    <h3 className="font-black text-yellow-900 flex items-center text-2xl">
-                        <Users className="w-8 h-8 mr-3 text-yellow-700" /> {t('stake.registration.list_mgmt', '名單管理')}
-                    </h3>
-                </div>
-                <div className="flex gap-4 flex-wrap mb-6">
-                    <button id="export-full-csv-btn" onClick={handleExportRegistrations} className="bg-red-50 border-2 border-red-200 text-red-900 px-5 py-2.5 rounded-xl text-sm flex items-center hover:bg-red-100 font-black shadow-[3px_3px_0px_0px_rgba(185,28,28,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"><Download className="w-4 h-4 mr-2"/> {t('stake.registration.export_full_csv', '完整名單 CSV')}</button>
-                    <label id="import-json-label" className="bg-orange-50 border-2 border-orange-200 text-orange-900 px-5 py-2.5 rounded-xl text-sm flex items-center hover:bg-orange-100 cursor-pointer font-black shadow-[3px_3px_0px_0px_rgba(194,65,12,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"><Upload className="w-4 h-4 mr-2"/> {t('stake.registration.import_json', '匯入資料 JSON')}<input type="file" className="hidden" accept=".json" onChange={handleImportFileChange}/></label>
-                    <button id="export-txt-btn" onClick={() => setIsExportModalOpen(true)} className="bg-yellow-50 border-2 border-yellow-200 text-yellow-900 px-6 py-2.5 rounded-xl text-sm flex items-center hover:bg-yellow-100 font-black shadow-[4px_4px_0px_0px_rgba(161,98,7,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"><ListOrdered className="w-5 h-5 mr-2"/> {t('stake.registration.export_txt', '導出 txt 名單')}</button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/50 p-6 rounded-2xl border border-violet-100">
-                    <div className="flex flex-col col-span-1 md:col-span-2">
-                        <label className="text-xs font-black text-violet-800 mb-2 uppercase opacity-70">{t('stake.registration.unit_filter_label', '單位篩選 (點擊切換):')}</label>
-                        <div className="flex flex-wrap gap-2">
-                            <button 
-                                id="all-units-btn"
-                                onClick={() => handleUnitSelect('')}
-                                className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-2 ${searchUnit === '' ? 'bg-indigo-600 text-white border-indigo-700 shadow-md ring-2 ring-indigo-200' : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600'}`}
-                            >
-                                {t('stake.registration.all_units', '全部單位')}
-                            </button>
-                            {settings.units.map((u, idx) => {
-                                const theme = RAINBOW_THEMES[idx % RAINBOW_THEMES.length];
-                                const isActive = searchUnit === u;
-                                return (
+            {/* Main Management Block (Rainbow: Orange) */}
+            <div className="px-1 md:px-6">
+                <RainbowCard
+                    title={t('stake.registration.list_mgmt', '篩選與工具 (Filters & Tools)')}
+                    icon={<Search size={20} />}
+                    colorIndex={1}
+                    isExpanded={isFilterOpen}
+                    onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                >
+                    <div className="space-y-6">
+                        {/* Filters */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <div className="w-1 h-3 bg-blue-600 rounded-full"></div>
+                                    {t('stake.registration.unit_filter', '單位快速篩選')}
+                                </label>
+                                <div className="flex flex-wrap gap-2">
                                     <button 
-                                        key={u}
-                                        id={`unit-filter-btn-${u}`}
-                                        onClick={() => handleUnitSelect(u)}
-                                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all border-2 ${isActive ? `${theme.headerBg} ${theme.text} ${theme.border} shadow-md ring-4 ring-indigo-500/5 scale-105` : `${theme.bg} ${theme.text} ${theme.border} opacity-60 hover:opacity-100`}`}
+                                        onClick={() => handleUnitSelect('')}
+                                        className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border shadow-sm ${
+                                            searchUnit === '' 
+                                                ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                                                : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
+                                        }`}
                                     >
-                                        {u}
+                                        {t('stake.registration.all_units', '全部')}
                                     </button>
-                                );
-                            })}
+                                    {((settings.billingConfig?.units || []).map(u => u.shortName)).map((u) => (
+                                        <button 
+                                            key={u}
+                                            onClick={() => handleUnitSelect(u)}
+                                            className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border shadow-sm ${
+                                                searchUnit === u 
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                                                    : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
+                                        }`}
+                                        >
+                                            {u}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <div className="w-1 h-3 bg-blue-600 rounded-full"></div>
+                                    {t('stake.registration.search_name', '搜尋成員姓名')}
+                                </label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input 
+                                        type="text" 
+                                        placeholder={t('stake.registration.search_placeholder', "輸入姓名...")}
+                                        value={searchName}
+                                        onChange={e => setSearchName(e.target.value)}
+                                        className={`${THEME.input} pl-10 h-10`}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Advanced Actions Row - Right Aligned */}
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-white/40">
+                            <span className="text-[10px] font-bold text-slate-500 mr-2 uppercase tracking-widest">批量處理工具:</span>
+                            <button 
+                                onClick={handleAssignSerials} 
+                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                            >
+                                分配流水編號
+                            </button>
+                            <button 
+                                onClick={handleAssignOrdinanceSerials} 
+                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                            >
+                                分配教儀編號
+                            </button>
+                            <button 
+                                onClick={handleImportUnpaidToBlacklist} 
+                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                            >
+                                欠費傳入黑名單
+                            </button>
                         </div>
                     </div>
-                    <div className="hidden lg:flex flex-col">
-                        <label className="text-xs font-black text-violet-800 mb-2 uppercase opacity-70">{t('stake.registration.unit_select_label', '單位選擇 (下拉清單):')}</label>
-                        <select 
-                            id="unit-search-select"
-                            value={searchUnit}
-                            onChange={e => handleUnitSelect(e.target.value)}
-                            className="border-2 border-violet-100 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-violet-300 bg-white text-gray-900 w-full"
-                        >
-                            <option value="">{t('stake.registration.show_all_units', '顯示全部單位')}</option>
-                            {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex flex-col flex-1">
-                        <label className="text-xs font-black text-violet-800 mb-2 uppercase opacity-70">{t('stake.registration.search_name_label', '搜尋成員姓名:')}</label>
-                        <div className="relative w-full">
-                            <Search className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
-                            <input 
-                                id="name-search-input"
-                                type="text" 
-                                placeholder={t('stake.registration.search_placeholder', "輸入關鍵字搜尋...")}
-                                value={searchName}
-                                onChange={e => setSearchName(e.target.value)}
-                                className="pl-12 pr-4 py-3 border-2 border-violet-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-violet-300 w-full text-gray-900 bg-white shadow-inner"
-                            />
-                        </div>
-                    </div>
-                </div>
+                </RainbowCard>
             </div>
 
-            {/* Detailed Table - Rainbow Themes Loop */}
-            {Object.entries(groupedRegs).map(([unitName, regs], index) => {
-                const typedRegs = regs as Registration[];
-                const cashTotal = typedRegs
-                    .filter(r => r.payment_method === PaymentMethod.CASH && r.status !== RegStatus.CANCELLED)
-                    .reduce((sum, r) => sum + r.amount_due, 0);
-                const transferTotal = typedRegs
-                    .filter(r => r.payment_method === PaymentMethod.TRANSFER && r.status !== RegStatus.CANCELLED)
-                    .reduce((sum, r) => sum + r.amount_due, 0);
-                
-                // V300: Stats according to new request
-                const goCount = typedRegs.filter(r => (r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_TO) && r.status !== RegStatus.CANCELLED).length;
-                const backCount = typedRegs.filter(r => (r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_BACK) && r.status !== RegStatus.CANCELLED).length;
-                const selfCount = typedRegs.filter(r => r.trip_type === TripType.SELF_MANAGED && r.status !== RegStatus.CANCELLED).length;
+            {/* Blacklist Management Card (Rainbow: Yellow) */}
+            <div className="px-1 md:px-6">
+                <RainbowCard
+                    title={t('stake.registration.blacklist_mgmt', '限制/欠費成員黑名單')}
+                    icon={<ShieldAlert size={20} />}
+                    colorIndex={2}
+                    isExpanded={isBlacklistOpen}
+                    onToggle={() => setIsBlacklistOpen(!isBlacklistOpen)}
+                >
+                    <div className="space-y-6">
+                        {/* Summary Info - Below Title, Right Aligned */}
+                        <div className="w-full flex justify-end px-1">
+                            <span className="text-[10px] font-black text-amber-700 bg-white/60 px-3 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
+                                {blacklist.length} Records Found
+                            </span>
+                        </div>
 
-                // Select Theme based on index
-                const theme = RAINBOW_THEMES[index % RAINBOW_THEMES.length];
-
-                return (
-                    <div key={unitName} className={`rounded-lg shadow-sm border ${theme.bg} ${theme.border} overflow-hidden mb-4`}>
-                        {/* Unit Header with Independent Row for Title */}
-                        <div className={`px-4 py-3 border-b ${theme.border} ${theme.headerBg} flex flex-col gap-2`}>
-                            <div className={`font-black text-lg ${theme.text} mb-1 border-b border-white/30 pb-1`}>
-                                {unitName}
+                        {/* Add Blacklist Form */}
+                        <div className="bg-white/40 p-5 rounded-lg border border-white/20 shadow-sm space-y-4 backdrop-blur-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Plus size={14} className="text-blue-600" />
+                                <span className="text-xs font-bold text-slate-700">新增黑名單成員</span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className={`text-xs bg-white px-2 py-0.5 rounded border ${theme.border} font-black ${theme.highlight} shadow-sm`}>
-                                    {t('stake.registration.unit_stats_trip', { go: goCount, back: backCount, self: selfCount, defaultValue: `(去程:${goCount}人,回程:${backCount}人,自理:${selfCount}人)` })}
-                                </span>
-
-                                <span className={`text-xs bg-white px-2 py-0.5 rounded border ${theme.border} font-black text-blue-800 shadow-sm`}>
-                                    {t('stake.registration.unit_stats_transfer', { amount: transferTotal.toLocaleString(), defaultValue: `(轉帳:${transferTotal.toLocaleString()})` })}
-                                </span>
-
-                                <span className={`text-xs font-black ${theme.text} bg-white px-2 py-0.5 rounded border ${theme.border} shadow-sm`}>
-                                    {t('stake.registration.unit_stats_cash', { amount: cashTotal.toLocaleString(), defaultValue: `(現金:${cashTotal.toLocaleString()})` })}
-                                </span>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <select 
+                                    value={newBlacklistUnit} 
+                                    onChange={e => setNewBlacklistUnit(e.target.value)}
+                                    className={`${THEME.input} h-10 bg-white`}
+                                >
+                                    <option value="">{t('stake.registration.select_unit', '選擇單位')}</option>
+                                    {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                </select>
+                                <input 
+                                    type="text" 
+                                    placeholder={t('stake.registration.name_placeholder', '姓名')}
+                                    value={newBlacklistName}
+                                    onChange={e => setNewBlacklistName(e.target.value)}
+                                    className={`${THEME.input} h-10 bg-white`}
+                                />
+                                <select 
+                                    value={newBlacklistReason} 
+                                    onChange={e => setNewBlacklistReason(e.target.value as any)}
+                                    className={`${THEME.input} h-10 bg-white`}
+                                >
+                                    <option value="欠費">{t('stake.registration.blacklist_reason_unpaid', '欠費')}</option>
+                                    <option value="犯規">{t('stake.registration.blacklist_reason_violation', '犯規')}</option>
+                                </select>
+                                <div className="flex justify-end">
+                                    <button 
+                                        onClick={handleAddBlacklistItem} 
+                                        className={`h-10 px-6 rounded-lg text-sm font-bold transition-all flex items-center gap-2 border ${rainbowStyles[2].bg} ${rainbowStyles[2].text} ${rainbowStyles[2].border}`}
+                                    >
+                                        <Plus size={16} /> {t('common.add', '新增')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-xs text-left whitespace-nowrap">
-                                <thead className={`${theme.headerBg} border-b ${theme.border} ${theme.text} font-bold sticky top-0 z-10`}>
+
+                        {/* Blacklist Items */}
+                        <div className="overflow-x-auto rounded-lg border border-slate-200">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
                                     <tr>
-                                        <th id={`th-rep-${unitName}`} className={`p-3 sticky left-0 z-20 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] ${theme.headerBg} cursor-pointer hover:underline underline-offset-4 decoration-2`} onClick={() => toggleSort('representative')}>
-                                            {t('stake.registration.col_representative', '代表人')} {sortKey === 'representative' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-serial-${unitName}`} className="p-3 cursor-pointer hover:underline" onClick={() => toggleSort('serial_number')}>
-                                            {t('stake.registration.col_serial', '編號')} {sortKey === 'serial_number' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-name-${unitName}`} className="p-3 cursor-pointer hover:underline" onClick={() => toggleSort('name')}>
-                                            {t('stake.registration.col_name', '姓名')} {sortKey === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-ord-type-${unitName}`} className="p-3 text-center cursor-pointer hover:underline" onClick={() => toggleSort('ordinance_type')}>
-                                            {t('stake.registration.col_ordinance_type', '教儀性質')} {sortKey === 'ordinance_type' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-ord-item-${unitName}`} className="p-3 cursor-pointer hover:underline" onClick={() => toggleSort('ordinance_item')}>
-                                            {t('stake.registration.col_ordinance_item', '教儀項目')} {sortKey === 'ordinance_item' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-trip-${unitName}`} className="p-3 cursor-pointer hover:underline" onClick={() => toggleSort('trip_type')}>
-                                            {t('stake.registration.col_trip', '行程')} {sortKey === 'trip_type' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-identity-${unitName}`} className="p-3 cursor-pointer hover:underline" onClick={() => toggleSort('identity_type')}>
-                                            {t('stake.registration.col_identity', '身分')} {sortKey === 'identity_type' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-payment-${unitName}`} className="p-3 text-center cursor-pointer hover:underline" onClick={() => toggleSort('payment_method')}>
-                                            {t('stake.registration.col_payment', '付款')} {sortKey === 'payment_method' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-amount-${unitName}`} className="p-3 text-right cursor-pointer hover:underline" onClick={() => toggleSort('amount_due')}>
-                                            {t('stake.registration.col_amount', '金額')} {sortKey === 'amount_due' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-is-paid-${unitName}`} className="p-3 text-center cursor-pointer hover:underline" onClick={() => toggleSort('is_paid')}>
-                                            {t('stake.registration.col_receipt', '收款')} {sortKey === 'is_paid' && (sortOrder === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th id={`th-booking-${unitName}`} className="p-3 text-center">{t('stake.registration.col_booking', '車位')}</th>
-                                        <th id={`th-actions-${unitName}`} className="p-3 text-center">{t('stake.registration.col_actions', '操作')}</th>
+                                        <th className="px-4 py-3">{t('stake.registration.csv.unit', '單位')}</th>
+                                        <th className="px-4 py-3">{t('stake.registration.csv.name', '姓名')}</th>
+                                        <th className="px-4 py-3">{t('stake.registration.blacklist_reason_col', '原因')}</th>
+                                        <th className="px-4 py-3 text-center">{t('stake.registration.col_actions', '操作')}</th>
                                     </tr>
                                 </thead>
-                                {/* Updated divide-y color to match theme border */}
-                                <tbody className={`divide-y ${theme.divide} bg-white`}>
-                                    {typedRegs.map(reg => {
-                                        const { bookingStatus, bookingColor, isWaitingLocal } = getBookingStatus(reg);
-
-                                        return (
-                                        <tr key={reg.reg_id} id={`reg-row-${reg.reg_id}`} className={`transition-colors group ${theme.rowHover} ${isWaitingLocal ? 'bg-red-50' : ''}`}>
-                                            <td className={`p-3 font-medium sticky left-0 bg-white ${theme.rowHover} z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] text-gray-600`}>
-                                                {reg.primary_contact_name || primaryContactMap.get(reg.family_group_id) || t('stake.registration.unknown', '未知')}
-                                            </td>
-                                            <td className="p-3 font-mono font-bold text-gray-800 text-center">{reg.serial_number || '-'}</td>
-                                            <td className="p-3 font-bold text-gray-800">
-                                                {reg.name}
-                                                {isWaitingLocal && <span className="ml-1 text-[8px] bg-red-600 text-white px-1 rounded">{t('stake.registration.waitlist_badge', '候補')}</span>}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                                <span className={`px-2 py-1 rounded text-[10px] font-normal border whitespace-nowrap ${
-                                                    reg.ordinance_type === '代替' ? 'bg-green-100 text-green-800 border-green-200' :
-                                                    reg.ordinance_type === '活人' ? 'bg-red-100 text-red-800 border-red-200' :
-                                                    'bg-gray-100 text-gray-800 border-gray-200'
-                                                }`}>
-                                                    {reg.ordinance_type ? (
-                                                        reg.ordinance_type === '活人' ? t('common.ordinance.living', '活人') :
-                                                        reg.ordinance_type === '代替' ? t('common.ordinance.proxy', '代替') :
-                                                        reg.ordinance_type
-                                                    ) : t('common.ordinance.none', '不參加')}
+                                <tbody className="divide-y divide-slate-100">
+                                    {blacklist.map(item => (
+                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-4 py-3">{item.unit}</td>
+                                            <td className="px-4 py-3 font-bold">{item.name}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.reason === '欠費' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'}`}>
+                                                    {item.reason}
                                                 </span>
                                             </td>
-                                            <td className="p-3 text-gray-800">{reg.ordinance_item}</td>
-                                            <td className="p-3 text-gray-800">{reg.trip_type}</td>
-                                            <td className="p-3 text-gray-500 text-xs">{reg.identity_type}</td>
-                                            
-                                            {/* Payment Method */}
-                                            <td className="p-3 text-center">
-                                                {getMethodBadge(reg)}
-                                            </td>
-                                            
-                                            {/* Amount */}
-                                            <td className="p-3 text-right font-mono text-gray-800">${reg.amount_due}</td>
-                                            
-                                            {/* Receipt Status */}
-                                            <td className="p-3 text-center">
-                                                {getStatusBadge(reg)}
-                                            </td>
-
-                                            <td className="p-3 text-center">
-                                                <span className={`px-2 py-1 rounded text-xs border whitespace-nowrap ${bookingColor}`}>
-                                                    {bookingStatus}
-                                                </span>
-                                            </td>
-
-                                            <td className="p-3 text-center flex gap-1 justify-center">
-                                                <button onClick={() => setEditTarget(reg)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded" title={t('common.edit', "編輯")}>
-                                                    <Edit2 className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={() => setDeleteTarget(reg.reg_id)} className="p-1.5 text-red-600 hover:bg-red-100 rounded" title={t('common.delete', "刪除")}>
-                                                    <Trash2 className="w-4 h-4" />
+                                            <td className="px-4 py-3 text-center">
+                                                <button 
+                                                    onClick={() => setBlacklistDeleteId(item.id!)}
+                                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm"
+                                                    title={t('common.delete', "刪除")}
+                                                >
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </td>
                                         </tr>
-                                        );
-                                    })}
+                                    ))}
+                                    {blacklist.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} className="px-4 py-8 text-center text-slate-400 italic">
+                                                {t('stake.registration.no_blacklist', '目前尚無名單')}
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                );
-            })}
+                </RainbowCard>
+            </div>
+
+            {/* Registration Units (Rainbow: Blue onwards) */}
+            <div className="px-2 md:px-6 space-y-6">
+                {Object.keys(groupedRegs).length === 0 ? (
+                    <div className="bg-white p-20 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center gap-4 text-slate-400 animate-pulse">
+                        <Users size={64} className="opacity-20" />
+                        <p className="font-bold italic">{t('stake.registration.no_data', '查無成員資料')}</p>
+                    </div>
+                ) : (
+                    Object.keys(groupedRegs).sort(new Intl.Collator('zh-Hant-TW-u-co-stroke').compare).map((unit, unitIdx) => {
+                        const regs = groupedRegs[unit];
+                        const colorIdx = (unitIdx + 3) % 7;
+                        const theme = rainbowStyles[colorIdx];
+                        const isCollapsed = collapsedUnits[unit];
+
+                        return (
+                            <RainbowCard
+                                key={unit}
+                                title={`${unit} (${regs.length} ${t('common.unit.people', '人')})`}
+                                icon={<Users size={20} />}
+                                colorIndex={colorIdx}
+                                isExpanded={!isCollapsed}
+                                onToggle={() => setCollapsedUnits(prev => ({ ...prev, [unit]: !prev[unit] }))}
+                            >
+                                <div className="space-y-4">
+                                    {viewMode === 'table' ? (
+                                        <div className="space-y-0">
+                                            {/* Mobile Scroll Controls - More discoverable */}
+                                            <div className="flex items-center justify-between px-2 py-1.5 bg-white/50 border-b border-slate-200/50 md:hidden">
+                                                <div className="flex items-center gap-1 text-[10px] font-black text-slate-400">
+                                                    <ArrowUpDown size={10} />
+                                                    <span>{t('common.scroll_hint', '左右滑動或點擊按鈕')}</span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            scrollTable(unit, 'left');
+                                                        }}
+                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                                    >
+                                                        <ChevronLeft size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            scrollTable(unit, 'right');
+                                                        }}
+                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
+                                                    >
+                                                        <ChevronRight size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div 
+                                                ref={el => wrapperRefs.current[unit] = el}
+                                                className="overflow-x-auto overscroll-x-contain -mx-1 px-1 md:mx-0 md:px-0 custom-scrollbar dense-table-wrapper"
+                                            >
+                                                <table className="min-w-[1000px] w-full [width:max-content] table-auto border-collapse">
+                                                    <thead>
+                                                        <tr className={`${theme.header} text-xs font-bold uppercase tracking-wider`}>
+                                                            <th className="px-3 py-3 text-center w-12">#</th>
+                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('unit')}>{t('stake.registration.csv.unit', '單位')}</th>
+                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('representative')}>{t('stake.registration.csv.representative', '代表人')}</th>
+                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('name')}>{t('stake.registration.csv.name', '姓名')}</th>
+                                                            <th className="px-3 py-3 text-left w-24 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('identity_type')}>{t('stake.registration.csv.identity', '身分')}</th>
+                                                            <th className="px-3 py-3 text-left w-20">{t('stake.registration.csv.trip', '行程')}</th>
+                                                            <th className="px-3 py-3 text-left w-32">{t('stake.registration.csv.ordinance', '教儀')}</th>
+                                                            <th className="px-3 py-3 text-left w-24">{t('stake.registration.csv.bus', '車次/座號')}</th>
+                                                            <th className="px-3 py-3 text-right w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('amount_due')}>{t('stake.registration.csv.amount', '金額')}</th>
+                                                            <th className="px-3 py-3 text-center w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('is_paid')}>{t('stake.registration.csv.status', '狀態')}</th>
+                                                            <th className="px-3 py-3 text-center w-16">{t('stake.registration.col_actions', '操作')}</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                                        {regs.map((r, idx) => {
+                                                            const { bookingStatus, bookingColor } = getBookingStatus(r);
+                                                            return (
+                                                                <tr key={r.reg_id} className="hover:bg-slate-50/80 transition-colors group/row">
+                                                                    <td className="px-3 py-3 text-center text-[10px] font-mono text-slate-400">{r.serial_number || idx + 1}</td>
+                                                                    <td className={`${THEME.tableText} px-3 py-3`}>{r.unit}</td>
+                                                                    <td className={`${THEME.tableText} px-3 py-3 font-bold text-indigo-700`}>{r.primary_contact_name || primaryContactMap.get(r.family_group_id) || '--'}</td>
+                                                                    <td className={`${THEME.tableText} px-3 py-3 font-bold`}>{r.name}</td>
+                                                                    <td className={`${THEME.tableText} px-3 py-3`}>{r.identity_type}</td>
+                                                                    <td className="px-3 py-3">
+                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">{r.trip_type}</span>
+                                                                    </td>
+                                                                    <td className="px-3 py-3">
+                                                                        <div className="flex flex-col gap-0.5">
+                                                                            <span className="text-[10px] font-bold text-indigo-900">{r.ordinance_item || '--'}</span>
+                                                                            <span className="text-[9px] text-slate-400">{r.ceremony_session || '--'}</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-3">
+                                                                        <div className="flex flex-col gap-0.5">
+                                                                            <span className={`px-2 py-0.5 rounded border ${bookingColor}`}>{bookingStatus}</span>
+                                                                            {r.bus_assigned && <span className="text-[10px] font-bold text-blue-600">Bus {r.bus_assigned} - {r.seat_no || '--'}</span>}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className={`${THEME.tableText} px-3 py-3 text-right font-mono font-bold text-blue-600`}>${r.amount_due}</td>
+                                                                    <td className="px-3 py-3 text-center">
+                                                                        <div className="flex flex-col items-center gap-1">
+                                                                            {getStatusBadge(r)}
+                                                                            {getMethodBadge(r)}
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-3 py-3 text-center">
+                                                                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                                                            <button 
+                                                                                onClick={() => setEditTarget(r)}
+                                                                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                                                            >
+                                                                                <Edit2 size={14} />
+                                                                            </button>
+                                                                            <button 
+                                                                                onClick={() => setDeleteTarget(r.reg_id)}
+                                                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                                                            >
+                                                                                <Trash2 size={14} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Card Mode (Grid) */
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                            {regs.map(r => {
+                                                const { bookingStatus, bookingColor } = getBookingStatus(r);
+                                                return (
+                                                    <motion.div 
+                                                        key={r.reg_id}
+                                                        layout
+                                                        className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+                                                    >
+                                                        <div className={`absolute top-0 left-0 w-1 h-full ${theme.level1}`}></div>
+                                                        <div className="flex justify-between items-start mb-3">
+                                                            <div>
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">#{r.serial_number || '--'}</span>
+                                                                <h4 className="text-sm font-bold text-slate-900">{r.name}</h4>
+                                                                <p className="text-[10px] text-indigo-600 font-bold">{r.unit} • {r.identity_type}</p>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <button onClick={() => setEditTarget(r)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Edit2 size={14} /></button>
+                                                                <button onClick={() => setDeleteTarget(r.reg_id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"><Trash2 size={14} /></button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-center justify-between text-[11px]">
+                                                                <span className="text-slate-500 font-medium">代表人:</span>
+                                                                <span className="text-slate-900 font-bold">{r.primary_contact_name || primaryContactMap.get(r.family_group_id) || '--'}</span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[11px]">
+                                                                <span className="text-slate-500 font-medium">行程/教儀:</span>
+                                                                <span className="text-slate-900 font-bold">{r.trip_type} | {r.ordinance_item || '--'}</span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[11px]">
+                                                                <span className="text-slate-500 font-medium">狀態:</span>
+                                                                <div className="flex gap-1 items-center">
+                                                                    <span className={`px-1.5 py-0.5 rounded-[4px] border ${bookingColor}`}>{bookingStatus}</span>
+                                                                    {getStatusBadge(r)}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-100">
+                                                                <span className="text-slate-500 font-medium">應付金額:</span>
+                                                                <span className="text-sm font-black text-blue-600">${r.amount_due}</span>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </RainbowCard>
+                        );
+                    })
+                )}
+            </div>
+
             {Object.keys(groupedRegs).length === 0 && (
-                <div id="no-matches-msg" className="text-center py-8 text-gray-400 bg-white border rounded-lg">{t('stake.registration.no_matches', '無符合資料')}</div>
+                <div className="px-4 md:px-6">
+                    <div className="bg-white/40 backdrop-blur-sm rounded-lg border border-white/20 py-20 text-center shadow-sm">
+                        <div className="bg-white/40 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Users className="w-8 h-8 text-slate-300" />
+                        </div>
+                        <p className="text-slate-400 font-bold text-sm">{t('stake.registration.no_matches', '查無任何報名資料')}</p>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -36,7 +36,7 @@ const PrintableUnitReport: React.FC<PrintableUnitReportProps> = ({ unit, event, 
 
         {/* Report Content */}
         <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold border-b-2 border-black inline-block pb-1 px-4">聖殿之旅 單位財務報表</h1>
+            <h1 className="text-2xl font-bold border-b-2 border-black inline-block pb-1 px-4">聖殿旅行團 單位財務報表</h1>
             <div className="mt-2 text-gray-700 font-medium">
                 <div>活動日期：{event.event_date}</div>
                 <div>申請單位：{unit}</div>
@@ -95,7 +95,7 @@ const PrintableUnitReport: React.FC<PrintableUnitReportProps> = ({ unit, event, 
         </div>
         
         <div className="text-xs text-center text-gray-500 mt-10">
-            此報表由聖殿之旅管理系統自動產生
+            此報表由聖殿旅行團管理系統自動產生
         </div>
       </div>
     </div>

@@ -57,7 +57,7 @@ const BriefingModal: React.FC<BriefingModalProps> = ({ registration, event, onCl
             </button>
             <div className="text-center">
                 <h2 className="text-xl font-bold tracking-wider mb-1">行前通知單</h2>
-                <div className="text-blue-200 text-sm">{event.event_date} 聖殿之旅</div>
+                <div className="text-blue-200 text-sm">{event.event_date} 聖殿旅行團</div>
             </div>
         </div>
 

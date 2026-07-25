@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Table, InputNumber, Space, Button, Popconfirm, Alert, Modal, Input, Typography, message } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, DeploymentUnitOutlined } from '@ant-design/icons';
+import { Edit2, Trash2, Plus, LayoutGrid } from 'lucide-react';
 import { BillingEngineConfig, UnitConfig } from '../../../types';
-import { RainbowCard } from './RainbowCard';
+import { RainbowCard, rainbowStyles } from './RainbowCard';
 
 const { Text } = Typography;
 
@@ -12,15 +12,17 @@ interface UnitFeesStepProps {
   onConfigChange: (config: BillingEngineConfig) => void;
   isExpanded: boolean;
   onToggle: () => void;
+  colorIndex?: number;
 }
 
 export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({ 
   billingConfig, 
   onConfigChange, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  colorIndex = 1
 }) => {
-  const { t } = useTranslation();
+  const { t, tString } = useI18n();
   const data = [
     { 
       isGlobal: true, 
@@ -29,17 +31,17 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       fee: billingConfig.baseFees['GLOBAL'] || 0,
       sortOrder: -999 // Always first
     },
-    ...billingConfig.units.map(u => ({ 
+    ... (billingConfig.units || []).map(u => ({ 
       isGlobal: false,
       shortName: u.shortName, 
       fullName: u.fullName, 
       fee: billingConfig.baseFees[u.shortName],
       sortOrder: u.sortOrder ?? 0
     }))
-  ].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  ];
 
   const deleteUnit = (index: number) => {
-    const newUnits = [...billingConfig.units];
+    const newUnits = [...(billingConfig.units || [])];
     newUnits.splice(index, 1);
     onConfigChange({ ...billingConfig, units: newUnits });
   };
@@ -71,7 +73,7 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
         </div>
       ),
       onOk: () => {
-        const newUnits = [...billingConfig.units];
+        const newUnits = [...(billingConfig.units || [])];
         newUnits[index] = { shortName: val1, fullName: val2, sortOrder: val3 };
         onConfigChange({ ...billingConfig, units: newUnits });
       }
@@ -81,7 +83,7 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
   const addUnit = () => {
     let val1 = '';
     let val2 = '';
-    const maxSort = billingConfig.units.reduce((max, u) => Math.max(max, u.sortOrder || 0), 0);
+    const maxSort = (billingConfig.units || []).reduce((max, u) => Math.max(max, u.sortOrder || 0), 0);
     let val3 = maxSort + 1;
     Modal.confirm({
       title: <div className="text-white font-black text-lg p-2 -m-2 mb-2 bg-gradient-to-r from-amber-400 to-amber-600 rounded-t-lg">{t('stake.fee_config.add_unit_title', '新增單位')}</div>,
@@ -110,16 +112,18 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
           message.warning(t('stake.fee_config.enter_short_name', '請輸入單位簡稱'));
           return;
         }
-        const exists = billingConfig.units.find(u => u.shortName === val1 || u.fullName === val2);
+        const exists = (billingConfig.units || []).find(u => u.shortName === val1 || u.fullName === val2);
         if (exists) {
           message.error(t('stake.fee_config.unit_exists', '單位簡稱或全稱已存在'));
           return;
         }
 
-        onConfigChange({ ...billingConfig, units: [...billingConfig.units, { shortName: val1, fullName: val2 || val1, sortOrder: val3 }] });
+        onConfigChange({ ...billingConfig, units: [...(billingConfig.units || []), { shortName: val1, fullName: val2 || val1, sortOrder: val3 }] });
       }
     });
   };
+
+  const style = rainbowStyles[colorIndex % rainbowStyles.length];
 
   const columns = [
     {
@@ -127,13 +131,14 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       dataIndex: 'sortOrder',
       key: 'sortOrder',
       width: 80,
+      sorter: (a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0),
       render: (val: number, record: any) => (
         record.isGlobal ? '-' : (
           <InputNumber 
             size="small" 
             value={val} 
             onChange={v => {
-              const newUnits = [...billingConfig.units];
+              const newUnits = [...(billingConfig.units || [])];
               const idx = newUnits.findIndex(u => u.shortName === record.shortName);
               if (idx > -1) {
                 newUnits[idx] = { ...newUnits[idx], sortOrder: Number(v) || 0 };
@@ -187,14 +192,14 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       render: (_: any, record: any, index: number) => (
         record.isGlobal ? null : (
           <Space>
-            <Button size="small" icon={<EditOutlined />} onClick={() => editUnit(index - 1, record)} />
+            <Button size="small" icon={<Edit2 className="w-3 h-3" />} onClick={() => editUnit(index - 1, record)} />
             <Popconfirm 
               title={t('common.delete_confirm', "確定刪除？")}
               onConfirm={() => deleteUnit(index - 1)}
               okText={t('common.confirm', "確認")}
               cancelText={t('common.cancel', "取消")}
             >
-              <Button size="small" danger icon={<DeleteOutlined />} />
+              <Button size="small" danger icon={<Trash2 className="w-3 h-3" />} />
             </Popconfirm>
           </Space>
         )
@@ -204,16 +209,28 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
 
   return (
     <RainbowCard
-      title={t('stake.fee_config.step1_title', '第1步：單位車資 (Unit Fees)')}
-      icon={<DeploymentUnitOutlined />}
-      colorIndex={1}
+      title={tString('stake.fee_config.step1_title', '第1步：單位車資 (Unit Fees)')}
+      icon={<LayoutGrid size={20} />}
+      colorIndex={colorIndex}
       isExpanded={isExpanded}
       onToggle={onToggle}
-      extra={<Button type="primary" icon={<PlusOutlined />} onClick={addUnit}>{t('stake.fee_config.add_unit_title', '新增單位')}</Button>}
+      extra={
+        <button 
+          onClick={addUnit}
+          className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+          style={{ 
+            backgroundColor: style.bg,
+            color: style.text,
+            border: `1px solid ${style.border}`
+          }}
+        >
+          <Plus size={16} /> {t('stake.fee_config.add_unit_title', '新增單位')}
+        </button>
+      }
     >
       <div className="overflow-x-auto">
         <Alert 
-          title={t('common.tip', '提示')}
+          title={tString('common.tip', '提示')}
           description={t('stake.fee_config.step1_desc', '若單位未設定金額，則依照支聯會設定金額。')} 
           type="warning"
           showIcon 

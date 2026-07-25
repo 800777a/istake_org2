@@ -108,7 +108,7 @@ const TestimonyWallModal: React.FC<TestimonyWallModalProps> = ({ event, registra
                         <textarea 
                             value={content}
                             onChange={e => setContent(e.target.value)}
-                            placeholder="這次聖殿之旅中，您有什麼特別的體會或靈性經驗嗎？"
+                            placeholder="這次聖殿旅行團中，您有什麼特別的體會或靈性經驗嗎？"
                             className="w-full h-40 p-4 border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-none bg-indigo-50/30"
                             required
                         />

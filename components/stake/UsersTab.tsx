@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { User, Role, GlobalSettings } from '../../types';
 import { saveUser, deleteUser, subscribeToUsers } from '../../services/userService';
 import { subscribeToSettings } from '../../services/settingsService';
@@ -13,7 +13,7 @@ interface UsersTabProps {
 }
 
 const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [users, setUsers] = useState<User[]>([]);
     const [newUser, setNewUser] = useState<User>({ username: '', password: '', role: 'stake_admin', name: '', unit: '', roles: ['stake_admin'], order: 0, email: '', phone: '', permission: 'edit' });
     const [editingUsername, setEditingUsername] = useState<string | null>(null);
@@ -116,7 +116,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
     ].filter(r => !internalHiddenRoles.includes(r.val));
 
     // Custom Unit List with Fixed additions
-    const unitOptions = [...settings.units, t('stake.common.stake_name', '支聯會'), t('bus.a', 'A車'), t('bus.b', 'B車'), t('bus.c', 'C車'), t('bus.d', 'D車')];
+    const unitOptions = [...(settings.units || []), tString('stake.common.stake_name', '支聯會'), tString('bus.a', 'A車'), tString('bus.b', 'B車'), tString('bus.c', 'C車'), tString('bus.d', 'D車')];
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -251,7 +251,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
         <div className="animate-fade-in relative max-w-full">
             <ConfirmDialog 
                 isOpen={!!deleteTarget}
-                title={t('users.dialogs.deleteTitle', '刪除帳號')}
+                title={tString('users.dialogs.deleteTitle', '刪除帳號')}
                 message={t('users.dialogs.deleteMessage', '確定要刪除帳號 {{target}} 嗎？此操作無法復原。', { target: deleteTarget })}
                 onConfirm={confirmDeleteUser}
                 onCancel={() => setDeleteTarget(null)}
@@ -260,7 +260,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
 
             <ConfirmDialog 
                 isOpen={!!pendingImportData}
-                title={t('users.dialogs.importTitle', '確認匯入')}
+                title={tString('users.dialogs.importTitle', '確認匯入')}
                 message={t('users.dialogs.importMessage', '讀取成功！共包含 {{count}} 筆帳號資料。\n確定要覆蓋現有資料嗎？確定後將重建資料。', { count: pendingImportData?.length })}
                 onConfirm={executeImport}
                 onCancel={() => setPendingImportData(null)}
@@ -274,375 +274,379 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                 onClose={() => setMsg(null)} 
             />
 
-            {/* Matrix Table - Orange Scheme - Renamed to 單位帳密 and removed outer bg if possible */}
-            <div className="bg-white rounded-3xl shadow-xl border-4 border-orange-200 overflow-hidden mb-8 p-6">
-                <div className="flex flex-col gap-4 mb-8 border-b-4 border-orange-100 pb-6">
-                    <div>
-                        <h2 className="font-black text-orange-900 flex items-center text-4xl mb-2">
-                            <Key className="w-10 h-10 mr-4" /> {t('users.title', '帳號管理 (Account Mgt)')}
-                        </h2>
-                        <p className="text-orange-600 font-bold ml-14">{t('users.description', '管理資管與主辦人員帳號與權限')}</p>
+            {/* Main Header Card - Modern Business Style */}
+            <div className="bg-white rounded-xl shadow-lg border border-indigo-100 overflow-hidden mb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-indigo-900 border-b border-indigo-800 gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white/10 rounded-xl border border-white/10 backdrop-blur-sm shadow-lg">
+                            <Key className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="font-bold text-white text-2xl">
+                                {t('users.title', '帳號管理')}
+                            </h2>
+                            <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mt-0.5 opacity-80">System Access & Identity Management</p>
+                        </div>
                     </div>
-                    <div className="flex flex-wrap gap-4 items-center justify-end">
-                        <button onClick={handleExportUsers} className="text-sm bg-white text-orange-900 border-orange-300 border-2 px-4 py-2 rounded-xl hover:bg-orange-50 flex items-center font-black shadow-sm transition-all"><Download className="w-5 h-5 mr-2"/>{t('users.export', '匯出帳號 / Export')}</button>
-                        <label className="text-sm bg-white text-orange-900 border-orange-300 border-2 px-4 py-2 rounded-xl hover:bg-orange-50 flex items-center cursor-pointer font-black shadow-sm transition-all">
-                            <Upload className="w-5 h-5 mr-2"/>{t('users.import', '匯入帳號 / Import')}
-                            <input type="file" className="hidden" accept=".json" onChange={handleImportUsers}/>
-                        </label>
-                        <button onClick={openAddModal} className="text-sm bg-orange-600 text-white border-orange-700 border-2 px-6 py-2.5 rounded-2xl hover:bg-orange-700 flex items-center font-black ml-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                            <Plus className="w-5 h-5 mr-2" /> {t('users.add', '新增帳號 / Add Account')}
+                    
+                    <div className="flex flex-wrap gap-2 justify-start md:justify-end">
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <button onClick={handleExportUsers} className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded-md hover:bg-white/20 flex items-center justify-center font-bold shadow-sm transition-all backdrop-blur-sm">
+                                <Download className="w-4 h-4 mr-2 text-indigo-300"/>{t('users.export', '匯出')}
+                            </button>
+                            <label className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded-md hover:bg-white/20 flex items-center justify-center cursor-pointer font-bold shadow-sm transition-all backdrop-blur-sm">
+                                <Upload className="w-4 h-4 mr-2 text-indigo-300"/>{t('users.import', '匯入')}
+                                <input type="file" className="hidden" accept=".json" onChange={handleImportUsers}/>
+                            </label>
+                        </div>
+                        <button onClick={openAddModal} className="w-full sm:w-auto text-xs bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
+                            <Plus className="w-4 h-4 mr-2" /> {t('users.add', '新增帳號')}
                         </button>
                     </div>
                 </div>
 
-                {/* Engineer Table */}
-                <div className="bg-white rounded-xl shadow-sm border-2 border-orange-200 overflow-hidden mb-6">
-                    <div 
-                        className="p-6 border-b-2 border-orange-200 bg-orange-50 cursor-pointer hover:bg-orange-100 transition-colors flex justify-between items-center"
-                        onClick={() => setIsEngineerExpanded(!isEngineerExpanded)}
-                    >
-                        <h3 className="font-black text-orange-900 flex items-center text-2xl">
-                            <ShieldAlert className="w-7 h-7 mr-3" /> {t('users.engineerSection', '資管 / System Admin')}
-                        </h3>
-                        <div className="flex items-center gap-4">
-                             {isEngineerExpanded ? <ChevronUp className="w-7 h-7 text-orange-900" /> : <ChevronDown className="w-7 h-7 text-orange-900" />}
-                        </div>
-                    </div>
-                    
-                    {isEngineerExpanded && (
-                        <div className="p-4 border-b-2 border-orange-100 bg-white">
-                            <div className="relative max-w-md">
-                                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    placeholder={t('users.searchPlaceholder', '搜尋資管人員...')}
-                                    className="w-full pl-10 pr-4 py-2 border-2 border-orange-100 rounded-xl focus:border-orange-300 outline-none font-bold text-sm"
-                                    value={engineerSearch}
-                                    onChange={e => setEngineerSearch(e.target.value)}
-                                    onClick={e => e.stopPropagation()}
-                                />
+                <div className="p-6 space-y-8">
+
+                    {/* Engineer Table - Modern Business Style */}
+                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                        <div 
+                            className="px-6 py-4 border-b border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex justify-between items-center"
+                            onClick={() => setIsEngineerExpanded(!isEngineerExpanded)}
+                        >
+                            <div className="flex items-center gap-3">
+                                <ShieldAlert className="w-5 h-5 text-rose-600" />
+                                <h3 className="font-bold text-slate-800 text-base">
+                                    {t('users.engineerSection', '資管 (System Admin)')}
+                                </h3>
+                            </div>
+                            <div className="text-slate-400">
+                                 {isEngineerExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                             </div>
                         </div>
-                    )}
-
-                    {isEngineerExpanded && (
-                        <>
-                            {filteredEngineerUsers.length === 0 ? (
-                                <div className="p-8 text-center text-gray-400 font-bold">{t('users.emptyEngineer', '目前無資管帳號')}</div>
-                            ) : (
-                                <div className="overflow-x-auto no-scrollbar">
-                                    <table className="w-full text-xs text-left border-collapse table-fixed min-w-[1100px]">
-                                        <thead className="bg-orange-100 text-orange-900 font-black border-b-2 border-orange-200 sticky top-0 z-30">
-                                            <tr>
-                                                <th className="p-4 text-center w-28">{t('users.columns.action', '操作 / Action')}</th>
-                                                <th onClick={() => toggleSort('order')} className="p-4 border-x-2 border-orange-200 w-24 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.order', '排序編號')} <SortArrow field="order"/></th>
-                                                <th onClick={() => toggleSort('unit')} className="p-4 border-r-2 border-orange-200 w-32 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.unit', '單位 / Stake')} <SortArrow field="unit"/></th>
-                                                <th onClick={() => toggleSort('name')} className="p-4 border-r-2 border-orange-200 w-40 sticky left-0 bg-orange-100 z-20 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.name', '姓名 / Name')} <SortArrow field="name"/></th>
-                                                <th className="p-4 border-r-2 border-orange-200 w-48">{t('users.columns.role', '權限 / Role')}</th>
-                                                <th onClick={() => toggleSort('permission')} className="p-4 border-r-2 border-orange-200 w-40 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.permission', '操作權限')} <SortArrow field="permission"/></th>
-                                                <th onClick={() => toggleSort('username')} className="p-4 border-r-2 border-orange-200 w-40 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.username', '帳號 / User ID')} <SortArrow field="username"/></th>
-                                                <th className="p-4 border-r-2 border-orange-200 w-40">{t('users.columns.password', '密碼 / Password')}</th>
-                                                <th onClick={() => toggleSort('phone')} className="p-4 border-r-2 border-orange-200 w-44 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.phone', '行動電話 / Phone')} <SortArrow field="phone"/></th>
-                                                <th onClick={() => toggleSort('email')} className="p-4 w-56 cursor-pointer hover:bg-orange-200 transition-colors">{t('users.columns.email', '電子信箱 / Email')} <SortArrow field="email"/></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y-2 divide-orange-100 bg-white">
-                                            {filteredEngineerUsers.map((u, idx) => (
-                                                <tr key={`${u.username}-${idx}`} className="hover:bg-orange-50 transition-colors group">
-                                                    <td className="p-4 text-center flex justify-center gap-2">
-                                                        <button onClick={() => handleEditUser(u)} className="text-blue-600 hover:bg-blue-100 p-2 rounded-xl transition-all hover:scale-110 shadow-sm border bg-white" title="Edit">
-                                                            <Edit2 className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={() => setDeleteTarget(u.username)} className="text-red-500 hover:bg-red-100 p-2 rounded-xl transition-all hover:scale-110 shadow-sm border bg-white" title="Delete">
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </td>
-                                                    <td className="p-4 border-x-2 border-orange-100 text-orange-800 font-bold text-center">{u.order || 0}</td>
-                                                    <td className="p-4 border-r-2 border-orange-100 text-gray-900 font-bold">{u.unit || '-'}</td>
-                                                    <td className="p-4 border-r-2 border-orange-100 font-black text-gray-900 sticky left-0 bg-white z-10 group-hover:bg-orange-50">{u.name}</td>
-                                                    <td className="p-4 border-r-2 border-orange-100">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {(u.roles || [u.role]).map(r => (
-                                                                <span key={r} className={`px-2 py-1 rounded-lg text-[10px] font-black ${getRoleStyle(r)} border shadow-sm`}>
-                                                                    {getRoleLabel(r)}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4 border-r-2 border-orange-100">
-                                                        {u.permission === 'read' ? (
-                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-orange-50 text-orange-800 border border-orange-100">
-                                                                <Shield className="w-3 h-3 mr-1" /> {t('users.permissions.readOnly', '唯讀 (Read-only)')}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-orange-100 text-orange-900 border border-orange-200">
-                                                                <Edit2 className="w-3 h-3 mr-1" /> {t('users.permissions.edit', '編輯 (Edit)')}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="p-4 border-r-2 border-orange-100 font-mono font-bold text-blue-700">{u.username}</td>
-                                                    <td className="p-4 border-r-2 border-orange-100 font-mono font-bold text-gray-600">{u.password}</td>
-                                                    <td className="p-4 border-r-2 border-orange-100 font-mono font-bold text-green-700">{u.phone || '-'}</td>
-                                                    <td className="p-4 font-mono text-gray-500">{u.email || '-'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                        
+                        {isEngineerExpanded && (
+                            <div className="animate-fade-in">
+                                <div className="p-4 bg-white border-b border-slate-100">
+                                    <div className="relative max-w-sm">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input 
+                                            type="text" 
+                                            placeholder={tString('users.searchPlaceholder', '搜尋資管人員...')}
+                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
+                                            value={engineerSearch}
+                                            onChange={e => setEngineerSearch(e.target.value)}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Stake Admin Table */}
-                <div className="bg-white rounded-xl shadow-sm border-2 border-amber-200 overflow-hidden mb-6">
-                    <div 
-                        className="p-6 border-b-2 border-amber-200 bg-amber-50 cursor-pointer hover:bg-amber-100 transition-colors flex justify-between items-center"
-                        onClick={() => setIsStakeAdminExpanded(!isStakeAdminExpanded)}
-                    >
-                        <h3 className="font-black text-amber-900 flex items-center text-2xl">
-                            <Shield className="w-7 h-7 mr-3" /> {t('users.stakeAdminSection', '主辦 / Stake Admin')}
-                        </h3>
-                        <div className="flex items-center gap-4">
-                             {isStakeAdminExpanded ? <ChevronUp className="w-7 h-7 text-amber-900" /> : <ChevronDown className="w-7 h-7 text-amber-900" />}
-                        </div>
-                    </div>
-                    
-                    {isStakeAdminExpanded && (
-                        <div className="p-4 border-b-2 border-amber-100 bg-white">
-                            <div className="relative max-w-md">
-                                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                <input 
-                                    type="text" 
-                                    placeholder={t('users.searchPlaceholderStake', '搜尋主辦人員...')}
-                                    className="w-full pl-10 pr-4 py-2 border-2 border-amber-100 rounded-xl focus:border-amber-300 outline-none font-bold text-sm"
-                                    value={stakeAdminSearch}
-                                    onChange={e => setStakeAdminSearch(e.target.value)}
-                                    onClick={e => e.stopPropagation()}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {isStakeAdminExpanded && (
-                        <>
-                            {filteredStakeAdminUsers.length === 0 ? (
-                                <div className="p-8 text-center text-gray-400 font-bold">{t('users.emptyStakeAdmin', '目前無主辦帳號')}</div>
-                            ) : (
-                                <div className="overflow-x-auto no-scrollbar">
-                                    <table className="w-full text-xs text-left border-collapse table-fixed min-w-[1200px]">
-                                        <thead className="bg-amber-100 text-amber-900 font-black border-b-2 border-amber-200 sticky top-0 z-30">
-                                            <tr>
-                                                <th className="p-4 text-center w-28">{t('users.columns.action', '操作 / Action')}</th>
-                                                <th onClick={() => toggleSort('order')} className="p-4 border-x-2 border-amber-200 w-24 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.unit_number', '單位編號')} <SortArrow field="order"/></th>
-                                                <th onClick={() => toggleSort('unit')} className="p-4 border-r-2 border-amber-200 w-32 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.unit', '單位 / Stake')} <SortArrow field="unit"/></th>
-                                                <th onClick={() => toggleSort('name')} className="p-4 border-r-2 border-amber-200 w-40 sticky left-0 bg-amber-100 z-20 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.name', '姓名 / Name')} <SortArrow field="name"/></th>
-                                                <th className="p-4 border-r-2 border-amber-200 w-48">{t('users.columns.role', '權限 / Role')}</th>
-                                                <th onClick={() => toggleSort('permission')} className="p-4 border-r-2 border-amber-200 w-40 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.permission', '操作權限')} <SortArrow field="permission"/></th>
-                                                <th onClick={() => toggleSort('username')} className="p-4 border-r-2 border-amber-200 w-40 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.username', '帳號 / User ID')} <SortArrow field="username"/></th>
-                                                <th className="p-4 border-r-2 border-amber-200 w-40">{t('users.columns.password', '密碼 / Password')}</th>
-                                                <th onClick={() => toggleSort('phone')} className="p-4 border-r-2 border-amber-200 w-44 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.phone', '行動電話 / Phone')} <SortArrow field="phone"/></th>
-                                                <th onClick={() => toggleSort('email')} className="p-4 w-56 cursor-pointer hover:bg-amber-200 transition-colors">{t('users.columns.email', '電子信箱 / Email')} <SortArrow field="email"/></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y-2 divide-amber-100 bg-white">
-                                            {filteredStakeAdminUsers.map((u, idx) => (
-                                                <tr key={`${u.username}-${idx}`} className="hover:bg-amber-50 transition-colors group">
-                                                    <td className="p-4 text-center flex justify-center gap-2">
-                                                        {u.permission === 'read' ? (
-                                                            <div className="text-gray-400 p-2" title="Read-only mode">
-                                                                <Shield className="w-4 h-4" />
-                                                            </div>
-                                                        ) : (
-                                                            <button onClick={() => handleEditUser(u)} className="text-blue-600 hover:bg-blue-100 p-2 rounded-xl transition-all hover:scale-110 shadow-sm border bg-white" title="Edit">
-                                                                <Edit2 className="w-4 h-4" />
+                                
+                                {filteredEngineerUsers.length === 0 ? (
+                                    <div className="p-12 text-center text-slate-400 italic text-sm">{t('users.emptyEngineer', '目前無資管帳號')}</div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left border-collapse table-fixed min-w-[1000px]">
+                                            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-widest text-[10px]">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center w-28 sticky left-0 bg-slate-50 z-20 shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">{t('users.columns.action', '操作')}</th>
+                                                    <th onClick={() => toggleSort('order')} className="px-4 py-3 text-center w-20 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.order', '序')} <SortArrow field="order"/></th>
+                                                    <th onClick={() => toggleSort('unit')} className="px-4 py-3 w-32 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.unit', '單位')} <SortArrow field="unit"/></th>
+                                                    <th onClick={() => toggleSort('name')} className="px-4 py-3 w-40 sticky left-28 bg-slate-50 z-20 border-r border-slate-100 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.name', '姓名')} <SortArrow field="name"/></th>
+                                                    <th className="px-4 py-3 w-40">{t('users.columns.role', '身分權限')}</th>
+                                                    <th onClick={() => toggleSort('permission')} className="px-4 py-3 w-32 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.permission', '權限')} <SortArrow field="permission"/></th>
+                                                    <th onClick={() => toggleSort('username')} className="px-4 py-3 w-40 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.username', '帳號')} <SortArrow field="username"/></th>
+                                                    <th className="px-4 py-3 w-40">{t('users.columns.password', '密碼')}</th>
+                                                    <th onClick={() => toggleSort('phone')} className="px-4 py-3 w-44 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.phone', '電話')} <SortArrow field="phone"/></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 bg-white">
+                                                {filteredEngineerUsers.map((u, idx) => (
+                                                    <tr key={`${u.username}-${idx}`} className="hover:bg-slate-50 transition-colors group">
+                                                        <td className="px-4 py-4 text-center sticky left-0 bg-white group-hover:bg-slate-50 transition-colors z-10 flex justify-center gap-2">
+                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all border border-slate-100" title="Edit">
+                                                                <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
-                                                        )}
-                                                        <button onClick={() => setDeleteTarget(u.username)} className="text-red-500 hover:bg-red-100 p-2 rounded-xl transition-all hover:scale-110 shadow-sm border bg-white" title="Delete">
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </td>
-                                                    <td className="p-4 border-x-2 border-amber-100 text-amber-800 font-bold text-center">{u.order || 0}</td>
-                                                    <td className="p-4 border-r-2 border-amber-100 text-gray-900 font-bold">{u.unit || '-'}</td>
-                                                    <td className="p-4 border-r-2 border-amber-100 font-black text-gray-900 sticky left-0 bg-white z-10 group-hover:bg-amber-50">{u.name}</td>
-                                                    <td className="p-4 border-r-2 border-amber-100">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {(u.roles || [u.role]).map(r => (
-                                                                <span key={r} className={`px-2 py-1 rounded-lg text-[10px] font-black ${getRoleStyle(r)} border shadow-sm`}>
-                                                                    {getRoleLabel(r)}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </td>
-                                                    <td className="p-4 border-r-2 border-amber-100">
-                                                        {u.permission === 'read' ? (
-                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">
-                                                                <Shield className="w-3 h-3 mr-1" /> {t('users.permissions.readOnly', '唯讀 (Read-only)')}
+                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all border border-slate-100" title="Delete">
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-slate-500 font-medium text-center">{u.order || 0}</td>
+                                                        <td className="px-4 py-4 text-slate-900 font-bold">{u.unit || '-'}</td>
+                                                        <td className="px-4 py-4 font-bold text-slate-900 sticky left-28 bg-white z-10 group-hover:bg-slate-50 transition-colors border-r border-slate-100">{u.name}</td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {(u.roles || [u.role]).map(r => (
+                                                                    <span key={r} className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
+                                                                        {getRoleLabel(r)}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${u.permission === 'read' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-sky-50 text-sky-700 border-sky-100'}`}>
+                                                                {u.permission === 'read' ? t('users.permissions.readOnly', '唯讀') : t('users.permissions.edit', '編輯')}
                                                             </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-orange-100 text-orange-800 border border-orange-200">
-                                                                <Edit2 className="w-3 h-3 mr-1" /> {t('users.permissions.edit', '編輯 (Edit)')}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="p-4 border-r-2 border-amber-100 font-mono font-bold text-blue-700">{u.username}</td>
-                                                    <td className="p-4 border-r-2 border-amber-100 font-mono font-bold text-gray-600">{u.password}</td>
-                                                    <td className="p-4 border-r-2 border-amber-100 font-mono font-bold text-green-700">{u.phone || '-'}</td>
-                                                    <td className="p-4 font-mono text-gray-500">{u.email || '-'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
+                                                        </td>
+                                                        <td className="px-4 py-4 font-mono text-xs font-bold text-sky-700 uppercase tracking-tighter">{u.username}</td>
+                                                        <td className="px-4 py-4 font-mono text-xs text-slate-500">{u.password}</td>
+                                                        <td className="px-4 py-4 font-mono text-xs text-slate-600">{u.phone || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                {/* Modal Form */}
-                {showModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in backdrop-blur-sm">
-                        <div className="bg-white w-[600px] max-w-full rounded-3xl shadow-2xl relative overflow-hidden flex flex-col border-4 border-orange-200">
-                        <div className="bg-orange-100 p-6 flex justify-between items-center border-b-2 border-orange-200">
-                            <h3 className="font-black text-orange-900 flex items-center text-xl">
-                                {editingUsername ? <Edit2 className="w-6 h-6 mr-3" /> : <Plus className="w-6 h-6 mr-3" />} 
-                                {editingUsername ? t('users.modal.editTitle', '編輯帳號 / Edit Account') : t('users.modal.addTitle', '新增帳號 / Add Account')}
-                            </h3>
-                            <button onClick={closeModal} className="hover:bg-orange-200 rounded-full p-2 transition-colors text-orange-900">
-                                <X className="w-6 h-6"/>
+                    {/* Stake Admin Table - Modern Business Style */}
+                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                        <div 
+                            className="px-6 py-4 border-b border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex justify-between items-center"
+                            onClick={() => setIsStakeAdminExpanded(!isStakeAdminExpanded)}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Shield className="w-5 h-5 text-sky-600" />
+                                <h3 className="font-bold text-slate-800 text-base">
+                                    {t('users.stakeAdminSection', '主辦 (Stake Admin)')}
+                                </h3>
+                            </div>
+                            <div className="text-slate-400">
+                                 {isStakeAdminExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                            </div>
+                        </div>
+                        
+                        {isStakeAdminExpanded && (
+                            <div className="animate-fade-in">
+                                <div className="p-4 bg-white border-b border-slate-100">
+                                    <div className="relative max-w-sm">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                        <input 
+                                            type="text" 
+                                            placeholder={tString('users.searchPlaceholderStake', '搜尋主辦人員...')}
+                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
+                                            value={stakeAdminSearch}
+                                            onChange={e => setStakeAdminSearch(e.target.value)}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {filteredStakeAdminUsers.length === 0 ? (
+                                    <div className="p-12 text-center text-slate-400 italic text-sm">{t('users.emptyStakeAdmin', '目前無主辦帳號')}</div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left border-collapse table-fixed min-w-[1000px]">
+                                            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-widest text-[10px]">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-center w-28 sticky left-0 bg-slate-50 z-20 shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">{t('users.columns.action', '操作')}</th>
+                                                    <th onClick={() => toggleSort('order')} className="px-4 py-3 text-center w-20 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.unit_number', '序')} <SortArrow field="order"/></th>
+                                                    <th onClick={() => toggleSort('unit')} className="px-4 py-3 w-32 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.unit', '單位')} <SortArrow field="unit"/></th>
+                                                    <th onClick={() => toggleSort('name')} className="px-4 py-3 w-40 sticky left-28 bg-slate-50 z-20 border-r border-slate-100 shadow-[1px_0_0_0_rgba(0,0,0,0.05)] cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.name', '姓名')} <SortArrow field="name"/></th>
+                                                    <th className="px-4 py-3 w-40">{t('users.columns.role', '身分權限')}</th>
+                                                    <th onClick={() => toggleSort('permission')} className="px-4 py-3 w-32 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.permission', '權限')} <SortArrow field="permission"/></th>
+                                                    <th onClick={() => toggleSort('username')} className="px-4 py-3 w-40 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.username', '帳號')} <SortArrow field="username"/></th>
+                                                    <th className="px-4 py-3 w-40">{t('users.columns.password', '密碼')}</th>
+                                                    <th onClick={() => toggleSort('phone')} className="px-4 py-3 w-44 cursor-pointer hover:bg-slate-100 transition-colors">{t('users.columns.phone', '電話')} <SortArrow field="phone"/></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 bg-white">
+                                                {filteredStakeAdminUsers.map((u, idx) => (
+                                                    <tr key={`${u.username}-${idx}`} className="hover:bg-slate-50 transition-colors group">
+                                                        <td className="px-4 py-4 text-center sticky left-0 bg-white group-hover:bg-slate-50 transition-colors z-10 flex justify-center gap-2">
+                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all border border-slate-100" title="Edit">
+                                                                <Edit2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all border border-slate-100" title="Delete">
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-slate-500 font-medium text-center">{u.order || 0}</td>
+                                                        <td className="px-4 py-4 text-slate-900 font-bold">{u.unit || '-'}</td>
+                                                        <td className="px-4 py-4 font-bold text-slate-900 sticky left-28 bg-white z-10 group-hover:bg-slate-50 transition-colors border-r border-slate-100">{u.name}</td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {(u.roles || [u.role]).map(r => (
+                                                                    <span key={r} className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200">
+                                                                        {getRoleLabel(r)}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${u.permission === 'read' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-sky-50 text-sky-700 border-sky-100'}`}>
+                                                                {u.permission === 'read' ? t('users.permissions.readOnly', '唯讀') : t('users.permissions.edit', '編輯')}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-4 font-mono text-xs font-bold text-sky-700 uppercase tracking-tighter">{u.username}</td>
+                                                        <td className="px-4 py-4 font-mono text-xs text-slate-500">{u.password}</td>
+                                                        <td className="px-4 py-4 font-mono text-xs text-slate-600">{u.phone || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Modal Form - Modern Business Style */}
+            {showModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 animate-fade-in backdrop-blur-sm">
+                    <div className="bg-white w-[500px] max-w-full rounded-xl shadow-2xl relative overflow-hidden flex flex-col border border-slate-200">
+                        <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-slate-900 rounded-lg">
+                                    {editingUsername ? <Edit2 className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />} 
+                                </div>
+                                <h3 className="font-bold text-slate-900 text-lg">
+                                    {editingUsername ? t('users.modal.editTitle', '編輯帳號') : t('users.modal.addTitle', '新增帳號')}
+                                </h3>
+                            </div>
+                            <button onClick={closeModal} className="hover:bg-slate-200 rounded-full p-2 transition-colors text-slate-400 hover:text-slate-900">
+                                <X className="w-5 h-5"/>
                             </button>
                         </div>
                         
                         <div className="p-6 overflow-y-auto max-h-[80vh]">
-                            <form onSubmit={handleSaveUser} className="space-y-4">
+                            <form onSubmit={handleSaveUser} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.orderLabel', '支聯會編號 / ID')}</label>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.orderLabel', '支聯會編號')}</label>
                                         <input 
                                             type="number" 
                                             value={newUser.order || 0} 
                                             onChange={e => setNewUser({...newUser, order: parseInt(e.target.value) || 0})} 
-                                            className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" 
+                                            className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
                                             placeholder="0" 
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.unitLabel', '支聯會名稱 / Stake')}</label>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.unitLabel', '單位名稱')}</label>
                                         <input 
                                             type="text"
                                             value={newUser.unit || ''} 
                                             onChange={e => setNewUser({...newUser, unit: e.target.value})} 
-                                            className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm bg-white text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold"
-                                            placeholder={t('users.modal.unitPlaceholder', '請手動輸入單位名稱')}
+                                            className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all"
+                                            placeholder={tString('users.modal.unitPlaceholder', '單位名稱')}
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.nameLabel', '姓名 / Name')}</label>
-                                    <input type="text" value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})} className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" required placeholder={t('users.modal.nameLabel', '姓名 / Name')} />
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.nameLabel', '姓名')}</label>
+                                    <input 
+                                        type="text" 
+                                        value={newUser.name} 
+                                        onChange={e => setNewUser({...newUser, name: e.target.value})} 
+                                        className="w-full border border-slate-200 h-10 rounded-md px-4 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
+                                        required 
+                                        placeholder={tString('users.modal.nameLabel', '姓名')} 
+                                    />
                                 </div>
                                 
-                                {((newUser.roles?.includes('stake_admin') || newUser.role === 'stake_admin')) ? (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.permissionLabel', '主辦權限 / Permission')}</label>
-                                            <div className="flex gap-4">
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setNewUser({...newUser, permission: 'edit'})}
-                                                    className={`flex-1 flex items-center justify-center py-2 px-4 rounded-xl border-2 transition-all font-bold text-sm ${newUser.permission === 'edit' ? 'bg-orange-600 border-orange-600 text-white shadow-md' : 'bg-white border-orange-200 text-orange-900 hover:bg-orange-50'}`}
-                                                >
-                                                    <Edit2 className="w-4 h-4 mr-2" /> {t('users.permissions.edit', '編輯 (Edit)')}
-                                                </button>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setNewUser({...newUser, permission: 'read'})}
-                                                    className={`flex-1 flex items-center justify-center py-2 px-4 rounded-xl border-2 transition-all font-bold text-sm ${newUser.permission === 'read' ? 'bg-amber-100 border-amber-600 text-amber-900 shadow-md' : 'bg-white border-orange-200 text-orange-900 hover:bg-orange-50'}`}
-                                                >
-                                                    <Shield className="w-4 h-4 mr-2" /> {t('users.permissions.readOnly', '唯讀 (Read-only)')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.roleLabel', '權限 / Role (可複選 / Multi)')}</label>
-                                            <div className="border-2 border-orange-100 p-4 rounded-xl bg-orange-50 max-h-40 overflow-y-auto space-y-1">
-                                                {availableRoles.map(r => (
-                                                    <div key={r.val} onClick={() => toggleRole(r.val as Role)} className="flex items-center cursor-pointer select-none hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                                        <div className={`w-5 h-5 rounded-md mr-3 flex items-center justify-center border-2 ${ (newUser.roles?.includes(r.val as Role) || newUser.role === r.val) ? 'bg-orange-600 border-orange-600' : 'border-orange-300 bg-white' }`}>
-                                                            {(newUser.roles?.includes(r.val as Role) || newUser.role === r.val) && <Check className="w-4 h-4 text-white" />}
-                                                        </div>
-                                                        <span className="text-sm font-bold text-gray-700">{r.label}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.permissionLabel', '操作權限')}</label>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                type="button"
+                                                onClick={() => setNewUser({...newUser, permission: 'edit'})}
+                                                className={`flex-1 flex items-center justify-center h-10 rounded-md border text-sm font-bold transition-all ${newUser.permission === 'edit' ? 'bg-sky-600 border-sky-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                <Edit2 className="w-4 h-4 mr-2" /> {t('users.permissions.edit', '可編輯')}
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setNewUser({...newUser, permission: 'read'})}
+                                                className={`flex-1 flex items-center justify-center h-10 rounded-md border text-sm font-bold transition-all ${newUser.permission === 'read' ? 'bg-amber-100 border-amber-600 text-amber-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                <Shield className="w-4 h-4 mr-2" /> {t('users.permissions.readOnly', '僅唯讀')}
+                                            </button>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.roleLabel', '權限 / Role (可複選 / Multi)')}</label>
-                                            <div className="border-2 border-orange-100 p-4 rounded-xl bg-orange-50 max-h-40 overflow-y-auto space-y-1">
-                                                {availableRoles.map(r => (
-                                                    <div key={r.val} onClick={() => toggleRole(r.val as Role)} className="flex items-center cursor-pointer select-none hover:bg-orange-100 p-2 rounded-lg transition-colors">
-                                                        <div className={`w-5 h-5 rounded-md mr-3 flex items-center justify-center border-2 ${ (newUser.roles?.includes(r.val as Role) || newUser.role === r.val) ? 'bg-orange-600 border-orange-600' : 'border-orange-300 bg-white' }`}>
-                                                            {(newUser.roles?.includes(r.val as Role) || newUser.role === r.val) && <Check className="w-4 h-4 text-white" />}
-                                                        </div>
-                                                        <span className="text-sm font-bold text-gray-700">{r.label}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.permissionLabel', '操作權限 / Action Permission')}</label>
-                                            <div className="flex gap-4">
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setNewUser({...newUser, permission: 'edit'})}
-                                                    className={`flex-1 flex items-center justify-center py-2 px-4 rounded-xl border-2 transition-all font-bold text-sm ${newUser.permission === 'edit' ? 'bg-orange-600 border-orange-600 text-white shadow-md' : 'bg-white border-orange-200 text-orange-900 hover:bg-orange-50'}`}
-                                                >
-                                                    <Edit2 className="w-4 h-4 mr-2" /> {t('users.permissions.edit', '編輯 (Edit)')}
-                                                </button>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setNewUser({...newUser, permission: 'read'})}
-                                                    className={`flex-1 flex items-center justify-center py-2 px-4 rounded-xl border-2 transition-all font-bold text-sm ${newUser.permission === 'read' ? 'bg-amber-100 border-amber-600 text-amber-900 shadow-md' : 'bg-white border-orange-200 text-orange-900 hover:bg-orange-50'}`}
-                                                >
-                                                    <Shield className="w-4 h-4 mr-2" /> {t('users.permissions.readOnly', '唯讀 (Read-only)')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
 
-                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.usernameLabel', '帳號 / User ID')}</label>
-                                        <input type="text" value={newUser.username} onChange={e => setNewUser({...newUser, username: e.target.value})} className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" required placeholder={t('users.modal.usernameLabel', '帳號 / User ID')} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.passwordLabel', '密碼 / Password')}</label>
-                                        <input type="text" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" required placeholder={t('users.modal.passwordLabel', '密碼 / Password')} />
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.roleLabel', '角色身分 (可複選)')}</label>
+                                        <div className="border border-slate-100 p-3 rounded-md bg-slate-50 max-h-40 overflow-y-auto space-y-1">
+                                            {availableRoles.map(r => (
+                                                <div key={r.val} onClick={() => toggleRole(r.val as Role)} className="flex items-center cursor-pointer select-none hover:bg-white p-2 rounded-md transition-all group">
+                                                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all mr-3 ${ (newUser.roles?.includes(r.val as Role) || newUser.role === r.val) ? 'bg-sky-600 border-sky-600' : 'border-slate-300 bg-white group-hover:border-sky-500' }`}>
+                                                        {(newUser.roles?.includes(r.val as Role) || newUser.role === r.val) && <Check className="w-4 h-4 text-white" />}
+                                                    </div>
+                                                    <span className={`text-sm font-bold ${ (newUser.roles?.includes(r.val as Role) || newUser.role === r.val) ? 'text-sky-700' : 'text-slate-600' }`}>{r.label}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.phoneLabel', '行動電話 / Phone')}</label>
-                                        <div className="relative">
-                                            <Phone className="absolute left-3 top-3 w-4 h-4 text-orange-400" />
-                                            <input type="text" value={newUser.phone || ''} onChange={e => setNewUser({...newUser, phone: e.target.value})} className="w-full border-2 border-orange-200 pl-10 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" placeholder="09xx-xxx-xxx" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.columns.username', '帳號 (User ID)')}</label>
+                                            <input 
+                                                type="text" 
+                                                value={newUser.username} 
+                                                onChange={e => setNewUser({...newUser, username: e.target.value})} 
+                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono font-bold text-sky-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all uppercase" 
+                                                required 
+                                                placeholder="ID"
+                                                disabled={!!editingUsername}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.columns.phone', '電話')}</label>
+                                            <input 
+                                                type="tel" 
+                                                value={newUser.phone || ''} 
+                                                onChange={e => setNewUser({...newUser, phone: e.target.value})} 
+                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                placeholder="09xx..." 
+                                            />
                                         </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-black text-orange-900 uppercase mb-1">{t('users.modal.emailLabel', '電子信箱 / Email')}</label>
-                                        <input type="email" value={newUser.email || ''} onChange={e => setNewUser({...newUser, email: e.target.value})} className="w-full border-2 border-orange-200 p-2.5 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-300 outline-none font-bold" placeholder="example@gmail.com" />
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.columns.password', '密碼')}</label>
+                                            <input 
+                                                type="text" 
+                                                value={newUser.password} 
+                                                onChange={e => setNewUser({...newUser, password: e.target.value})} 
+                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                required 
+                                                placeholder="PW" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.columns.email', 'Email')}</label>
+                                            <input 
+                                                type="email" 
+                                                value={newUser.email || ''} 
+                                                onChange={e => setNewUser({...newUser, email: e.target.value})} 
+                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                placeholder="Email" 
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-6 flex justify-end">
-                                    <button type="submit" className="bg-orange-600 text-white px-8 py-3 rounded-xl font-black text-sm hover:bg-orange-700 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] flex items-center transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                                        <Save className="w-5 h-5 mr-3" /> {t('users.modal.saveButton', '儲存帳號 / Save Account')}
+                                <div className="flex gap-3 pt-6 border-t border-slate-100">
+                                    <button 
+                                        type="button" 
+                                        onClick={closeModal} 
+                                        className="flex-1 h-11 border border-slate-200 text-slate-600 rounded-md text-sm font-bold hover:bg-slate-50 transition-all"
+                                    >
+                                        {t('common.cancel', '取消')}
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-1 h-11 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                                    >
+                                        <Save className="w-4 h-4" /> {t('common.save', '儲存帳號')}
                                     </button>
                                 </div>
                             </form>
@@ -651,7 +655,6 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                 </div>
             )}
         </div>
-    </div>
     );
 };
 

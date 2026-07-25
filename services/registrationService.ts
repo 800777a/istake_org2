@@ -92,6 +92,7 @@ export const saveFamilyRegistration = async (input: FamilyGroupInput, eventId: s
         primary_unit: input.primary_unit,
         payment_method: input.payment_method,
         transfer_last_5: input.transfer_last_5 || '',
+        needs_self_paid_insurance: input.needs_self_paid_insurance || false,
         created_at: new Date().toISOString()
     };
     batch.set(doc(db, COLL_FAMILIES, familyId), familyData);
@@ -154,6 +155,7 @@ export const saveFamilyRegistration = async (input: FamilyGroupInput, eventId: s
             boarding_place: m.boarding_place || '', 
             payment_method: input.payment_method,
             transfer_last_5: input.transfer_last_5 || '', 
+            needs_self_paid_insurance: input.needs_self_paid_insurance || false,
             amount_due: price,
             dietary_preference: m.dietary_preference || DietaryType.NO_MEAL,
             is_paid: false,
@@ -182,12 +184,77 @@ export const updateRegistrationField = async (regId: string, field: string, valu
     await updateDoc(doc(db, COLL_REGS, regId), { [field]: value });
 };
 
+export const batchUpdateRegistrationField = async (regIds: string[], field: string, value: any) => {
+    const batch = writeBatch(db);
+    regIds.forEach(id => {
+        batch.update(doc(db, COLL_REGS, id), { [field]: value });
+    });
+    await batch.commit();
+};
+
+export const batchUpdateRegistrationFields = async (updates: { regId: string, data: Record<string, any> }[]) => {
+    const batch = writeBatch(db);
+    updates.forEach(u => {
+        batch.update(doc(db, COLL_REGS, u.regId), u.data);
+    });
+    await batch.commit();
+};
+
 export const deleteRegistration = async (regId: string) => {
     await deleteDoc(doc(db, COLL_REGS, regId));
 };
 
 export const updateRegistration = async (reg: Registration) => {
-    const safeReg = JSON.parse(JSON.stringify(reg));
+    // Extract only necessary fields to avoid circular structure issues
+    const safeReg = {
+        reg_id: reg.reg_id,
+        serial_number: reg.serial_number,
+        endowment_serial_number: reg.endowment_serial_number,
+        baptism_serial_number: reg.baptism_serial_number,
+        sealing_serial_number: reg.sealing_serial_number,
+        event_id: reg.event_id,
+        family_group_id: reg.family_group_id,
+        is_primary_contact: reg.is_primary_contact,
+        primary_contact_name: reg.primary_contact_name,
+        name: reg.name,
+        phone: reg.phone,
+        contact_phone: reg.contact_phone,
+        identity_id: reg.identity_id,
+        birth_date: reg.birth_date,
+        unit: reg.unit,
+        identity_type: reg.identity_type,
+        meal_item: reg.meal_item,
+        room_item: reg.room_item,
+        other_item: reg.other_item,
+        guardian: reg.guardian,
+        trip_type: reg.trip_type,
+        ordinance_type: reg.ordinance_type,
+        ordinance_item: reg.ordinance_item,
+        ceremony_session: reg.ceremony_session,
+        is_staff: reg.is_staff,
+        staff_role: reg.staff_role,
+        is_new_member: reg.is_new_member,
+        boarding_place: reg.boarding_place,
+        payment_method: reg.payment_method,
+        transfer_last_5: reg.transfer_last_5,
+        amount_due: reg.amount_due,
+        dietary_preference: reg.dietary_preference,
+        is_paid: reg.is_paid,
+        is_checked_in: reg.is_checked_in,
+        is_checked_in_to: reg.is_checked_in_to,
+        is_checked_in_back: reg.is_checked_in_back,
+        admin_note: reg.admin_note,
+        status: reg.status,
+        bus_assigned: reg.bus_assigned,
+        seat_no: reg.seat_no,
+        created_at: reg.created_at,
+        has_feedback: reg.has_feedback,
+        duty_description: reg.duty_description,
+        personal_goal: reg.personal_goal,
+        safety_status: reg.safety_status,
+        ancestors: reg.ancestors,
+        trivia_score: reg.trivia_score
+    };
     await updateDoc(doc(db, COLL_REGS, reg.reg_id), safeReg);
 };
 
@@ -265,7 +332,7 @@ export const lookupRegistration = async (unit: string, name: string, password: s
     );
     const snapFamily = await getDocs(qFamily);
     
-    if (!snapFamily.empty) {
+    if (!snapFamily.empty && snapFamily.docs[0]) {
         const familyId = snapFamily.docs[0].id;
         return getFamilyMembers(familyId, eventId);
     }
@@ -279,7 +346,7 @@ export const lookupRegistration = async (unit: string, name: string, password: s
         where('is_primary_contact', '==', true)
     );
     const snapRegs = await getDocs(qRegs);
-    if (!snapRegs.empty) {
+    if (!snapRegs.empty && snapRegs.docs[0]) {
         const familyId = snapRegs.docs[0].data().family_group_id;
         return getFamilyMembers(familyId, eventId);
     }
@@ -411,14 +478,16 @@ export const updateFamilyRegistration = async (familyId: string, input: FamilyGr
             contact_phone: input.primary_real_phone,
             primary_unit: input.primary_unit,
             payment_method: input.payment_method,
-            transfer_last_5: input.transfer_last_5
+            transfer_last_5: input.transfer_last_5,
+            needs_self_paid_insurance: input.needs_self_paid_insurance
         });
 
         const regs: Registration[] = input.members.map(m => ({
             ...m,
             reg_id: m.temp_id,
             event_id: eventId,
-            family_group_id: familyId
+            family_group_id: familyId,
+            needs_self_paid_insurance: input.needs_self_paid_insurance
         } as any as Registration));
 
         regs.forEach(r => batch.set(doc(db, COLL_REGS, r.reg_id), r, { merge: true }));

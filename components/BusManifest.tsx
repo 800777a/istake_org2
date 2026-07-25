@@ -93,7 +93,7 @@ const BusManifest: React.FC<BusManifestProps> = ({ busName, event, registrations
 
         {/* Footer */}
         <div className="mt-8 pt-4 border-t border-gray-300 text-xs text-center text-gray-400">
-            聖殿之旅管理系統 • 自動產生
+            聖殿旅行團管理系統 • 自動產生
         </div>
       </div>
     </div>

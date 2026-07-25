@@ -104,152 +104,173 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
             {/* Inner Service Personnel Modal */}
             {showServicePersonnel ? (
-                <div className="bg-white w-[600px] max-w-full rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative z-[110]">
-                    <div className="bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-slate-900 p-5 flex justify-between items-center shrink-0">
-                        <h3 className="font-bold flex items-center text-lg tracking-wide">
-                            <ShieldCheck className="w-5 h-5 mr-2" />
-                            服務同工
-                        </h3>
-                        <button onClick={() => setShowServicePersonnel(false)} className="hover:bg-white/20 rounded-full p-2 transition-colors"><X className="w-5 h-5"/></button>
+                <div className="bg-white w-[600px] max-w-full rounded-[2rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative z-[110] border-2 border-slate-100 animate-in zoom-in-95 duration-300">
+                    <div className="bg-indigo-900 text-white p-6 flex justify-between items-center shrink-0 border-b border-indigo-950">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-white/10 rounded-xl border border-white/10">
+                                <ShieldCheck className="w-6 h-6 text-indigo-300" />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-xl tracking-tight leading-none mb-1">工作人員名單</h3>
+                                <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest opacity-60">Service Personnel Registry</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowServicePersonnel(false)} className="hover:bg-white/10 rounded-xl p-3 transition-all active:scale-90"><X className="w-6 h-6"/></button>
                     </div>
-                    <div className="p-0 overflow-y-auto bg-gray-50 flex-1 min-h-[300px]">
+                    <div className="p-0 overflow-y-auto bg-slate-50 flex-1 min-h-[300px] custom-scrollbar">
                         {sortedServicePersonnel.length > 0 ? (
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gradient-to-t from-yellow-100 to-amber-200 text-black font-bold sticky top-0 shadow-sm">
+                            <table className="w-full text-left border-collapse">
+                                <thead className="bg-white/80 backdrop-blur-md text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] sticky top-0 z-20 shadow-sm border-b border-slate-100">
                                     <tr>
-                                        <th className="p-4 w-1/3">單位</th>
-                                        <th className="p-4 w-1/3">職位</th>
-                                        <th className="p-4 w-1/3">姓名</th>
+                                        <th className="p-5 w-1/3">單位 (Unit)</th>
+                                        <th className="p-5 w-1/3">職位 (Position)</th>
+                                        <th className="p-5 w-1/3">姓名 (Name)</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white">
+                                <tbody className="divide-y divide-slate-100 bg-white">
                                     {sortedServicePersonnel.map((p) => (
-                                        <tr key={p.id} className="hover:bg-indigo-50/20">
-                                            <td className="p-4 text-gray-700">{p.unit}</td>
-                                            <td className="p-4 text-gray-600">{p.calling}</td>
-                                            <td className="p-4 text-black">{p.name}</td>
+                                        <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
+                                            <td className="p-5 text-slate-600 font-bold text-sm">{p.unit}</td>
+                                            <td className="p-5 text-slate-400 font-medium text-xs">{p.calling}</td>
+                                            <td className="p-5 text-slate-900 font-black text-sm">{p.name}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         ) : (
-                            <div className="p-10 text-center text-gray-400">
-                                目前尚無服務同工名單
+                            <div className="p-16 text-center flex flex-col items-center justify-center">
+                                <AlertCircle className="w-16 h-16 text-slate-200 mb-6" />
+                                <p className="text-slate-400 font-black uppercase tracking-widest text-xs">目前尚無服務同工名單</p>
                             </div>
                         )}
                     </div>
-                    <div className="p-4 border-t bg-white text-center shrink-0">
+                    <div className="p-6 border-t border-slate-100 bg-slate-50 shrink-0">
                         <button 
                             onClick={() => setShowServicePersonnel(false)}
-                            className="w-full bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-slate-900 px-6 py-3 rounded-lg font-bold hover:from-amber-400 hover:to-yellow-600 shadow-sm transition-colors"
+                            className="w-full bg-white text-slate-900 h-14 rounded-2xl font-black text-sm hover:bg-slate-900 hover:text-white transition-all shadow-md active:scale-95 border-2 border-slate-100"
                         >
-                            返回登入
+                            返回登入入口
                         </button>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white/95 backdrop-blur-xl w-full max-w-sm rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] overflow-hidden border border-white relative z-[105]">
-                    <div className="h-1.5 w-full bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300"></div>
+                <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden border-2 border-slate-100 relative z-[105] animate-in zoom-in-95 duration-300">
+                    <div className="h-2 w-full bg-indigo-600"></div>
                     <button 
                         onClick={onClose}
-                        className="absolute right-4 top-5 text-gray-400 hover:text-gray-700 transition-colors p-1"
+                        className="absolute right-6 top-8 text-slate-400 hover:text-slate-900 transition-all p-2 hover:bg-slate-50 rounded-xl active:scale-90"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-6 h-6" />
                     </button>
-                    <div className="p-8">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 text-center">同工登入</h2>
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            
-                            <div className="mb-4">
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowServicePersonnel(true)}
-                                    className="w-full bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-slate-900 font-bold py-3 h-12 rounded-xl shadow-sm hover:from-amber-400 hover:to-yellow-600 transition-colors flex items-center justify-center text-sm"
-                                >
-                                    查看同工名單
-                                </button>
+                    <div className="p-10">
+                        <div className="flex flex-col items-center mb-10">
+                            <div className="w-16 h-16 bg-indigo-50 rounded-[1.25rem] flex items-center justify-center text-indigo-600 mb-6 shadow-inner border border-indigo-100">
+                                <Lock size={32} />
                             </div>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">同工系統登入</h2>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-3">Personnel Authorization required</p>
+                        </div>
 
+                        <form onSubmit={handleLogin} className="space-y-6">
                             <div className="space-y-5">
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <UserIcon className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-widest">管理帳號 (ID)</label>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                            <UserIcon className="h-5 w-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                        </div>
+                                        <input
+                                            type={showUsername ? "text" : "password"}
+                                            required
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            className="pl-14 pr-12 block w-full border-slate-100 rounded-[1.25rem] shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
+                                            placeholder="Account ID"
+                                            disabled={loginLockCountdown > 0}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowUsername(!showUsername)}
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-300 hover:text-indigo-600 focus:outline-none"
+                                            disabled={loginLockCountdown > 0}
+                                        >
+                                            {showUsername ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
                                     </div>
-                                    <input
-                                        type={showUsername ? "text" : "password"}
-                                        required
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="pl-10 pr-10 block w-full border-gray-300 rounded-lg shadow-sm p-3.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm bg-gray-50 focus:bg-white text-gray-900"
-                                        placeholder="帳號"
-                                        disabled={loginLockCountdown > 0}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowUsername(!showUsername)}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                        disabled={loginLockCountdown > 0}
-                                    >
-                                        {showUsername ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </button>
                                 </div>
 
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-widest">驗證密碼 (Token)</label>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                            <Lock className="h-5 w-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                        </div>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="pl-14 pr-12 block w-full border-slate-100 rounded-[1.25rem] shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
+                                            placeholder="Security Password"
+                                            disabled={loginLockCountdown > 0}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-300 hover:text-indigo-600 focus:outline-none"
+                                            disabled={loginLockCountdown > 0}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
                                     </div>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        required
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="pl-10 pr-10 block w-full border-gray-300 rounded-lg shadow-sm p-3.5 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-sm bg-gray-50 focus:bg-white text-gray-900"
-                                        placeholder="密碼"
-                                        disabled={loginLockCountdown > 0}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                        disabled={loginLockCountdown > 0}
-                                    >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                    </button>
                                 </div>
                             </div>
 
                             {error && (
-                                <div className="flex items-center text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100 animate-pulse">
-                                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                                <div className="flex items-center text-[11px] font-black bg-rose-50 text-rose-600 p-4 rounded-2xl border-2 border-rose-100 animate-in shake duration-300">
+                                    <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
                                     {error}
                                 </div>
                             )}
 
-                            <button
-                                type="submit"
-                                disabled={loading || loginLockCountdown > 0}
-                                className={`w-full flex justify-center py-3 h-12 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-400 transition-all hover:-translate-y-0.5 mt-4 
-                                    ${loginLockCountdown > 0 ? 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 cursor-not-allowed text-slate-900 opacity-80' : 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 hover:from-amber-400 hover:to-yellow-600'}
-                                `}
-                            >
-                                {loading ? (
-                                    <span className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        登入系統中...
-                                    </span>
-                                ) : loginLockCountdown > 0 ? (
-                                    <span className="flex items-center">
-                                        <Clock className="w-4 h-4 mr-2" />
-                                        請等待 {loginLockCountdown} 秒
-                                    </span>
-                                ) : '登入'}
-                            </button>
+                            <div className="pt-4 space-y-4">
+                                <button
+                                    type="submit"
+                                    disabled={loading || loginLockCountdown > 0}
+                                    className={`w-full flex justify-center items-center h-14 px-6 rounded-[1.25rem] shadow-xl text-base font-black transition-all hover:-translate-y-1 active:scale-95
+                                        ${loginLockCountdown > 0 
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                                            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'}
+                                    `}
+                                >
+                                    {loading ? (
+                                        <span className="flex items-center">
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            正在驗證
+                                        </span>
+                                    ) : loginLockCountdown > 0 ? (
+                                        <span className="flex items-center">
+                                            <Clock className="w-5 h-5 mr-3" />
+                                            請等待 {loginLockCountdown} 秒
+                                        </span>
+                                    ) : '立即登入系統'}
+                                </button>
+                                
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowServicePersonnel(true)}
+                                    className="w-full text-slate-400 font-black py-2 text-xs hover:text-indigo-600 transition-colors flex items-center justify-center gap-2 uppercase tracking-widest"
+                                >
+                                    <ShieldCheck size={16} />
+                                    查看服務同工名單
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

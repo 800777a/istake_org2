@@ -84,7 +84,7 @@ export const saveComment = async (eventId: string, c: Partial<Comment> & { autho
 export const addComment = saveComment;
 
 export const subscribeToComments = (eventId: string, callback: (list: Comment[]) => void) => {
-    const q = query(collection(db, COLL_COMMENTS), where('event_id', '==', eventId), orderBy('created_at', 'desc'));
+    const q = query(collection(db, COLL_COMMENTS), where('event_id', '==', eventId));
     return onSnapshot(q, (snap) => {
         const list: Comment[] = [];
         snap.forEach(d => list.push(d.data() as Comment));

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Bus, Plus, Trash2, ChevronUp, ChevronDown, Edit2, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BusRoute, RoutePlanItem } from '../../../types';
@@ -20,7 +20,7 @@ interface BusRouteCardProps {
 const BusRouteCard: React.FC<BusRouteCardProps> = ({
     busName, route, isCollapsed, onToggleCollapse, onFieldUpdate, onAddItem, onUpdateItem, onRemoveItem, theme
 }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
 
     const renderTripTable = (type: 'outbound' | 'return') => {
         const items = type === 'outbound' ? (route.outbound || []) : (route.returnTrip || []);

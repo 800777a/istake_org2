@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { EventData, Registration, GlobalSettings, OrdinanceItem, RegStatus, OrdinanceSessionItem } from '../../types';
 import { updateEvent, batchUpdateSession, updateRegistrationField, assignMissingSerialNumbers } from '../../services/sheetService';
 import { BookOpen, Download, Zap, Clock, ArrowUp, ArrowDown, ChevronUp, ChevronDown } from 'lucide-react';
@@ -17,8 +17,20 @@ interface TempleTabProps {
     onUpdateEvent: (e: EventData) => void;
 }
 
+// Rainbow sequence themes for unit sections (Light bg + Dark text & borders)
+const rainbowThemes = [
+    { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-300', hover: 'hover:bg-red-200', accent: 'bg-red-50' },
+    { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', hover: 'hover:bg-orange-200', accent: 'bg-orange-50' },
+    { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-300', hover: 'hover:bg-amber-200', accent: 'bg-amber-50' },
+    { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-300', hover: 'hover:bg-emerald-200', accent: 'bg-emerald-50' },
+    { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300', hover: 'hover:bg-blue-200', accent: 'bg-blue-50' },
+    { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-300', hover: 'hover:bg-indigo-200', accent: 'bg-indigo-50' },
+    { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300', hover: 'hover:bg-purple-200', accent: 'bg-purple-50' },
+];
+
 const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, settings, onRefresh, onUpdateEvent }) => {
-    const { t, i18n } = useTranslation();
+    const { t, tString, currentLang: langCode } = useI18n();
+    const i18n = { language: langCode }; // Mock i18n object for compatibility
     const [globalEndowmentTime, setGlobalEndowmentTime] = useState<string>('');
     const [globalBaptismTime, setGlobalBaptismTime] = useState<string>('');
     const [globalSealingTime, setGlobalSealingTime] = useState<string>('');
@@ -178,8 +190,8 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             let valB: any = '';
 
             if (sortState.key === 'unit') {
-                valA = settings.units.indexOf(a.unit);
-                valB = settings.units.indexOf(b.unit);
+                valA = (settings.units || []).indexOf(a.unit);
+                valB = (settings.units || []).indexOf(b.unit);
                 // If unit not in list, put at end
                 if (valA === -1) valA = 999;
                 if (valB === -1) valB = 999;
@@ -229,70 +241,80 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
         });
 
         return (
-            <div className="overflow-x-auto max-h-60 md:max-h-full overflow-y-auto">
-                <table className="w-full text-xs text-left table-fixed">
-                    <thead className="bg-white border-b sticky top-0 z-20">
-                        <tr>
-                            <th className="p-2 w-10 text-gray-700 bg-white">#</th>
-                            <th className="p-2 w-24 text-gray-700 bg-white cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('unit')}>{t('common.col.unit', '單位')} {renderSortIcon(typeName, 'unit')}</th>
-                            <th className="p-2 w-20 text-gray-700 bg-white cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('serial_number')}>{t('common.col.serialNumber', '編號')} {renderSortIcon(typeName, 'serial_number')}</th>
-                            <th className="p-2 w-32 text-gray-700 sticky left-0 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.1)] z-30 cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('name')}>{t('common.col.name', '姓名')} {renderSortIcon(typeName, 'name')}</th>
-                            <th className="p-2 w-20 text-gray-700 bg-white cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('gender')}>{t('common.col.gender', '性別')} {renderSortIcon(typeName, 'gender')}</th>
-                            <th className="p-2 w-20 text-gray-700 bg-white cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('booking')}>{t('common.col.reservation', '預約')} {renderSortIcon(typeName, 'booking')}</th>
-                            <th className="p-2 w-32 text-gray-700 bg-white cursor-pointer hover:bg-gray-50" onClick={() => onHeaderClick('session')}>{t('common.col.session', '場次')} {renderSortIcon(typeName, 'session')}</th>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                    <thead className="bg-white/80 border-b border-slate-200 sticky top-0 z-20">
+                        <tr className="text-[11px] text-slate-500 uppercase tracking-widest font-bold">
+                            <th className="p-3 w-10">#</th>
+                            <th className="p-3 w-24 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('unit')}>{t('common.col.unit', '單位')} {renderSortIcon(typeName, 'unit')}</th>
+                            <th className="p-3 w-20 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('serial_number')}>{t('common.col.serialNumber', '編號')} {renderSortIcon(typeName, 'serial_number')}</th>
+                            <th className="p-3 w-32 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('name')}>{t('common.col.name', '姓名')} {renderSortIcon(typeName, 'name')}</th>
+                            <th className="p-3 w-20 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('gender')}>{t('common.col.gender', '性別')} {renderSortIcon(typeName, 'gender')}</th>
+                            <th className="p-3 w-24 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('booking')}>{t('common.col.reservation', '預約')} {renderSortIcon(typeName, 'booking')}</th>
+                            <th className="p-3 w-32 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => onHeaderClick('session')}>{t('common.col.session', '場次')} {renderSortIcon(typeName, 'session')}</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y">
+                    <tbody className="divide-y divide-slate-100 bg-white/60">
                         {list.map((r, idx) => {
                             const gender = getGenderFromId(r.identity_id) === '1' ? t('common.gender.male_label', '弟兄') : t('common.gender.female_label', '姊妹');
                             let bookingStatus = '';
-                            let bookingColor = '';
+                            let badgeClass = '';
                             if (typeName === 'endowment') {
                                 const cap = currentEvent.endowment_capacity || 0;
                                 const rank = endowmentRanks.get(r.reg_id) || 999999;
-                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位設定'); bookingColor = 'text-gray-400'; }
-                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); bookingColor = 'text-green-600 bg-green-100 px-1 rounded'; }
-                                else { bookingStatus = t('common.status.waiting', '候補'); bookingColor = 'text-orange-600 bg-orange-100 px-1 rounded'; }
+                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位'); badgeClass = 'bg-slate-50 text-slate-400 border-slate-200'; }
+                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100'; }
+                                else { bookingStatus = t('common.status.waiting', '候補'); badgeClass = 'bg-amber-50 text-amber-700 border-amber-100'; }
                             } else if (typeName === 'baptism') {
                                 const cap = currentEvent.baptism_capacity || 0;
                                 const rank = baptismRanks.get(r.reg_id) || 999999;
-                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位設定'); bookingColor = 'text-gray-400'; }
-                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); bookingColor = 'text-green-600 bg-green-100 px-1 rounded'; }
-                                else { bookingStatus = t('common.status.waiting', '候補'); bookingColor = 'text-orange-600 bg-orange-100 px-1 rounded'; }
+                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位'); badgeClass = 'bg-slate-50 text-slate-400 border-slate-200'; }
+                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100'; }
+                                else { bookingStatus = t('common.status.waiting', '候補'); badgeClass = 'bg-amber-50 text-amber-700 border-amber-100'; }
                             } else if (typeName === 'sealing') {
                                 const cap = currentEvent.sealing_capacity || 0;
                                 const rank = sealingRanks.get(r.reg_id) || 999999;
-                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位設定'); bookingColor = 'text-gray-400'; }
-                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); bookingColor = 'text-green-600 bg-green-100 px-1 rounded'; }
-                                else { bookingStatus = t('common.status.waiting', '候補'); bookingColor = 'text-orange-600 bg-orange-100 px-1 rounded'; }
+                                if (cap === 0) { bookingStatus = t('stake.temple.status.noSeatConfig', '無座位'); badgeClass = 'bg-slate-50 text-slate-400 border-slate-200'; }
+                                else if (rank <= cap) { bookingStatus = t('common.status.success', '成功'); badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100'; }
+                                else { bookingStatus = t('common.status.waiting', '候補'); badgeClass = 'bg-amber-50 text-amber-700 border-amber-100'; }
                             }
                             
                             return (
-                                <tr key={r.reg_id} className="hover:bg-purple-50">
-                                    <td className="p-2 text-gray-500">{idx + 1}</td>
-                                    <td className="p-2 text-gray-800">{r.unit}</td>
-                                    <td className="p-2 font-mono font-bold text-gray-800 bg-white">
+                                <tr key={r.reg_id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="p-3 text-slate-400">{idx + 1}</td>
+                                    <td className="p-3 text-slate-600">{r.unit}</td>
+                                    <td className="p-3 font-mono font-bold text-slate-900">
                                         {typeName === 'endowment' 
                                             ? (r.endowment_serial_number || '-') 
                                             : (typeName === 'baptism' ? (r.baptism_serial_number || '-') : (r.sealing_serial_number || '-'))}
                                     </td>
-                                    <td className="p-2 font-bold text-gray-800 sticky left-0 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.1)] z-10 group-hover:bg-purple-50">{r.name}</td>
-                                    <td className="p-2 text-gray-600">{gender}</td>
-                                    <td className="p-2 text-xs font-bold"><span className={bookingColor}>{bookingStatus}</span></td>
-                                    <td className="p-2">
+                                    <td className="p-3 font-bold text-slate-900">{r.name}</td>
+                                    <td className="p-3 text-slate-600">{gender}</td>
+                                    <td className="p-3">
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${badgeClass}`}>
+                                            {bookingStatus}
+                                        </span>
+                                    </td>
+                                    <td className="p-3">
                                         <select 
                                             value={r.ceremony_session || ''}
                                             onChange={e => handleSessionUpdate(r.reg_id, e.target.value)}
-                                            className="border rounded p-1 text-[10px] text-gray-800 bg-white"
+                                            className="w-full border border-slate-200 rounded p-1 text-xs text-slate-700 bg-white"
                                         >
-                                            <option value="">{t('common.status.unassigned', '未指定')}</option>
+                                            <option value="">{tString('common.status.unassigned', '未指定')}</option>
                                             {slots.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </td>
                                 </tr>
                             );
                         })}
-                        {list.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-400">{t('common.status.noData', '尚無資料')}</td></tr>}
+                        {list.length === 0 && (
+                            <tr>
+                                <td colSpan={7} className="p-12 text-center text-slate-400 italic">
+                                    {t('common.status.noData', '尚無資料')}
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
@@ -343,58 +365,60 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
         const totalAssigned = data.reduce((sum, s) => sum + getAssignedCount(s.time), 0);
 
         return (
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1">
-                <h4 className="font-bold text-gray-800 text-sm mb-3 text-center">{title}</h4>
-                <table className="w-full text-[10px] text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b">
-                            <th className="p-1 border text-center">{t('common.col.session', '場次')}</th>
-                            <th className="p-1 border text-center">{t('common.col.time', '時間')}</th>
-                            <th className="p-1 border text-center">{t('common.col.seats', '座位')}</th>
-                            <th className="p-1 border text-center">{t('common.col.assigned', '指定')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row, idx) => (
-                            <tr key={idx} className="border-b">
-                                <td className="p-1 border">
-                                    <input 
-                                        type="text" 
-                                        className="w-full p-0.5 border-0 text-center focus:ring-0" 
-                                        value={row.name} 
-                                        onChange={e => handleRowChange(idx, 'name', e.target.value)}
-                                    />
-                                </td>
-                                <td className="p-1 border">
-                                    <select 
-                                        className="w-full p-0.5 border-0 text-center focus:ring-0 bg-transparent"
-                                        value={row.time}
-                                        onChange={e => handleRowChange(idx, 'time', e.target.value)}
-                                    >
-                                        <option value="">-</option>
-                                        {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                </td>
-                                <td className="p-1 border text-center">
-                                    <input 
-                                        type="number" 
-                                        className="w-10 p-0.5 border-0 text-center focus:ring-0 bg-transparent font-bold" 
-                                        value={row.capacity || ''} 
-                                        onChange={e => handleRowChange(idx, 'capacity', parseInt(e.target.value) || 0)}
-                                    />
-                                </td>
-                                <td className="p-1 border text-center font-bold text-blue-600">
-                                    {getAssignedCount(row.time)}
-                                </td>
+            <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex-1">
+                <h4 className="font-bold text-slate-800 text-sm mb-4 text-center">{title}</h4>
+                <div className="overflow-hidden rounded-md border border-slate-200">
+                    <table className="w-full text-[11px] text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="p-2 border-r border-slate-200 text-center text-slate-500 font-bold uppercase tracking-wider">{t('common.col.session', '場次')}</th>
+                                <th className="p-2 border-r border-slate-200 text-center text-slate-500 font-bold uppercase tracking-wider">{t('common.col.time', '時間')}</th>
+                                <th className="p-2 border-r border-slate-200 text-center text-slate-500 font-bold uppercase tracking-wider">{t('common.col.seats', '座位')}</th>
+                                <th className="p-2 text-center text-slate-500 font-bold uppercase tracking-wider">{t('common.col.assigned', '指定')}</th>
                             </tr>
-                        ))}
-                        <tr className="bg-gray-50 font-bold">
-                            <td colSpan={2} className="p-1 border text-right">{t('common.label.total', '合計')}:</td>
-                            <td className="p-1 border text-center">{totalCapacity}</td>
-                            <td className="p-1 border text-center text-blue-700">{totalAssigned}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {data.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                    <td className="p-2 border-r border-slate-200">
+                                        <input 
+                                            type="text" 
+                                            className="w-full p-0.5 border-0 text-center focus:ring-0 bg-transparent text-slate-700 font-medium" 
+                                            value={row.name} 
+                                            onChange={e => handleRowChange(idx, 'name', e.target.value)}
+                                        />
+                                    </td>
+                                    <td className="p-2 border-r border-slate-200">
+                                        <select 
+                                            className="w-full p-0.5 border-0 text-center focus:ring-0 bg-transparent text-slate-700"
+                                            value={row.time}
+                                            onChange={e => handleRowChange(idx, 'time', e.target.value)}
+                                        >
+                                            <option value="">-</option>
+                                            {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </td>
+                                    <td className="p-2 border-r border-slate-200 text-center">
+                                        <input 
+                                            type="number" 
+                                            className="w-10 p-0.5 border-0 text-center focus:ring-0 bg-transparent font-bold text-slate-900" 
+                                            value={row.capacity || ''} 
+                                            onChange={e => handleRowChange(idx, 'capacity', parseInt(e.target.value) || 0)}
+                                        />
+                                    </td>
+                                    <td className="p-2 text-center font-bold text-sky-600">
+                                        {getAssignedCount(row.time)}
+                                    </td>
+                                </tr>
+                            ))}
+                            <tr className="bg-slate-50 font-bold text-slate-900 border-t border-slate-200">
+                                <td colSpan={2} className="p-2 text-right border-r border-slate-200 text-slate-500">{t('common.label.total', '合計')}:</td>
+                                <td className="p-2 text-center border-r border-slate-200">{totalCapacity}</td>
+                                <td className="p-2 text-center text-sky-700">{totalAssigned}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };
@@ -405,7 +429,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     // Calculate unit-specific ordinance counts for assigned people
     const unitStats = useMemo(() => {
         const stats: Record<string, { end: number, bap: number, seal: number, endWait: number, bapWait: number, sealWait: number }> = {};
-        settings.units.forEach(u => stats[u] = { end: 0, bap: 0, seal: 0, endWait: 0, bapWait: 0, sealWait: 0 });
+        (settings.units || []).forEach(u => stats[u] = { end: 0, bap: 0, seal: 0, endWait: 0, bapWait: 0, sealWait: 0 });
         
         registrations.forEach(r => {
             if (r.status === RegStatus.NORMAL) {
@@ -427,7 +451,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             }
         });
         return stats;
-    }, [registrations, settings.units]);
+    }, [registrations, (settings.units || [])]);
 
     // Update settings wrappers
     const updateEndowmentSettings = async (newSettings: OrdinanceSessionItem[]) => {
@@ -452,37 +476,37 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     };
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-8">
             {msg && <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />}
-            <div className="bg-fuchsia-50/50 p-8 rounded-3xl border-2 border-fuchsia-100 shadow-inner">
+            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm">
                 <RegistrationDashboard 
                     activeEvent={currentEvent}
                     eventStats={vehicleStats}
                     ordinanceStats={ordinanceStats}
                     deadlineDisplay={currentEvent.registrationDeadline ? new Date(currentEvent.registrationDeadline).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('common.status.notSet', '未設定')}
                     isClosed={currentEvent.status === 'cancelled' || currentEvent.is_registration_open === false}
-                    lang={i18n.language.startsWith('zh') ? 'zh' : 'en'}
+                    lang={langCode.startsWith('zh') ? 'zh' : 'en'}
                     onAssignOrdinanceSerials={handleAssignSerials}
                 />
             </div>
             
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 <OrdinanceSettingsTable 
-                    title={t('stake.temple.title.endowmentSettings', '恩道門教儀座位設定')}
+                    title={tString('stake.temple.title.endowmentSettings', '恩道門教儀座位設定')}
                     settings={currentEvent.endowmentSettingsV2 || []} 
                     ordinance={OrdinanceItem.ENDOWMENT}
                     currentRegs={registrations}
                     onUpdate={updateEndowmentSettings}
                 />
                 <OrdinanceSettingsTable 
-                    title={t('stake.temple.title.baptismSettings', '洗禮教儀座位設定')}
+                    title={tString('stake.temple.title.baptismSettings', '洗禮教儀座位設定')}
                     settings={currentEvent.baptismSettingsV2 || []} 
                     ordinance={OrdinanceItem.BAPTISM}
                     currentRegs={registrations}
                     onUpdate={updateBaptismSettings}
                 />
                 <OrdinanceSettingsTable 
-                    title={t('stake.temple.title.sealingSettings', '印證教儀座位設定')}
+                    title={tString('stake.temple.title.sealingSettings', '印證教儀座位設定')}
                     settings={currentEvent.sealingSettingsV2 || []} 
                     ordinance={OrdinanceItem.SEALING}
                     currentRegs={registrations}
@@ -491,243 +515,338 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
 
             {/* Endowment Assignment */}
-            <div className="bg-fuchsia-50 p-8 rounded-3xl border-2 border-fuchsia-200 shadow-sm">
-                <div className="flex flex-col mb-8 border-b-2 border-fuchsia-100 pb-6">
-                    <h4 className="font-black text-fuchsia-900 text-2xl flex items-center mb-4">
-                        <Clock className="w-8 h-8 mr-3 text-fuchsia-600" /> {t('stake.temple.title.endowmentAssignment', '恩道門 (Endowment) 場次指派')}
-                    </h4>
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <div className="bg-white p-4 rounded-2xl border-2 border-fuchsia-100 flex items-center gap-4 shadow-sm">
-                            <span className="text-sm font-black text-fuchsia-700">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
-                            <TimeSelect value={globalEndowmentTime} onChange={setGlobalEndowmentTime} options={endowmentSlots} placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')} />
-                            <button 
-                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, globalEndowmentTime)}
-                                className="bg-fuchsia-600 text-white px-6 py-2.5 rounded-xl text-sm font-black hover:bg-fuchsia-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                            >
-                                {t('stake.temple.button.applyToAll', '全體適用')}
-                            </button>
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsEndowmentExpanded(!isEndowmentExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <Clock className="text-blue-300" size={20} />
                         </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.endowmentAssignment', '恩道門 (Endowment) 場次指派')}</h4>
+                    </div>
+                    <div className="text-white opacity-60">
+                        {isEndowmentExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {settings.units.map(unit => (
-                        <div key={unit} className="flex flex-col gap-3 bg-white p-5 rounded-2xl border-2 border-fuchsia-100 shadow-sm group hover:border-fuchsia-300 transition-all">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-black text-fuchsia-900">{unit}</span>
-                                <span className="bg-fuchsia-100 text-fuchsia-700 px-2.5 py-1 rounded-lg text-[10px] font-black border border-fuchsia-200">
-                                    {unitStats[unit]?.end || 0} {t('common.label.people', '人')}
-                                </span>
-                            </div>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <TimeSelect 
-                                        value={unitEndowmentTime[unit] || ''}
-                                        onChange={v => setUnitEndowmentTime({...unitEndowmentTime, [unit]: v})}
-                                        options={endowmentSlots}
-                                        placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')}
-                                    />
+                {isEndowmentExpanded && (
+                    <div className="p-6 bg-slate-50/40 space-y-6">
+                        <div className="flex flex-wrap justify-end gap-3 w-full">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
+                                <div className="w-32">
+                                    <TimeSelect value={globalEndowmentTime} onChange={setGlobalEndowmentTime} options={endowmentSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
-                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, unitEndowmentTime[unit], unit)}
-                                    className="bg-fuchsia-100 text-fuchsia-700 p-2.5 rounded-xl text-[10px] font-black border-2 border-fuchsia-200 hover:bg-fuchsia-600 hover:text-white transition-all disabled:opacity-30"
-                                    disabled={!unitEndowmentTime[unit]}
+                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, globalEndowmentTime)}
+                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
-                                    {t('common.button.assign', '指定')}
+                                    {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
                             </div>
                         </div>
-                    ))}
-                </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {(settings.units || []).map((unit, idx) => {
+                                const theme = rainbowThemes[idx % 7];
+                                return (
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
+                                            <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
+                                                {unitStats[unit]?.end || 0} {t('common.label.people', '人')}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <TimeSelect 
+                                                    value={unitEndowmentTime[unit] || ''}
+                                                    onChange={v => setUnitEndowmentTime({...unitEndowmentTime, [unit]: v})}
+                                                    options={endowmentSlots}
+                                                    placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')}
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, unitEndowmentTime[unit], unit)}
+                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                disabled={!unitEndowmentTime[unit]}
+                                            >
+                                                {t('common.button.assign', '指定')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
             
             {/* Baptism Assignment */}
-            <div className="bg-indigo-50 p-8 rounded-3xl border-2 border-indigo-200 shadow-sm">
-                <div className="flex flex-col mb-8 border-b-2 border-indigo-100 pb-6">
-                    <h4 className="font-black text-indigo-900 text-2xl flex items-center mb-4">
-                        <Clock className="w-8 h-8 mr-3 text-indigo-600" /> {t('stake.temple.title.baptismAssignment', '洗禮 (Baptism) 場次指派')}
-                    </h4>
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <div className="bg-white p-4 rounded-2xl border-2 border-indigo-100 flex items-center gap-4 shadow-sm">
-                            <span className="text-sm font-black text-indigo-700">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
-                            <TimeSelect value={globalBaptismTime} onChange={setGlobalBaptismTime} options={baptismSlots} placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')} />
-                            <button 
-                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, globalBaptismTime)}
-                                className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-black hover:bg-indigo-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                            >
-                                {t('stake.temple.button.applyToAll', '全體適用')}
-                            </button>
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsBaptismExpanded(!isBaptismExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <Clock className="text-blue-300" size={20} />
                         </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.baptismAssignment', '洗禮 (Baptism) 場次指派')}</h4>
+                    </div>
+                    <div className="text-white opacity-60">
+                        {isBaptismExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {settings.units.map(unit => (
-                        <div key={unit} className="flex flex-col gap-3 bg-white p-5 rounded-2xl border-2 border-indigo-100 shadow-sm group hover:border-indigo-300 transition-all">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-black text-indigo-900">{unit}</span>
-                                <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-black border border-indigo-200">
-                                    {unitStats[unit]?.bap || 0} {t('common.label.people', '人')}
-                                </span>
-                            </div>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <TimeSelect 
-                                        value={unitBaptismTime[unit] || ''}
-                                        onChange={v => setUnitBaptismTime({...unitBaptismTime, [unit]: v})}
-                                        options={baptismSlots}
-                                        placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')}
-                                    />
+                {isBaptismExpanded && (
+                    <div className="p-6 bg-slate-50/40 space-y-6">
+                        <div className="flex flex-wrap justify-end gap-3 w-full">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
+                                <div className="w-32">
+                                    <TimeSelect value={globalBaptismTime} onChange={setGlobalBaptismTime} options={baptismSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
-                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, unitBaptismTime[unit], unit)}
-                                    className="bg-indigo-100 text-indigo-700 p-2.5 rounded-xl text-[10px] font-black border-2 border-indigo-200 hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-30"
-                                    disabled={!unitBaptismTime[unit]}
+                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, globalBaptismTime)}
+                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
-                                    {t('common.button.assign', '指定')}
+                                    {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
                             </div>
                         </div>
-                    ))}
-                </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {(settings.units || []).map((unit, idx) => {
+                                const theme = rainbowThemes[idx % 7];
+                                return (
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
+                                            <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
+                                                {unitStats[unit]?.bap || 0} {t('common.label.people', '人')}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <TimeSelect 
+                                                    value={unitBaptismTime[unit] || ''}
+                                                    onChange={v => setUnitBaptismTime({...unitBaptismTime, [unit]: v})}
+                                                    options={baptismSlots}
+                                                    placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')}
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, unitBaptismTime[unit], unit)}
+                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                disabled={!unitBaptismTime[unit]}
+                                            >
+                                                {t('common.button.assign', '指定')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Sealing Assignment */}
-            <div className="bg-teal-50 p-8 rounded-3xl border-2 border-teal-200 shadow-sm">
-                <div className="flex flex-col mb-8 border-b-2 border-teal-100 pb-6">
-                    <h4 className="font-black text-teal-900 text-2xl flex items-center mb-4">
-                        <Clock className="w-8 h-8 mr-3 text-teal-600" /> {t('stake.temple.title.sealingAssignment', '印證 (Sealing) 場次指派')}
-                    </h4>
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <div className="bg-white p-4 rounded-2xl border-2 border-teal-100 flex items-center gap-4 shadow-sm">
-                            <span className="text-sm font-black text-teal-700">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
-                            <TimeSelect value={globalSealingTime} onChange={setGlobalSealingTime} options={sealingSlots} placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')} />
-                            <button 
-                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, globalSealingTime)}
-                                className="bg-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-black hover:bg-teal-700 shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
-                            >
-                                {t('stake.temple.button.applyToAll', '全體適用')}
-                            </button>
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsSealingExpanded(!isSealingExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <Clock className="text-blue-300" size={20} />
                         </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.sealingAssignment', '印證 (Sealing) 場次指派')}</h4>
+                    </div>
+                    <div className="text-white opacity-60">
+                        {isSealingExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {settings.units.map(unit => (
-                        <div key={unit} className="flex flex-col gap-3 bg-white p-5 rounded-2xl border-2 border-teal-100 shadow-sm group hover:border-teal-300 transition-all">
-                            <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-black text-teal-900">{unit}</span>
-                                <span className="bg-teal-100 text-teal-700 px-2.5 py-1 rounded-lg text-[10px] font-black border border-teal-200">
-                                    {unitStats[unit]?.seal || 0} {t('common.label.people', '人')}
-                                </span>
-                            </div>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <TimeSelect 
-                                        value={unitSealingTime[unit] || ''}
-                                        onChange={v => setUnitSealingTime({...unitSealingTime, [unit]: v})}
-                                        options={sealingSlots}
-                                        placeholder={t('stake.temple.placeholder.selectTime', '選擇時間')}
-                                    />
+                {isSealingExpanded && (
+                    <div className="p-6 bg-slate-50/40 space-y-6">
+                        <div className="flex flex-wrap justify-end gap-3 w-full">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
+                                <div className="w-32">
+                                    <TimeSelect value={globalSealingTime} onChange={setGlobalSealingTime} options={sealingSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
-                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, unitSealingTime[unit], unit)}
-                                    className="bg-teal-100 text-teal-700 p-2.5 rounded-xl text-[10px] font-black border-2 border-teal-200 hover:bg-teal-600 hover:text-white transition-all disabled:opacity-30"
-                                    disabled={!unitSealingTime[unit]}
+                                    onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, globalSealingTime)}
+                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
-                                    {t('common.button.assign', '指定')}
+                                    {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
                             </div>
                         </div>
-                    ))}
-                </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {(settings.units || []).map((unit, idx) => {
+                                const theme = rainbowThemes[idx % 7];
+                                return (
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
+                                            <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
+                                                {unitStats[unit]?.seal || 0} {t('common.label.people', '人')}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <TimeSelect 
+                                                    value={unitSealingTime[unit] || ''}
+                                                    onChange={v => setUnitSealingTime({...unitSealingTime, [unit]: v})}
+                                                    options={sealingSlots}
+                                                    placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')}
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, unitSealingTime[unit], unit)}
+                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                disabled={!unitSealingTime[unit]}
+                                            >
+                                                {t('common.button.assign', '指定')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* List Header Row */}
-            <div className="flex flex-col border-b-4 border-fuchsia-100 pb-6 mb-8">
-                <h3 className="text-3xl font-black flex items-center text-fuchsia-900">
-                    <BookOpen className="w-10 h-10 mr-4 text-fuchsia-600" /> {t('stake.temple.title.ordinanceManagement', '教儀名單座次管理')}
+            <div className="flex flex-col border-b border-slate-200 pb-4 mb-6">
+                <h3 className="text-xl font-bold flex items-center text-slate-900">
+                    <BookOpen className="w-6 h-6 mr-3 text-sky-600" /> {t('stake.temple.title.ordinanceManagement', '教儀名單座次管理')}
                 </h3>
-                <p className="text-sm font-bold text-fuchsia-400 mt-2 uppercase tracking-widest flex items-center">
-                    <Zap className="w-4 h-4 mr-2" /> {t('stake.temple.subtitle.realtimeAdjustment', '表格內可即時調整場次並連動更新雲端資料')}
+                <p className="text-xs text-slate-400 mt-2 font-medium flex items-center">
+                    <Zap className="w-4 h-4 mr-2 text-amber-400" /> {t('stake.temple.subtitle.realtimeAdjustment', '表格內可即時調整場次並連動更新雲端資料')}
                 </p>
             </div>
             
             {/* Endowment List */}
-            <div className="bg-white rounded-[2.5rem] border-4 border-fuchsia-50 overflow-hidden shadow-sm">
-                <div className="p-8 bg-fuchsia-50/50 border-b-2 border-fuchsia-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="font-black text-fuchsia-900 flex items-center text-2xl">
-                        <button onClick={() => setIsEndowmentExpanded(!isEndowmentExpanded)} className="mr-4 p-2 bg-white hover:bg-fuchsia-100 rounded-xl shadow-sm transition-all text-fuchsia-600">
-                            {isEndowmentExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                        </button>
-                        {t('stake.temple.list.endowmentTitle', '恩道門 (Endowment) 名單')}
-                        <span className="ml-4 bg-fuchsia-600 text-white px-4 py-1 rounded-full text-xs font-black shadow-sm">
-                            {endowmentList.length} {t('common.label.people', '人')}
-                        </span>
-                        <div className="hidden lg:flex ml-4 gap-2">
-                             <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-fuchsia-600 border border-fuchsia-200">{t('common.gender.male_label', '弟兄')}: {endCount.male}</span>
-                             <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-fuchsia-600 border border-fuchsia-200">{t('common.gender.female_label', '姊妹')}: {endCount.female}</span>
+            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[0].bg} ${rainbowThemes[0].border}`}>
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsEndowmentExpanded(!isEndowmentExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <BookOpen className="text-blue-300" size={20} />
+                        </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.endowmentTitle', '恩道門 (Endowment) 名單')}</h4>
+                    </div>
+                    <div className="text-white opacity-60">
+                        {isEndowmentExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
+                    </div>
+                </div>
+                
+                {isEndowmentExpanded && (
+                    <div className="p-6 flex flex-col gap-6">
+                        <div className="w-full flex flex-wrap justify-end items-center gap-3">
+                             <div className="hidden lg:flex gap-2 mr-auto">
+                                <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border shadow-sm bg-white ${rainbowThemes[0].text} ${rainbowThemes[0].border}`}>
+                                    {endowmentList.length} {t('common.label.people', '人')}
+                                </span>
+                                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[0].text} ${rainbowThemes[0].border}`}>{t('common.gender.male_label', '弟兄')}: {endCount.male}</span>
+                                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[0].text} ${rainbowThemes[0].border}`}>{t('common.gender.female_label', '姊妹')}: {endCount.female}</span>
+                            </div>
+                            <button onClick={() => handleExportTempleList('Endowment')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[0].text} ${rainbowThemes[0].border} ${rainbowThemes[0].hover}`}>
+                                <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
+                            </button>
+                        </div>
+                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[0].border}`}>
+                            {renderTempleListTable(OrdinanceItem.ENDOWMENT, endowmentSlots, endowmentSort, (key) => handleSort('endowment', key), 'endowment')}
                         </div>
                     </div>
-                    <button onClick={() => handleExportTempleList('Endowment')} className="w-full md:w-auto bg-white text-fuchsia-700 px-8 py-3.5 rounded-2xl border-2 border-fuchsia-200 text-sm font-black hover:bg-fuchsia-600 hover:text-white hover:border-fuchsia-600 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] flex items-center justify-center">
-                        <Download className="w-5 h-5 mr-3" /> {t('common.button.export', '匯出名冊')}
-                    </button>
-                </div>
-                {isEndowmentExpanded && renderTempleListTable(OrdinanceItem.ENDOWMENT, endowmentSlots, endowmentSort, (key) => handleSort('endowment', key), 'endowment')}
+                )}
             </div>
 
             {/* Baptism List */}
-            <div className="bg-white rounded-[2.5rem] border-4 border-indigo-50 overflow-hidden shadow-sm">
-                <div className="p-8 bg-indigo-50/50 border-b-2 border-indigo-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="font-black text-indigo-900 flex items-center text-2xl">
-                         <button onClick={() => setIsBaptismExpanded(!isBaptismExpanded)} className="mr-4 p-2 bg-white hover:bg-indigo-100 rounded-xl shadow-sm transition-all text-indigo-600">
-                            {isBaptismExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                        </button>
-                        {t('stake.temple.list.baptismTitle', '洗禮 (Baptism) 名單')}
-                        <span className="ml-4 bg-indigo-600 text-white px-4 py-1 rounded-full text-xs font-black shadow-sm">
-                            {baptismList.length} {t('common.label.people', '人')}
-                        </span>
-                        <div className="hidden lg:flex ml-4 gap-2">
-                             <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-indigo-600 border border-indigo-200">{t('common.gender.male_label', '弟兄')}: {bapCount.male}</span>
-                             <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-indigo-600 border border-indigo-200">{t('common.gender.female_label', '姊妹')}: {bapCount.female}</span>
+            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[4].bg} ${rainbowThemes[4].border}`}>
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsBaptismExpanded(!isBaptismExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <BookOpen className="text-blue-300" size={20} />
+                        </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.baptismTitle', '洗禮 (Baptism) 名單')}</h4>
+                    </div>
+                    <div className="text-white opacity-60">
+                        {isBaptismExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
+                    </div>
+                </div>
+                
+                {isBaptismExpanded && (
+                    <div className="p-6 flex flex-col gap-6">
+                        <div className="w-full flex flex-wrap justify-end items-center gap-3">
+                             <div className="hidden lg:flex gap-2 mr-auto">
+                                <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border shadow-sm bg-white ${rainbowThemes[4].text} ${rainbowThemes[4].border}`}>
+                                    {baptismList.length} {t('common.label.people', '人')}
+                                </span>
+                                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[4].text} ${rainbowThemes[4].border}`}>{t('common.gender.male_label', '弟兄')}: {bapCount.male}</span>
+                                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[4].text} ${rainbowThemes[4].border}`}>{t('common.gender.female_label', '姊妹')}: {bapCount.female}</span>
+                            </div>
+                            <button onClick={() => handleExportTempleList('Baptism')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[4].text} ${rainbowThemes[4].border} ${rainbowThemes[4].hover}`}>
+                                <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
+                            </button>
+                        </div>
+                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[4].border}`}>
+                            {renderTempleListTable(OrdinanceItem.BAPTISM, baptismSlots, baptismSort, (key) => handleSort('baptism', key), 'baptism')}
                         </div>
                     </div>
-                    <button onClick={() => handleExportTempleList('Baptism')} className="w-full md:w-auto bg-white text-indigo-700 px-8 py-3.5 rounded-2xl border-2 border-indigo-200 text-sm font-black hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] flex items-center justify-center">
-                        <Download className="w-5 h-5 mr-3" /> {t('common.button.export', '匯出名冊')}
-                    </button>
-                </div>
-                {isBaptismExpanded && renderTempleListTable(OrdinanceItem.BAPTISM, baptismSlots, baptismSort, (key) => handleSort('baptism', key), 'baptism')}
+                )}
             </div>
 
             {/* Sealing List */}
-            <div className="bg-white rounded-[2.5rem] border-4 border-teal-50 overflow-hidden shadow-sm">
-                <div className="p-8 bg-teal-50/50 border-b-2 border-teal-100 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="font-black text-teal-900 flex items-center text-2xl">
-                        <button onClick={() => setIsSealingExpanded(!isSealingExpanded)} className="mr-4 p-2 bg-white hover:bg-teal-100 rounded-xl shadow-sm transition-all text-teal-600">
-                            {isSealingExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                        </button>
-                        {t('stake.temple.list.sealingTitle', '印證 (Sealing) 名單')}
-                        {(() => {
-                            const sealList = registrations.filter(r => r.status === RegStatus.NORMAL && r.ordinance_item === OrdinanceItem.SEALING);
-                            const sealCounts = getGenderCounts(sealList);
-                            return (
-                                <>
-                                    <span className="ml-4 bg-teal-600 text-white px-4 py-1 rounded-full text-xs font-black shadow-sm">
-                                        {sealList.length} {t('common.label.people', '人')}
-                                    </span>
-                                    <div className="hidden lg:flex ml-4 gap-2">
-                                        <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-teal-600 border border-teal-200">{t('common.gender.male_label', '弟兄')}: {sealCounts.male}</span>
-                                        <span className="bg-white px-3 py-1 rounded-lg text-[10px] font-bold text-teal-600 border border-teal-200">{t('common.gender.female_label', '姊妹')}: {sealCounts.female}</span>
-                                    </div>
-                                </>
-                            );
-                        })()}
+            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[6].bg} ${rainbowThemes[6].border}`}>
+                <div 
+                    className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
+                    onClick={() => setIsSealingExpanded(!isSealingExpanded)}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                            <BookOpen className="text-blue-300" size={20} />
+                        </div>
+                        <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.sealingTitle', '印證 (Sealing) 名單')}</h4>
                     </div>
-                    <button onClick={() => handleExportTempleList('Sealing')} className="w-full md:w-auto bg-white text-teal-700 px-8 py-3.5 rounded-2xl border-2 border-teal-200 text-sm font-black hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] flex items-center justify-center">
-                        <Download className="w-5 h-5 mr-3" /> {t('common.button.export', '匯出名冊')}
-                    </button>
+                    <div className="text-white opacity-60">
+                        {isSealingExpanded ? <ChevronUp size={22}/> : <ChevronDown size={22}/>}
+                    </div>
                 </div>
-                {isSealingExpanded && renderTempleListTable(OrdinanceItem.SEALING, sealingSlots, sealingSort, (key) => handleSort('sealing', key), 'sealing')}
+                
+                {isSealingExpanded && (
+                    <div className="p-6 flex flex-col gap-6">
+                        <div className="w-full flex flex-wrap justify-end items-center gap-3">
+                             <div className="hidden lg:flex gap-2 mr-auto">
+                                <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border shadow-sm bg-white ${rainbowThemes[6].text} ${rainbowThemes[6].border}`}>
+                                    {(() => {
+                                        const sealList = registrations.filter(r => r.status === RegStatus.NORMAL && r.ordinance_item === OrdinanceItem.SEALING);
+                                        return sealList.length;
+                                    })()} {t('common.label.people', '人')}
+                                </span>
+                            </div>
+                            <button onClick={() => handleExportTempleList('Sealing')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[6].text} ${rainbowThemes[6].border} ${rainbowThemes[6].hover}`}>
+                                <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
+                            </button>
+                        </div>
+                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[6].border}`}>
+                            {renderTempleListTable(OrdinanceItem.SEALING, sealingSlots, sealingSort, (key) => handleSort('sealing', key), 'sealing')}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -735,14 +854,14 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
 
 // Helper component for time select
 const TimeSelect = ({ value, onChange, options, placeholder }: { value: string, onChange: (v: string) => void, options: string[], placeholder?: string }) => {
-    const { t } = useTranslation();
+    const { tString } = useI18n();
     return (
         <select 
-            className="border rounded-lg p-1 text-xs w-24 bg-white text-gray-800"
+            className="border border-slate-200 rounded-md p-1.5 text-xs w-full bg-slate-50 text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
             value={value}
             onChange={e => onChange(e.target.value)}
         >
-            <option value="">{placeholder || t('common.placeholder.select_time', '選擇時間')}</option>
+            <option value="">{placeholder || tString('common.placeholder.select_time', '選擇時間')}</option>
             {options.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
     );

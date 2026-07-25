@@ -1,7 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
+import { useI18n } from '../../contexts/LanguageContext';
 import { Edit, Save, CheckCircle, Clock } from 'lucide-react';
 import ConfirmDialog from '../../../components/ConfirmDialog';
+import ConfirmationModal from '../ConfirmationModal';
 
 interface FormDialogsProps {
     showSubmitConfirm: boolean;
@@ -40,7 +41,8 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
     showLockModal,
     setShowLockModal,
 }) => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     return (
         <>
             {showLockModal && lockCountdown > 0 && (
@@ -83,7 +85,7 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
                                 <Edit className="w-4 h-4 mr-2" /> {t('stake.registration.form.dialogs.continue_edit_btn')}
                             </button>
                             <button 
-                                onClick={handleSaveAndSubmit} 
+                                onClick={() => setShowSaveConfirm(true)} 
                                 className="bg-green-100 text-green-800 w-full py-3 rounded-lg font-bold shadow hover:bg-green-200 transition-colors flex items-center justify-center text-sm ring-1 ring-green-200"
                             >
                                 <Save className="w-4 h-4 mr-2" /> {t('stake.registration.form.dialogs.save_submit_btn')}
@@ -92,6 +94,16 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
                     </div>
                 </div>
             )}
+            
+            <ConfirmationModal
+                isOpen={showSaveConfirm}
+                onClose={() => setShowSaveConfirm(false)}
+                onConfirm={handleSaveAndSubmit}
+                title={t('common.notice', '通知')}
+                message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+                confirmText={t('common.confirm', '確定')}
+                type="info"
+            />
             
             {showQueryConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">

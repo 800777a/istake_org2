@@ -49,7 +49,7 @@ const CertificateModal: React.FC<CertificateModalProps> = ({ registration, event
                     <p>茲證明</p>
                     <h2 className="text-4xl font-bold my-6 border-b-2 border-gray-300 inline-block px-10 pb-2">{registration.name}</h2>
                     <p>參加由 嘉義支聯會 主辦之</p>
-                    <h3 className="text-2xl font-bold text-blue-900 my-4">「{event.event_date} 聖殿之旅」</h3>
+                    <h3 className="text-2xl font-bold text-blue-900 my-4">「{event.event_date} 聖殿旅行團」</h3>
                     <p>已圓滿完成所有行程，並展現對聖殿教儀之熱忱。</p>
                     <p className="mt-2">特頒此證，以資鼓勵。</p>
                 </div>

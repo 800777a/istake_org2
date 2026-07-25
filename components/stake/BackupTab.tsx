@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../src/contexts/LanguageContext';
 import { Database, Download, Upload, RefreshCw, UploadCloud, Loader, AlertTriangle, CheckCircle, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, getSettings, migrateToCloud, subscribeToEvents } from '../../services/sheetService';
@@ -8,7 +8,7 @@ import { getDocs, collection } from 'firebase/firestore';
 import ConfirmDialog from '../ConfirmDialog';
 
 const BackupTab: React.FC = () => {
-    const { t } = useTranslation();
+    const { t, tString } = useI18n();
     const [cloudDataJson, setCloudDataJson] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [msg, setMsg] = useState<string | null>(null);
@@ -28,22 +28,6 @@ const BackupTab: React.FC = () => {
     const showToast = (message: string) => {
         setMsg(message);
         setTimeout(() => setMsg(null), 3000);
-    };
-
-    // Rainbow Schemes
-    const rainbowSchemes = [
-        { bg: 'bg-red-100', text: 'text-red-900', border: 'border-red-200' },
-        { bg: 'bg-orange-100', text: 'text-orange-900', border: 'border-orange-200' },
-        { bg: 'bg-yellow-100', text: 'text-yellow-900', border: 'border-yellow-200' },
-        { bg: 'bg-green-100', text: 'text-green-900', border: 'border-green-200' },
-        { bg: 'bg-blue-100', text: 'text-blue-900', border: 'border-blue-200' },
-        { bg: 'bg-indigo-100', text: 'text-indigo-900', border: 'border-indigo-200' },
-        { bg: 'bg-violet-100', text: 'text-violet-900', border: 'border-violet-200' },
-    ];
-
-    const getBtnStyle = (idx: number) => {
-        const s = rainbowSchemes[idx % rainbowSchemes.length];
-        return `${s.bg} ${s.text} ${s.border} border-2 hover:brightness-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all`;
     };
 
     // --- Action Handlers ---
@@ -146,29 +130,33 @@ const BackupTab: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in p-2 md:p-8">
+        <div className="space-y-6 animate-fade-in">
             {/* Header Section */}
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm border-2 border-indigo-50">
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-indigo-50">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
                     <div className="flex items-center">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-500 flex items-center justify-center text-white mr-4 shadow-lg shadow-indigo-100">
+                        <div className="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center text-white mr-4">
                             <Database className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-gray-800">{t('stake.backup.title.backupRestore', '備份還原')}</h2>
-                            <p className="text-sm font-bold text-gray-500">{t('stake.backup.desc.backupRestore', '管理雲端資料的同步、匯出、匯入與災難重建')}</p>
+                            <h2 className="text-xl font-bold text-slate-900">{t('stake.backup.title.backupRestore', '備份還原')}</h2>
+                            <p className="text-sm text-slate-500">{t('stake.backup.desc.backupRestore', '管理雲端資料的同步、匯出、匯入與災難重建')}</p>
                         </div>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">App Version</span>
+                        <span className="px-2 py-1 bg-slate-100 rounded text-xs font-mono font-bold text-slate-600">{appVersion}</span>
                     </div>
                 </div>
 
-                {/* Control Buttons - Sequential colors */}
-                <div className="flex flex-wrap gap-4 mb-8">
+                {/* Control Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <button 
                         onClick={() => setConfirmAction({ type: 'sync' })}
                         disabled={isProcessing}
-                        className={`flex items-center justify-center px-6 py-4 rounded-2xl font-black text-sm w-full md:w-auto h-16 min-w-[180px] ${getBtnStyle(0)}`}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
-                        {isProcessing ? <Loader className="w-5 h-5 mr-3 animate-spin" /> : <RefreshCw className="w-5 h-5 mr-3" />}
+                        {isProcessing ? <Loader className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         {t('stake.backup.button.cloudSync', '雲端同步')}
                     </button>
                     
@@ -180,16 +168,16 @@ const BackupTab: React.FC = () => {
                             }
                             setConfirmAction({ type: 'export' });
                         }}
-                        className={`flex items-center justify-center px-6 py-4 rounded-2xl font-black text-sm w-full md:w-auto h-16 min-w-[180px] ${getBtnStyle(1)}`}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                     >
-                        <Download className="w-5 h-5 mr-3" />
+                        <Download className="w-4 h-4" />
                         {t('stake.backup.button.exportJson', '匯出 JSON')}
                     </button>
 
                     <label 
-                        className={`flex items-center justify-center px-6 py-4 rounded-2xl font-black text-sm w-full md:w-auto h-16 min-w-[180px] cursor-pointer ${getBtnStyle(2)}`}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
-                        <Upload className="w-5 h-5 mr-3" />
+                        <Upload className="w-4 h-4" />
                         {t('stake.backup.button.importJson', '匯入 JSON')}
                         <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange} />
                     </label>
@@ -203,35 +191,47 @@ const BackupTab: React.FC = () => {
                             setConfirmAction({ type: 'rebuild' });
                         }}
                         disabled={isProcessing}
-                        className={`flex items-center justify-center px-6 py-4 rounded-2xl font-black text-sm w-full md:w-auto h-16 min-w-[180px] ${getBtnStyle(3)}`}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 text-white rounded-lg font-bold text-sm hover:bg-rose-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
-                        <UploadCloud className="w-5 h-5 mr-3" />
+                        <UploadCloud className="w-4 h-4" />
                         {t('stake.backup.button.rebuildCloud', '重建雲端')}
                     </button>
                 </div>
 
                 {/* Editor Area */}
-                <div className="relative group">
-                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="bg-gray-800/80 text-white text-[10px] px-3 py-1.5 rounded-full font-black">
-                            {t('stake.backup.label.editorArea', '資料預覽編輯區')}
-                        </span>
+                <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-900">
+                    <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
+                        <div className="flex items-center gap-2">
+                            <div className="flex gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50" />
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2">JSON DATA PREVIEW</span>
+                        </div>
+                        <button 
+                            onClick={() => {
+                                navigator.clipboard.writeText(cloudDataJson);
+                                showToast('已複製到剪貼簿');
+                            }}
+                            className="text-[10px] font-bold text-slate-400 hover:text-white transition-colors"
+                        >
+                            COPY
+                        </button>
                     </div>
-                    <div className="bg-gray-900 rounded-[1.5rem] p-1 shadow-2xl">
-                        <textarea 
-                            className="w-full h-[500px] bg-transparent text-green-400 font-mono text-xs p-8 focus:ring-0 outline-none resize-none leading-relaxed"
-                            value={cloudDataJson}
-                            onChange={(e) => setCloudDataJson(e.target.value)}
-                            placeholder={t('stake.backup.placeholder.editorArea', '請點擊上方按鈕獲取雲端資料...')}
-                        />
-                    </div>
+                    <textarea 
+                        className="w-full h-[500px] bg-transparent text-emerald-400 font-mono text-[11px] p-6 focus:ring-0 outline-none resize-none leading-relaxed"
+                        value={cloudDataJson}
+                        onChange={(e) => setCloudDataJson(e.target.value)}
+                        placeholder={tString('stake.backup.placeholder.editorArea', '請點擊上方按鈕獲取雲端資料...')}
+                    />
                 </div>
             </div>
 
             {/* Confirmation Dialogs */}
             <ConfirmDialog 
                 isOpen={confirmAction?.type === 'sync'}
-                title={t('stake.backup.modal.syncConfirmTitle', '雲端資料同步')}
+                title={tString('stake.backup.modal.syncConfirmTitle', '雲端資料同步')}
                 message={t('stake.backup.modal.syncConfirmMsg', '確定要從雲端伺服器下載最新資料嗎？這將覆蓋目前編輯區的內容。')}
                 onConfirm={handleSync}
                 onCancel={() => setConfirmAction(null)}
@@ -239,7 +239,7 @@ const BackupTab: React.FC = () => {
             
             <ConfirmDialog 
                 isOpen={confirmAction?.type === 'export'}
-                title={t('stake.backup.modal.exportConfirmTitle', '資料匯出確認')}
+                title={tString('stake.backup.modal.exportConfirmTitle', '資料匯出確認')}
                 message={t('stake.backup.modal.exportConfirmMsg', '確定要將編輯區的內容下載為 JSON 檔案進行備份嗎？')}
                 onConfirm={handleExport}
                 onCancel={() => setConfirmAction(null)}
@@ -247,7 +247,7 @@ const BackupTab: React.FC = () => {
 
             <ConfirmDialog 
                 isOpen={confirmAction?.type === 'import'}
-                title={t('stake.backup.modal.importConfirmTitle', '載入外部資料')}
+                title={tString('stake.backup.modal.importConfirmTitle', '載入外部資料')}
                 message={t('stake.backup.modal.importConfirmMsg', '確定要載入此 JSON 檔案到編輯區嗎？此操作僅載入至畫面，尚未寫入雲端。')}
                 onConfirm={executeImport}
                 onCancel={() => setConfirmAction(null)}
@@ -255,13 +255,16 @@ const BackupTab: React.FC = () => {
 
             <ConfirmDialog 
                 isOpen={confirmAction?.type === 'rebuild'}
-                title={t('stake.backup.modal.rebuildConfirmTitle', '重建雲端資料庫')}
+                title={tString('stake.backup.modal.rebuildConfirmTitle', '重建雲端資料庫')}
                 message={
-                    <div className="space-y-4">
-                        <p className="font-black text-red-600">{t('stake.backup.modal.rebuildDangerLabel', '⚠ 極度危險的操作：')}</p>
-                        <p>{t('stake.backup.modal.rebuildWarningMsg', '系統將把編輯區內的 JSON 資料「完整覆蓋」目前的雲端資料庫。')}</p>
-                        <p className="font-bold bg-yellow-100 p-2 rounded">{t('stake.backup.modal.rebuildAdvice', '建議在執行前先備份目前雲端資料！')}</p>
-                        <p>{t('stake.backup.modal.rebuildConfirmFinal', '確定要執行重建嗎？')}</p>
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-rose-600 font-bold">
+                            <AlertTriangle size={18} />
+                            <span>{t('stake.backup.modal.rebuildDangerLabel', '⚠ 極度危險的操作：')}</span>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed">{t('stake.backup.modal.rebuildWarningMsg', '系統將把編輯區內的 JSON 資料「完整覆蓋」目前的雲端資料庫。')}</p>
+                        <p className="bg-amber-50 border border-amber-100 p-3 rounded-lg text-amber-800 text-xs font-medium">{t('stake.backup.modal.rebuildAdvice', '建議在執行前先備份目前雲端資料！')}</p>
+                        <p className="text-slate-900 font-bold">{t('stake.backup.modal.rebuildConfirmFinal', '確定要執行重建嗎？')}</p>
                     </div>
                 }
                 isDangerous={true}
@@ -273,13 +276,15 @@ const BackupTab: React.FC = () => {
             <AnimatePresence>
                 {msg && (
                     <motion.div 
-                        initial={{ opacity: 0, y: 50, x: '-50%' }}
-                        animate={{ opacity: 1, y: 0, x: '-50%' }}
-                        exit={{ opacity: 0, y: 50, x: '-50%' }}
-                        className={`fixed bottom-12 left-1/2 z-[200] px-8 py-4 rounded-2xl shadow-2xl flex items-center font-black ${msg.includes(t('common.failed', '失敗')) ? 'bg-red-600 text-white' : 'bg-black/90 text-white'}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200]"
                     >
-                        {msg.includes(t('common.failed', '失敗')) ? <AlertTriangle className="w-5 h-5 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-green-400" />}
-                        {msg}
+                        <div className={`px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-3 font-bold text-sm ${msg.includes(t('common.failed', '失敗')) ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>
+                            {msg.includes(t('common.failed', '失敗')) ? <AlertTriangle size={16} /> : <CheckCircle size={16} className="text-emerald-400" />}
+                            {msg}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

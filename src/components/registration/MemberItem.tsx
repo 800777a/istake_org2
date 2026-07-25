@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Trash2 } from 'lucide-react';
 import Toast, { ToastType } from '../../../components/Toast';
 import { RegistrationMemberInput, TripType, OrdinanceType, OrdinanceItem, EventData, GlobalSettings } from '../../../types';
@@ -53,7 +53,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
     stopCancellation,
     forceShowPersonalInfo
 }) => {
-    const { t } = useTranslation();
+    const { t, tString, tAttr, isEditMode, setActiveKey } = useI18n();
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('error');
 
@@ -75,7 +75,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
             '留用': 'roll_over'
         };
         const key = keyMap[val] || val;
-        return t(`stake.registration.form.trips.${key}`);
+        return tString(`stake.registration.form.trips.${key}`);
     };
 
     const translateIdentityType = (val: string) => {
@@ -93,7 +93,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
             '傳教': 'missionary'
         };
         const key = keyMap[val] || val;
-        return t(`stake.registration.form.identities.${key}`);
+        return tString(`stake.registration.form.identities.${key}`);
     };
 
     const translateOrdinance = (val: string) => {
@@ -117,7 +117,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
             '其他活動': 'other_activities'
         };
         const key = keyMap[val] || val;
-        return t(`stake.registration.form.ordinances.${key}`);
+        return tString(`stake.registration.form.ordinances.${key}`);
     };
 
     let birthYear: number | '' = '';
@@ -197,21 +197,21 @@ const MemberItem: React.FC<MemberItemProps> = ({
         if (gender === '1') { // Male
             if (age >= 18) {
                 return [
-                    { value: '沒有', label: t('stake.registration.form.ordinances.none') },
+                    { value: '沒有', label: tString('stake.registration.form.ordinances.none') },
                     { value: '祭司', label: '祭司' },
                     { value: '長老', label: '長老' },
                     { value: '已做過恩道門', label: '已做過恩道門' }
                 ];
             } else if (age >= 16) {
                 return [
-                    { value: '沒有', label: t('stake.registration.form.ordinances.none') },
+                    { value: '沒有', label: tString('stake.registration.form.ordinances.none') },
                     { value: '祭司', label: '祭司' }
                 ];
             }
         } else if (gender === '2') { // Female
             if (age >= 18) {
                 return [
-                    { value: '沒有', label: t('stake.registration.form.ordinances.none') },
+                    { value: '沒有', label: tString('stake.registration.form.ordinances.none') },
                     { value: '已做過恩道門', label: '已做過恩道門' }
                 ];
             }
@@ -242,7 +242,10 @@ const MemberItem: React.FC<MemberItemProps> = ({
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.name_label')}</label>
+                    <label className="block text-xs text-green-900 font-bold mb-1">
+                        {t('stake.registration.form.name_label')}
+                        {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.real_name_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                    </label>
                     <input 
                         type="text" 
                         value={member.name} 
@@ -258,7 +261,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                             handleCheckGuardian();
                         }}
                         className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black underline-offset-4 focus:ring-2 focus:ring-green-400 outline-none transition-all"
-                        placeholder={t('stake.registration.form.real_name_placeholder')}
+                        placeholder={tAttr('stake.registration.form.real_name_placeholder')}
                     />
                 </div>
                 {!!member.name.trim() && (isNameFinished || forceShowPersonalInfo) && !isMatched && (
@@ -272,8 +275,8 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                     onChange={e => onUpdateBirthday(member.temp_id, 'year', parseInt(e.target.value))}
                                     onBlur={handleCheckGuardian}
                                 >
-                                    <option value="" disabled>{t('stake.registration.form.year_label')}</option>
-                                    {years.map(y => <option key={y} value={y}>{y}{t('stake.registration.form.year_label')}</option>)}
+                                    <option value="" disabled>{tString('stake.registration.form.year_label', { forceString: true })}</option>
+                                    {years.map(y => <option key={y} value={y}>{y}{tString('stake.registration.form.year_label', { forceString: true })}</option>)}
                                 </select>
                                 <select 
                                     className="border rounded h-[38px] px-2 text-xs w-20 bg-white text-black"
@@ -281,8 +284,8 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                     onChange={e => onUpdateBirthday(member.temp_id, 'month', parseInt(e.target.value))}
                                     onBlur={handleCheckGuardian}
                                 >
-                                    <option value="" disabled>{t('stake.registration.form.month_label')}</option>
-                                    {months.map(m => <option key={m} value={m}>{m}{t('stake.registration.form.month_label')}</option>)}
+                                    <option value="" disabled>{tString('stake.registration.form.month_label', { forceString: true })}</option>
+                                    {months.map(m => <option key={m} value={m}>{m}{tString('stake.registration.form.month_label', { forceString: true })}</option>)}
                                 </select>
                                 <select 
                                     className="border rounded h-[38px] px-2 text-xs w-20 bg-white text-black"
@@ -290,19 +293,22 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                     onChange={e => onUpdateBirthday(member.temp_id, 'day', parseInt(e.target.value))}
                                     onBlur={handleCheckGuardian}
                                 >
-                                    <option value="" disabled>{t('stake.registration.form.day_label')}</option>
-                                    {days.map(d => <option key={d} value={d}>{d}{t('stake.registration.form.day_label')}</option>)}
+                                    <option value="" disabled>{tString('stake.registration.form.day_label', { forceString: true })}</option>
+                                    {days.map(d => <option key={d} value={d}>{d}{tString('stake.registration.form.day_label', { forceString: true })}</option>)}
                                 </select>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.id_label')}</label>
+                            <label className="block text-xs text-green-900 font-bold mb-1">
+                                {t('stake.registration.form.id_label')}
+                                {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.id_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                            </label>
                             <input 
                                 type="text" 
                                 value={member.identity_id} 
                                 onChange={e => onUpdate(member.temp_id, 'identity_id', e.target.value.toUpperCase())} 
                                 className="w-full border rounded h-[38px] px-2 text-xs uppercase bg-white text-black"
-                                placeholder={t('stake.registration.form.id_placeholder')}
+                                placeholder={tAttr('stake.registration.form.id_placeholder')}
                                 maxLength={10}
                             />
                         </div>
@@ -313,7 +319,10 @@ const MemberItem: React.FC<MemberItemProps> = ({
             {isGuardianVisible && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 animate-fade-in">
                     <div>
-                        <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.guardian_label')}</label>
+                        <label className="block text-xs text-green-900 font-bold mb-1">
+                            {t('stake.registration.form.guardian_label')}
+                            {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.guardian_placeholder')} title="Click to edit placeholder key">[P]</span>}
+                        </label>
                         <input 
                             type="text"
                             value={member.guardian || ''}
@@ -325,7 +334,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                 }
                             }}
                             className="w-full border border-green-200 rounded h-[38px] px-2 text-xs bg-white text-black focus:ring-2 focus:ring-green-300 outline-none"
-                            placeholder={t('stake.registration.form.guardian_placeholder')}
+                            placeholder={tAttr('stake.registration.form.guardian_placeholder')}
                         />
                     </div>
                 </div>
@@ -386,7 +395,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                             onChange={e => onUpdate(member.temp_id, 'service_qualification', e.target.value)} 
                             className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black"
                         >
-                            <option value="">{t('stake.registration.form.select_hint')}</option>
+                            <option value="">{tString('stake.registration.form.select_hint')}</option>
                             {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                         </select>
                     </div>
