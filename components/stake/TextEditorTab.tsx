@@ -97,7 +97,7 @@ const EditorBlock: React.FC<EditorBlockProps> = ({ title, content, onChange }) =
     };
 
     return (
-        <div className={`bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden transition-all duration-500 ease-in-out relative ${isExpanded ? 'flex-1 min-h-[600px]' : 'h-20'}`}>
+        <div className={`bg-white rounded shadow-sm border border-slate-200 flex flex-col overflow-hidden transition-all duration-500 ease-in-out relative ${isExpanded ? 'flex-1 min-h-[600px]' : 'h-20'}`}>
             {toastMsg && (
                 <div className="fixed top-24 left-1/2 transform -translate-x-1/2 z-[100] bg-slate-900 text-white px-6 py-3 rounded-full text-xs font-bold flex items-center shadow-2xl animate-fade-in border border-slate-700">
                     <CheckCircle size={14} className="mr-2 text-emerald-400" />
@@ -122,7 +122,7 @@ const EditorBlock: React.FC<EditorBlockProps> = ({ title, content, onChange }) =
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-sky-100 rounded-lg">
+                    <div className="p-2 bg-sky-100 rounded">
                         <FileEdit size={20} className="text-sky-600" />
                     </div>
                     <div>
@@ -139,7 +139,7 @@ const EditorBlock: React.FC<EditorBlockProps> = ({ title, content, onChange }) =
                 <div className="flex flex-col flex-1 p-6 animate-fade-in gap-6">
                     {/* Warning Zone */}
                     {isOverLimit && (
-                        <div className="p-4 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-4 text-rose-800">
+                        <div className="p-4 bg-rose-50 border border-rose-100 rounded flex items-center gap-4 text-rose-800">
                             <div className="p-2 bg-rose-100 rounded-full shrink-0">
                                 <ShieldAlert size={20} />
                             </div>
@@ -155,25 +155,25 @@ const EditorBlock: React.FC<EditorBlockProps> = ({ title, content, onChange }) =
                         <div className="flex flex-wrap items-center gap-2">
                             <button 
                                 onClick={handleSelectAll} 
-                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-md font-bold transition-all text-xs border border-slate-200"
+                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded font-bold transition-all text-xs border border-slate-200"
                             >
                                 <Grab size={14} className="mr-2" /> {t('common.button.select_all', '全選')}
                             </button>
                             <button 
                                 onClick={handleCopy} 
-                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-md font-bold transition-all text-xs border border-slate-200"
+                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded font-bold transition-all text-xs border border-slate-200"
                             >
                                 <Copy size={14} className="mr-2" /> {t('common.button.copy', '複製')}
                             </button>
                             <button 
                                 onClick={handlePaste} 
-                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-md font-bold transition-all text-xs border border-slate-200"
+                                className="flex items-center px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded font-bold transition-all text-xs border border-slate-200"
                             >
                                 <ClipboardPaste size={14} className="mr-2" /> {t('common.button.paste', '貼上')}
                             </button>
                             <button 
                                 onClick={() => setShowDeleteConfirm(true)} 
-                                className="flex items-center px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-md font-bold transition-all text-xs border border-rose-100"
+                                className="flex items-center px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded font-bold transition-all text-xs border border-rose-100"
                             >
                                 <Trash2 size={14} className="mr-2" /> {t('common.button.delete', '清空')}
                             </button>
@@ -181,14 +181,14 @@ const EditorBlock: React.FC<EditorBlockProps> = ({ title, content, onChange }) =
                         
                         <button 
                             onClick={handleSave} 
-                            className="flex items-center px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-md font-bold transition-all shadow-sm text-xs ml-auto"
+                            className="flex items-center px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded font-bold transition-all shadow-sm text-xs ml-auto"
                         >
                             <Save size={14} className="mr-2" /> {t('common.button.save', '本地存檔')}
                         </button>
                     </div>
 
                     {/* Editor Zone */}
-                    <div className="flex-1 border border-slate-200 rounded-lg overflow-hidden flex flex-col bg-white">
+                    <div className="flex-1 border border-slate-200 rounded overflow-hidden flex flex-col bg-white">
                         <ReactQuill 
                             theme="snow"
                             ref={quillRef}

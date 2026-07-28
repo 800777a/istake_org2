@@ -275,10 +275,10 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
             />
 
             {/* Main Header Card - Modern Business Style */}
-            <div className="bg-white rounded-xl shadow-lg border border-indigo-100 overflow-hidden mb-8">
+            <div className="bg-white rounded shadow-lg border border-indigo-100 overflow-hidden mb-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-indigo-900 border-b border-indigo-800 gap-6">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-white/10 rounded-xl border border-white/10 backdrop-blur-sm shadow-lg">
+                        <div className="p-3 bg-white/10 rounded border border-white/10 backdrop-blur-sm shadow-lg">
                             <Key className="w-8 h-8 text-white" />
                         </div>
                         <div>
@@ -291,15 +291,15 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                     
                     <div className="flex flex-wrap gap-2 justify-start md:justify-end">
                         <div className="flex gap-2 w-full sm:w-auto">
-                            <button onClick={handleExportUsers} className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded-md hover:bg-white/20 flex items-center justify-center font-bold shadow-sm transition-all backdrop-blur-sm">
+                            <button onClick={handleExportUsers} className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded hover:bg-white/20 flex items-center justify-center font-bold shadow-sm transition-all backdrop-blur-sm">
                                 <Download className="w-4 h-4 mr-2 text-indigo-300"/>{t('users.export', '匯出')}
                             </button>
-                            <label className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded-md hover:bg-white/20 flex items-center justify-center cursor-pointer font-bold shadow-sm transition-all backdrop-blur-sm">
+                            <label className="flex-1 sm:flex-none text-xs bg-white/10 text-white border border-white/20 px-4 py-2 rounded hover:bg-white/20 flex items-center justify-center cursor-pointer font-bold shadow-sm transition-all backdrop-blur-sm">
                                 <Upload className="w-4 h-4 mr-2 text-indigo-300"/>{t('users.import', '匯入')}
                                 <input type="file" className="hidden" accept=".json" onChange={handleImportUsers}/>
                             </label>
                         </div>
-                        <button onClick={openAddModal} className="w-full sm:w-auto text-xs bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
+                        <button onClick={openAddModal} className="w-full sm:w-auto text-xs bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 flex items-center justify-center font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
                             <Plus className="w-4 h-4 mr-2" /> {t('users.add', '新增帳號')}
                         </button>
                     </div>
@@ -308,7 +308,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                 <div className="p-6 space-y-8">
 
                     {/* Engineer Table - Modern Business Style */}
-                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded border border-slate-200 overflow-hidden shadow-sm">
                         <div 
                             className="px-6 py-4 border-b border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex justify-between items-center"
                             onClick={() => setIsEngineerExpanded(!isEngineerExpanded)}
@@ -332,7 +332,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                         <input 
                                             type="text" 
                                             placeholder={tString('users.searchPlaceholder', '搜尋資管人員...')}
-                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
+                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
                                             value={engineerSearch}
                                             onChange={e => setEngineerSearch(e.target.value)}
                                             onClick={e => e.stopPropagation()}
@@ -362,10 +362,10 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 {filteredEngineerUsers.map((u, idx) => (
                                                     <tr key={`${u.username}-${idx}`} className="hover:bg-slate-50 transition-colors group">
                                                         <td className="px-4 py-4 text-center sticky left-0 bg-white group-hover:bg-slate-50 transition-colors z-10 flex justify-center gap-2">
-                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all border border-slate-100" title="Edit">
+                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded transition-all border border-slate-100" title="Edit">
                                                                 <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
-                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all border border-slate-100" title="Delete">
+                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all border border-slate-100" title="Delete">
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>
                                                         </td>
@@ -400,7 +400,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                     </div>
 
                     {/* Stake Admin Table - Modern Business Style */}
-                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="bg-white rounded border border-slate-200 overflow-hidden shadow-sm">
                         <div 
                             className="px-6 py-4 border-b border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors flex justify-between items-center"
                             onClick={() => setIsStakeAdminExpanded(!isStakeAdminExpanded)}
@@ -424,7 +424,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                         <input 
                                             type="text" 
                                             placeholder={tString('users.searchPlaceholderStake', '搜尋主辦人員...')}
-                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
+                                            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-medium text-sm transition-all"
                                             value={stakeAdminSearch}
                                             onChange={e => setStakeAdminSearch(e.target.value)}
                                             onClick={e => e.stopPropagation()}
@@ -454,10 +454,10 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 {filteredStakeAdminUsers.map((u, idx) => (
                                                     <tr key={`${u.username}-${idx}`} className="hover:bg-slate-50 transition-colors group">
                                                         <td className="px-4 py-4 text-center sticky left-0 bg-white group-hover:bg-slate-50 transition-colors z-10 flex justify-center gap-2">
-                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-all border border-slate-100" title="Edit">
+                                                            <button onClick={() => handleEditUser(u)} className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded transition-all border border-slate-100" title="Edit">
                                                                 <Edit2 className="w-3.5 h-3.5" />
                                                             </button>
-                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all border border-slate-100" title="Delete">
+                                                            <button onClick={() => setDeleteTarget(u.username)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all border border-slate-100" title="Delete">
                                                                 <Trash2 className="w-3.5 h-3.5" />
                                                             </button>
                                                         </td>
@@ -496,10 +496,10 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
             {/* Modal Form - Modern Business Style */}
             {showModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 animate-fade-in backdrop-blur-sm">
-                    <div className="bg-white w-[500px] max-w-full rounded-xl shadow-2xl relative overflow-hidden flex flex-col border border-slate-200">
+                    <div className="bg-white w-[500px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col border border-slate-200">
                         <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-slate-900 rounded-lg">
+                                <div className="p-2 bg-slate-900 rounded">
                                     {editingUsername ? <Edit2 className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />} 
                                 </div>
                                 <h3 className="font-bold text-slate-900 text-lg">
@@ -520,7 +520,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                             type="number" 
                                             value={newUser.order || 0} 
                                             onChange={e => setNewUser({...newUser, order: parseInt(e.target.value) || 0})} 
-                                            className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
+                                            className="w-full border border-slate-200 h-10 rounded px-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
                                             placeholder="0" 
                                         />
                                     </div>
@@ -530,7 +530,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                             type="text"
                                             value={newUser.unit || ''} 
                                             onChange={e => setNewUser({...newUser, unit: e.target.value})} 
-                                            className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all"
+                                            className="w-full border border-slate-200 h-10 rounded px-3 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all"
                                             placeholder={tString('users.modal.unitPlaceholder', '單位名稱')}
                                         />
                                     </div>
@@ -542,7 +542,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                         type="text" 
                                         value={newUser.name} 
                                         onChange={e => setNewUser({...newUser, name: e.target.value})} 
-                                        className="w-full border border-slate-200 h-10 rounded-md px-4 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
+                                        className="w-full border border-slate-200 h-10 rounded px-4 text-sm text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all" 
                                         required 
                                         placeholder={tString('users.modal.nameLabel', '姓名')} 
                                     />
@@ -555,14 +555,14 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                             <button 
                                                 type="button"
                                                 onClick={() => setNewUser({...newUser, permission: 'edit'})}
-                                                className={`flex-1 flex items-center justify-center h-10 rounded-md border text-sm font-bold transition-all ${newUser.permission === 'edit' ? 'bg-sky-600 border-sky-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                                className={`flex-1 flex items-center justify-center h-10 rounded border text-sm font-bold transition-all ${newUser.permission === 'edit' ? 'bg-sky-600 border-sky-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                                             >
                                                 <Edit2 className="w-4 h-4 mr-2" /> {t('users.permissions.edit', '可編輯')}
                                             </button>
                                             <button 
                                                 type="button"
                                                 onClick={() => setNewUser({...newUser, permission: 'read'})}
-                                                className={`flex-1 flex items-center justify-center h-10 rounded-md border text-sm font-bold transition-all ${newUser.permission === 'read' ? 'bg-amber-100 border-amber-600 text-amber-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                                className={`flex-1 flex items-center justify-center h-10 rounded border text-sm font-bold transition-all ${newUser.permission === 'read' ? 'bg-amber-100 border-amber-600 text-amber-900' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                                             >
                                                 <Shield className="w-4 h-4 mr-2" /> {t('users.permissions.readOnly', '僅唯讀')}
                                             </button>
@@ -571,9 +571,9 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
 
                                     <div>
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.roleLabel', '角色身分 (可複選)')}</label>
-                                        <div className="border border-slate-100 p-3 rounded-md bg-slate-50 max-h-40 overflow-y-auto space-y-1">
+                                        <div className="border border-slate-100 p-3 rounded bg-slate-50 max-h-40 overflow-y-auto space-y-1">
                                             {availableRoles.map(r => (
-                                                <div key={r.val} onClick={() => toggleRole(r.val as Role)} className="flex items-center cursor-pointer select-none hover:bg-white p-2 rounded-md transition-all group">
+                                                <div key={r.val} onClick={() => toggleRole(r.val as Role)} className="flex items-center cursor-pointer select-none hover:bg-white p-2 rounded transition-all group">
                                                     <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all mr-3 ${ (newUser.roles?.includes(r.val as Role) || newUser.role === r.val) ? 'bg-sky-600 border-sky-600' : 'border-slate-300 bg-white group-hover:border-sky-500' }`}>
                                                         {(newUser.roles?.includes(r.val as Role) || newUser.role === r.val) && <Check className="w-4 h-4 text-white" />}
                                                     </div>
@@ -592,7 +592,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 type="text" 
                                                 value={newUser.username} 
                                                 onChange={e => setNewUser({...newUser, username: e.target.value})} 
-                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono font-bold text-sky-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all uppercase" 
+                                                className="w-full border border-slate-200 h-10 rounded px-3 text-sm font-mono font-bold text-sky-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all uppercase" 
                                                 required 
                                                 placeholder="ID"
                                                 disabled={!!editingUsername}
@@ -604,7 +604,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 type="tel" 
                                                 value={newUser.phone || ''} 
                                                 onChange={e => setNewUser({...newUser, phone: e.target.value})} 
-                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                className="w-full border border-slate-200 h-10 rounded px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
                                                 placeholder="09xx..." 
                                             />
                                         </div>
@@ -616,7 +616,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 type="text" 
                                                 value={newUser.password} 
                                                 onChange={e => setNewUser({...newUser, password: e.target.value})} 
-                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                className="w-full border border-slate-200 h-10 rounded px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
                                                 required 
                                                 placeholder="PW" 
                                             />
@@ -627,7 +627,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                                 type="email" 
                                                 value={newUser.email || ''} 
                                                 onChange={e => setNewUser({...newUser, email: e.target.value})} 
-                                                className="w-full border border-slate-200 h-10 rounded-md px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
+                                                className="w-full border border-slate-200 h-10 rounded px-3 text-sm font-mono focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all" 
                                                 placeholder="Email" 
                                             />
                                         </div>
@@ -638,13 +638,13 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                     <button 
                                         type="button" 
                                         onClick={closeModal} 
-                                        className="flex-1 h-11 border border-slate-200 text-slate-600 rounded-md text-sm font-bold hover:bg-slate-50 transition-all"
+                                        className="flex-1 h-11 border border-slate-200 text-slate-600 rounded text-sm font-bold hover:bg-slate-50 transition-all"
                                     >
                                         {t('common.cancel', '取消')}
                                     </button>
                                     <button 
                                         type="submit" 
-                                        className="flex-1 h-11 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                                        className="flex-1 h-11 bg-slate-900 text-white rounded text-sm font-bold hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
                                     >
                                         <Save className="w-4 h-4" /> {t('common.save', '儲存帳號')}
                                     </button>

@@ -56,7 +56,7 @@ const EmergencyOverlay: React.FC = () => {
         </div>
         
         <h1 className="text-4xl font-black mb-4 tracking-widest text-center">EMERGENCY ALERT</h1>
-        <h2 className="text-2xl font-bold mb-8 text-center bg-red-800 px-6 py-2 rounded-lg shadow-inner">
+        <h2 className="text-2xl font-bold mb-8 text-center bg-red-800 px-6 py-2 rounded shadow-inner">
             {message || '緊急狀況，請依照指示行動'}
         </h2>
 
@@ -64,19 +64,19 @@ const EmergencyOverlay: React.FC = () => {
             <div className="w-full max-w-sm space-y-4">
                 <button 
                     onClick={handleSafe}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg transform transition hover:scale-105 flex items-center justify-center"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded text-xl shadow-lg transform transition hover:scale-105 flex items-center justify-center"
                 >
                     <CheckCircle className="w-6 h-6 mr-2" /> 我已安全 (I AM SAFE)
                 </button>
                 <button 
                     onClick={handleHelp}
-                    className="w-full bg-white text-red-600 hover:bg-gray-100 font-bold py-4 rounded-xl text-xl shadow-lg transform transition hover:scale-105 flex items-center justify-center"
+                    className="w-full bg-white text-red-600 hover:bg-gray-100 font-bold py-4 rounded text-xl shadow-lg transform transition hover:scale-105 flex items-center justify-center"
                 >
                     <AlertTriangle className="w-6 h-6 mr-2" /> 我需要協助 (NEED HELP)
                 </button>
             </div>
         ) : (
-            <div className="text-center bg-green-600 p-8 rounded-xl shadow-lg max-w-sm">
+            <div className="text-center bg-green-600 p-8 rounded shadow-lg max-w-sm">
                 <CheckCircle className="w-20 h-20 mx-auto mb-4" />
                 <h3 className="text-2xl font-bold">感謝回報</h3>
                 <p className="mt-2">請留在安全區域，等待進一步指示。</p>

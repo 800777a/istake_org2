@@ -36,7 +36,7 @@ const LanguageSelector: React.FC = () => {
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute top-full left-0 mt-2 w-full bg-white rounded-md shadow-2xl border border-indigo-100 py-1 z-20 overflow-hidden"
+              className="absolute top-full left-0 mt-2 w-full bg-white rounded shadow-2xl border border-indigo-100 py-1 z-20 overflow-hidden"
             >
               <div className="px-3 py-1 text-[9px] font-black text-indigo-300 uppercase tracking-widest border-b border-indigo-50 mb-1 pl-10">
                 Language

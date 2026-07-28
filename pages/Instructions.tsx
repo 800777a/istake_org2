@@ -23,7 +23,7 @@ interface InstructionsProps {
 // Standardized Section Header: text-lg on mobile, text-xl on desktop
 const SectionHeader = ({ icon: Icon, title }: { icon: React.ElementType, title: string }) => (
     <div className="flex items-center border-b-2 border-amber-200 pb-2 mb-4 mt-8 first:mt-0">
-        <div className="bg-gradient-to-r from-amber-200 to-yellow-400 p-2 rounded-lg mr-3 shadow-sm">
+        <div className="bg-gradient-to-r from-amber-200 to-yellow-400 p-2 rounded mr-3 shadow-sm">
             <Icon className="w-5 h-5 md:w-6 md:h-6 text-slate-900" />
         </div>
         <h2 className="text-lg md:text-xl font-bold text-slate-800">{title}</h2>
@@ -268,11 +268,11 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             </ul>
                         </div>
                     </div>
-                    <div className="bg-white/40 p-3 rounded-xl text-xs space-y-1">
+                    <div className="bg-white/40 p-3 rounded text-xs space-y-1">
                         <p><span className="font-bold">C. 半價：</span>服務人員、工作人員；首訪成員伴隨者。</p>
                         <p><span className="font-bold">D. 免費：</span>0-3歲、新成員首訪、傳教首訪、受訓期。</p>
                     </div>
-                    <div className="bg-white/60 p-3 rounded-xl text-xs border border-current/10">
+                    <div className="bg-white/60 p-3 rounded text-xs border border-current/10">
                         <p className="font-bold mb-1 underline">E. 其他規定</p>
                         <ul className="space-y-1 list-disc pl-4">
                             <li>繳款後不退費。當日未上車可保留一次。</li>
@@ -443,7 +443,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
                                 className={`
-                                    py-3 px-2 md:px-4 rounded-lg font-bold text-center transition-all flex items-center justify-center border text-sm touch-manipulation shadow-sm
+                                    py-3 px-2 md:px-4 rounded font-bold text-center transition-all flex items-center justify-center border text-sm touch-manipulation shadow-sm
                                     ${activeTab === tab.id ? `${tab.activeClass} scale-[1.02]` : `${tab.colorClass}`}
                                 `}
                             >
@@ -455,7 +455,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                 )}
 
                 {/* Content Sections */}
-                <div className="bg-white p-5 md:p-10 rounded-2xl shadow-sm border border-gray-100 min-h-[400px]">
+                <div className="bg-white p-5 md:p-10 rounded shadow-sm border border-gray-100 min-h-[400px]">
                     
                     {/* TAB 0: Event Rules (Synced with backend) */}
                     {activeTab === 'eventRules' && (
@@ -491,10 +491,10 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                                     return (
                                                         <div 
                                                             key={index} 
-                                                            className={`${color.bg} ${color.border} ${color.text} p-5 md:p-6 rounded-2xl border-2 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col`}
+                                                            className={`${color.bg} ${color.border} ${color.text} p-5 md:p-6 rounded border-2 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col`}
                                                         >
                                                             <div className="flex items-center mb-4 border-b border-current/10 pb-3">
-                                                                <div className={`${color.accent} p-2 rounded-xl mr-3`}>
+                                                                <div className={`${color.accent} p-2 rounded mr-3`}>
                                                                     <section.icon className="w-5 h-5 md:w-6 md:h-6" />
                                                                 </div>
                                                                 <h3 className="font-bold text-lg md:text-xl">{section.title}</h3>
@@ -508,7 +508,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                             </div>
 
                                             {settings?.rules_content && settings.rules_content.length > 50 && (
-                                                <div className="mt-8 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                                                <div className="mt-8 bg-gray-50 p-6 rounded border border-gray-200">
                                                     <p className="text-gray-500 text-xs mb-4 uppercase tracking-widest font-bold">其他補充說明</p>
                                                     <div 
                                                         className="markdown-body text-gray-700"
@@ -533,7 +533,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                     defaultCollapsed={false}
                                 />
                             ) : (
-                                <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                <div className="text-center py-10 text-gray-400 bg-gray-50 rounded border border-dashed border-gray-200">
                                     {t('stake.instructions.loading_billing', '載入收費資訊中...')}
                                 </div>
                             )}
@@ -587,7 +587,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                 <BulletPoint>{t('stake.instructions.general.fees.point1', '請依據您的身分（成人、青少年、兒童等）繳交相應的報名費。')}</BulletPoint>
                                 <BulletPoint>
                                     {t('stake.instructions.general.fees.payment_methods', '付款方式：')}
-                                    <div className="mt-3 block w-full bg-red-100 p-4 md:p-6 rounded-xl border border-red-200 text-red-900 text-sm md:text-base font-medium leading-relaxed shadow-sm">
+                                    <div className="mt-3 block w-full bg-red-100 p-4 md:p-6 rounded border border-red-200 text-red-900 text-sm md:text-base font-medium leading-relaxed shadow-sm">
                                         <div className="mb-2 md:mb-4">
                                             1. <span className="font-bold">{t('stake.instructions.general.fees.cash_label', '現金：')}</span>{t('stake.instructions.general.fees.cash_desc', '請將車資交給各單位的負責人。')}
                                         </div>
@@ -609,7 +609,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {/* TAB 3: Handbook Extracts - NEW Indigo Theme (Now Last Tab) */}
                     {activeTab === 'handbook' && (
                         <div className="animate-fade-in space-y-6">
-                            <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-200 mb-6">
+                            <div className="bg-indigo-50 p-4 rounded border border-indigo-200 mb-6">
                                 <h3 className="font-bold text-indigo-900 flex items-center mb-2">
                                     <Book className="w-5 h-5 mr-2" /> {t('stake.instructions.handbook_data.header_title', '總指導手冊')}
                                 </h3>
@@ -621,7 +621,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                         href="https://www.churchofjesuschrist.org/study/manual/general-handbook?lang=zho" 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center text-indigo-700 hover:text-indigo-900 font-bold bg-white px-4 py-2 rounded-lg border border-indigo-200 shadow-sm transition-all hover:shadow-md"
+                                        className="inline-flex items-center text-indigo-700 hover:text-indigo-900 font-bold bg-white px-4 py-2 rounded border border-indigo-200 shadow-sm transition-all hover:shadow-md"
                                     >
                                         <ExternalLink className="w-4 h-4 mr-2" />
                                         {t('stake.instructions.handbook_data.source_url_label', '查詢原文出處內容')}
@@ -636,7 +636,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                     const color = rainbowColors[idx % rainbowColors.length];
                                     
                                     return (
-                                        <div key={idx} className={`${color.bg} rounded-xl border ${color.border} shadow-sm overflow-hidden`}>
+                                        <div key={idx} className={`${color.bg} rounded border ${color.border} shadow-sm overflow-hidden`}>
                                             <div 
                                                 className={`flex items-center justify-between p-4 cursor-pointer select-none ${color.hover} transition-colors`}
                                                 onClick={() => toggleSection(sectionId)}
@@ -684,7 +684,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {activeTab === 'housing' && (
                         <div className="animate-fade-in">
                             <SectionHeader icon={Home} title={tString('stake.instructions.housing.header', '副殿住宿規定')} />
-                            <div className="bg-yellow-50 p-4 md:p-6 rounded-xl border border-yellow-200 mb-6 text-yellow-900 leading-relaxed text-sm md:text-base">
+                            <div className="bg-yellow-50 p-4 md:p-6 rounded border border-yellow-200 mb-6 text-yellow-900 leading-relaxed text-sm md:text-base">
                                 <h4 className="font-bold text-base md:text-lg mb-4 text-center">{t('stake.instructions.housing.subheader', '台灣台北聖殿與會者住房住宿規定')}<br/><span className="text-xs md:text-sm font-normal">{t('stake.instructions.housing.effective_date', '(2023年9月1日起開始實施)')}</span></h4>
                                 
                                 <p className="mb-4">{t('stake.instructions.housing.intro_greeting', '親愛的弟兄姊姊：')}</p>
@@ -754,7 +754,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             <SectionHeader icon={MapPin} title={tString('stake.instructions.driving.header', '路線停車')} />
                             
                             <div className="space-y-6">
-                                <div className="bg-green-50 p-4 md:p-6 rounded-xl border border-green-200">
+                                <div className="bg-green-50 p-4 md:p-6 rounded border border-green-200">
                                     <h4 className="font-bold text-green-900 mb-2 text-base md:text-lg">📍 {t('stake.instructions.driving.address_title', '聖殿地址')}</h4>
                                     <p className="text-green-800 text-lg md:text-xl font-mono select-all">{t('stake.instructions.driving.address', '台北市大安區愛國東路256號')}</p>
                                     <div className="mt-4">
@@ -762,14 +762,14 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                             href="https://www.google.com/maps/search/?api=1&query=台北聖殿" 
                                             target="_blank" 
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center bg-green-100 text-green-800 px-6 py-3 rounded-lg font-bold hover:bg-green-200 transition-colors shadow-sm text-sm md:text-base"
+                                            className="inline-flex items-center bg-green-100 text-green-800 px-6 py-3 rounded font-bold hover:bg-green-200 transition-colors shadow-sm text-sm md:text-base"
                                         >
                                             <MapPin className="w-5 h-5 mr-2" /> {t('stake.instructions.driving.google_maps_btn', '開啟 Google Maps 導航')}
                                         </a>
                                     </div>
                                 </div>
 
-                                <div className="bg-green-50 p-4 md:p-6 rounded-xl border border-green-200 text-green-900 leading-relaxed text-sm md:text-base">
+                                <div className="bg-green-50 p-4 md:p-6 rounded border border-green-200 text-green-900 leading-relaxed text-sm md:text-base">
                                     <h4 className="font-bold text-base md:text-lg mb-4">{t('stake.instructions.driving.parking.header', '停車資訊')}</h4>
                                     
                                     <p className="mb-4">
@@ -819,7 +819,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                         </div>
                                     </div>
 
-                                    <div className="bg-green-100 p-4 rounded-lg border border-green-200">
+                                    <div className="bg-green-100 p-4 rounded border border-green-200">
                                         <span className="font-bold">{t('stake.instructions.driving.parking.reminder_label', '💡 交通提醒：')}</span>
                                         {t('stake.instructions.driving.parking.reminder_desc', '該區域位於熱鬧的東門/永康商圈，巷弄較窄且車位競爭激烈。建議多利用大眾運輸，從捷運東門站步行約 3-5 分鐘即可抵達綜合大樓。')}
                                     </div>
@@ -834,7 +834,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             <SectionHeader icon={Train} title={tString('stake.instructions.transit.header', '轉乘指南')} />
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-blue-50 p-4 md:p-6 rounded-xl border border-blue-100 text-blue-900 leading-relaxed">
+                                <div className="bg-blue-50 p-4 md:p-6 rounded border border-blue-100 text-blue-900 leading-relaxed">
                                     <h4 className="font-bold text-blue-900 mb-4 text-base md:text-lg flex items-center">
                                         <Train className="w-5 h-5 md:w-6 md:h-6 mr-2" /> {t('stake.instructions.transit.mrt.title', '捷運 (MRT)')}
                                     </h4>
@@ -855,11 +855,11 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                             </ul>
                                         </div>
 
-                                        <div className="bg-blue-100 p-3 rounded-lg border border-blue-200 text-xs md:text-sm">
+                                        <div className="bg-blue-100 p-3 rounded border border-blue-200 text-xs md:text-sm">
                                             <span className="font-bold">{t('stake.instructions.transit.mrt.note_label', '備註：')}</span> {t('stake.instructions.transit.mrt.note_desc', '若您從 台北捷運 M8 入口 進入捷運站會比較接近 紅線月台。')}
                                         </div>
 
-                                        <div className="bg-white p-3 rounded-lg border border-blue-200 text-xs md:text-sm shadow-sm">
+                                        <div className="bg-white p-3 rounded border border-blue-200 text-xs md:text-sm shadow-sm">
                                             <span className="font-bold block mb-1">{t('stake.instructions.transit.mrt.alert_2026_label', '📢 2026 年最新提醒：')}</span>
                                             <p className="mb-1">{t('stake.instructions.transit.mrt.alert_2026_p1', '捷運信義線東延段（廣慈/奉天宮站）預計於 2026 年第一季通車，屆時搭乘紅線往東向的班次將更加頻繁。')}</p>
                                             <p>{t('stake.instructions.transit.mrt.alert_2026_p2', '台北捷運營運時間為每日 06:00 至 24:00。')}</p>
@@ -867,21 +867,21 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                     </div>
                                 </div>
 
-                                <div className="bg-indigo-50 p-4 md:p-6 rounded-xl border border-indigo-100 text-indigo-900 leading-relaxed">
+                                <div className="bg-indigo-50 p-4 md:p-6 rounded border border-indigo-100 text-indigo-900 leading-relaxed">
                                     <h4 className="font-bold text-indigo-900 mb-4 text-base md:text-lg flex items-center">
                                         <Bus className="w-5 h-5 md:w-6 md:h-6 mr-2" /> {t('stake.instructions.transit.bus.title', '公車 (Bus)')}
                                     </h4>
                                     <div className="space-y-4 text-sm md:text-base">
                                         <p className="font-medium mb-2">{t('stake.instructions.transit.bus.intro', '若您想搭乘公車，可由台北車站周邊搭乘以下路線：')}</p>
                                         
-                                        <div className="bg-white p-3 rounded-lg border border-indigo-200 shadow-sm">
+                                        <div className="bg-white p-3 rounded border border-indigo-200 shadow-sm">
                                             <h5 className="font-bold text-indigo-800 mb-1 text-base md:text-lg">{t('stake.instructions.transit.bus.line606_title', '606 路')}</h5>
                                             <p className="text-indigo-700">
                                                 {t('stake.instructions.transit.bus.line606_desc', '於「台北車站(忠孝)」站牌搭乘，至「金山潮州街口」站下車，下車後步行約 2 分鐘即可抵達。')}
                                             </p>
                                         </div>
 
-                                        <div className="bg-white p-3 rounded-lg border border-indigo-200 shadow-sm">
+                                        <div className="bg-white p-3 rounded border border-indigo-200 shadow-sm">
                                             <h5 className="font-bold text-indigo-800 mb-1 text-base md:text-lg">{t('stake.instructions.transit.bus.line237_title', '237 路')}</h5>
                                             <p className="text-indigo-700">
                                                 {t('stake.instructions.transit.bus.line237_desc', '於「台北車站(忠孝)」搭乘，至「金山南路站」或「公教住宅站」下車。')}
@@ -892,7 +892,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                             </div>
                             
                             {/* New Bus Rules Section */}
-                            <div className="mt-6 bg-amber-50 p-4 md:p-6 rounded-xl border border-amber-200 text-amber-900 leading-relaxed">
+                            <div className="mt-6 bg-amber-50 p-4 md:p-6 rounded border border-amber-200 text-amber-900 leading-relaxed">
                                 <h4 className="font-bold text-amber-900 mb-4 text-base md:text-lg flex items-center">
                                     <AlertCircle className="w-5 h-5 md:w-6 md:h-6 mr-2" /> {t('stake.instructions.busRules.header', '遊覽車司機工時規定')}
                                 </h4>
@@ -905,12 +905,12 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                     <BulletPoint>{t('stake.instructions.busRules.point5', '兩日以上行程，駕駛員隔日出勤需休息10 小時以上，請提供駕駛員1人1室妥善的夜間休息環境。')}</BulletPoint>
                                     <BulletPoint>{t('stake.instructions.busRules.point6', '違反工時規定者，公路主管機關可依規定處分業者，最高可處新臺幣 9 萬元罰鍰。')}</BulletPoint>
                                 </ul>
-                                <div className="text-xs md:text-sm text-gray-600 bg-amber-100 p-3 rounded-lg border border-amber-200">
+                                <div className="text-xs md:text-sm text-gray-600 bg-amber-100 p-3 rounded border border-amber-200">
                                     {t('stake.instructions.busRules.footer_note', '＊再次提醒租車消費者，唯有注意及遵守使用遊覽車安全規定事項，才能保障旅遊品質與行程安全，不要讓遊覽車公司及駕駛員因您違反規定而受罰。 規劃行程時應將駕駛休息時間納入，避免要求司機超時工作，保障旅遊安全。')}
                                 </div>
                             </div>
 
-                            <div className="mt-6 bg-purple-50 p-4 rounded-lg border border-purple-200 text-purple-900">
+                            <div className="mt-6 bg-purple-50 p-4 rounded border border-purple-200 text-purple-900">
                                 <p className="text-sm font-bold mb-1">{t('stake.instructions.transit.warm_tip_label', '💡 溫馨提醒：')}</p>
                                 <p className="text-sm">{t('stake.instructions.transit.warm_tip_desc', '台北市區交通繁忙，建議優先使用捷運前往，以免塞車延誤教儀時間。')}</p>
                             </div>
@@ -950,7 +950,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     </div>
                     <button 
                         onClick={onGoRegister}
-                        className="w-full md:w-auto h-12 px-10 bg-indigo-600 text-white font-bold rounded-lg shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 group active:scale-95"
+                        className="w-full md:w-auto h-12 px-10 bg-indigo-600 text-white font-bold rounded shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 group active:scale-95"
                     >
                         <span>立即前往報名</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

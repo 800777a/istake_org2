@@ -21,7 +21,7 @@ interface BusRouteTableProps {
 
 const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], busPrefix, onUpdate, onUpdateMultiple, onDelete, onAdd, onMove, theme }) => {
     return (
-        <div className={`rounded-lg shadow-sm border overflow-hidden bg-white/60 backdrop-blur-sm ${theme.border}`}>
+        <div className={`rounded shadow-sm border overflow-hidden bg-white/60 backdrop-blur-sm ${theme.border}`}>
             <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-sm text-left border-collapse min-w-[1000px]">
                     <thead>
@@ -52,27 +52,27 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
                                     <input 
-                                        className={`w-full bg-white/60 border rounded-lg px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-sm ${theme.text} ${theme.border}`} 
+                                        className={`w-full bg-white/60 border rounded px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-sm ${theme.text} ${theme.border}`} 
                                         value={item.stopCode || ''} 
                                         placeholder={autoStopCode}
                                         onChange={e => onUpdate(idx, 'stopCode', e.target.value)} 
                                     />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/60 border rounded-lg px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-base ${theme.text} ${theme.border}`} value={item.arrivalTime} onChange={e => onUpdate(idx, 'arrivalTime', e.target.value)} />
+                                    <input className={`w-full bg-white/60 border rounded px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-base ${theme.text} ${theme.border}`} value={item.arrivalTime} onChange={e => onUpdate(idx, 'arrivalTime', e.target.value)} />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/40 border rounded-lg px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm ${theme.text} ${theme.border}`} value={item.stay || ''} onChange={e => onUpdate(idx, 'stay', e.target.value)} />
+                                    <input className={`w-full bg-white/40 border rounded px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm ${theme.text} ${theme.border}`} value={item.stay || ''} onChange={e => onUpdate(idx, 'stay', e.target.value)} />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/60 border rounded-lg px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-base text-emerald-700 ${theme.border}`} value={item.departureTime} onChange={e => onUpdate(idx, 'departureTime', e.target.value)} />
+                                    <input className={`w-full bg-white/60 border rounded px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm text-base text-emerald-700 ${theme.border}`} value={item.departureTime} onChange={e => onUpdate(idx, 'departureTime', e.target.value)} />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/40 border rounded-lg px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm ${theme.text} ${theme.border}`} placeholder="分" value={item.duration} onChange={e => onUpdate(idx, 'duration', e.target.value)} />
+                                    <input className={`w-full bg-white/40 border rounded px-2 py-2 text-center font-bold focus:bg-white outline-none transition-all shadow-sm ${theme.text} ${theme.border}`} placeholder="分" value={item.duration} onChange={e => onUpdate(idx, 'duration', e.target.value)} />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
                                     <select 
-                                        className={`w-full bg-white/60 border rounded-lg px-2 py-2 font-bold focus:bg-white outline-none transition-all shadow-sm text-sm cursor-pointer ${theme.text} ${theme.border}`}
+                                        className={`w-full bg-white/60 border rounded px-2 py-2 font-bold focus:bg-white outline-none transition-all shadow-sm text-sm cursor-pointer ${theme.text} ${theme.border}`}
                                         value={item.location}
                                         onChange={e => {
                                             const selected = stations.find(s => s.area === e.target.value);
@@ -96,13 +96,13 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
                                     </select>
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/60 border rounded-lg px-3 py-2 text-xs font-medium focus:bg-white outline-none transition-all shadow-sm text-slate-600 ${theme.border}`} value={item.address || ''} onChange={e => onUpdate(idx, 'address', e.target.value)} />
+                                    <input className={`w-full bg-white/60 border rounded px-3 py-2 text-xs font-medium focus:bg-white outline-none transition-all shadow-sm text-slate-600 ${theme.border}`} value={item.address || ''} onChange={e => onUpdate(idx, 'address', e.target.value)} />
                                 </td>
                                 <td className={`p-2 border-r ${theme.border}`}>
-                                    <input className={`w-full bg-white/60 border rounded-lg px-3 py-2 text-[10px] font-medium focus:bg-white outline-none transition-all shadow-sm text-blue-600 ${theme.border}`} value={item.mapUrl || ''} onChange={e => onUpdate(idx, 'mapUrl', e.target.value)} placeholder="https://..." />
+                                    <input className={`w-full bg-white/60 border rounded px-3 py-2 text-[10px] font-medium focus:bg-white outline-none transition-all shadow-sm text-blue-600 ${theme.border}`} value={item.mapUrl || ''} onChange={e => onUpdate(idx, 'mapUrl', e.target.value)} placeholder="https://..." />
                                 </td>
                                 <td className="p-2 text-right">
-                                    <button onClick={() => onDelete(idx)} className="text-slate-300 hover:text-rose-600 transition-all p-2 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-100">
+                                    <button onClick={() => onDelete(idx)} className="text-slate-300 hover:text-rose-600 transition-all p-2 hover:bg-rose-50 rounded border border-transparent hover:border-rose-100">
                                         <Trash2 size={16}/>
                                     </button>
                                 </td>

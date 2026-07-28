@@ -61,7 +61,7 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
         isExpanded={expandedSteps['step6']}
         onToggle={() => onToggle('step6')}
       >
-        <div className="flex items-center space-x-4 p-4 bg-white/50 rounded-xl">
+        <div className="flex items-center space-x-4 p-4 bg-white/50 rounded">
           <Text strong className="text-xs opacity-70">{t('stake.fee_config.round_to_ten_label', '進位到十位數 (Rounding to Ten):')}</Text>
           <Switch 
             checked={billingConfig.roundingToTen} 
@@ -75,7 +75,7 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
         <div className="mt-4 mb-8 flex justify-center">
           <button 
             onClick={onOpenSandbox}
-            className="h-12 px-8 bg-amber-500 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
+            className="h-12 px-8 bg-amber-500 text-white rounded text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
           >
             <Calculator size={20} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Fee Calculation Sandbox')}
           </button>

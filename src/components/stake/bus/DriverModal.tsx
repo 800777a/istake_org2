@@ -42,7 +42,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
+                className="relative bg-white rounded shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
             >
                 <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 className="font-black text-xl text-gray-900 uppercase tracking-tighter">
@@ -54,18 +54,18 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.driverName')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none font-black" value={data.name} onChange={e => setData({...data, name: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-indigo-500 outline-none font-black" value={data.name} onChange={e => setData({...data, name: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.phone')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none font-mono" value={data.phone} onChange={e => setData({...data, phone: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-indigo-500 outline-none font-mono" value={data.phone} onChange={e => setData({...data, phone: e.target.value})} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.company')}</label>
                             <select 
-                                className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none bg-white"
+                                className="w-full p-3 border-2 rounded focus:border-indigo-500 outline-none bg-white"
                                 value={`${data.companyId}|${data.companyName}`}
                                 onChange={e => {
                                     const [id, name] = e.target.value.split('|');
@@ -81,7 +81,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.pairedVehicle')}</label>
                             <select 
-                                className="w-full p-3 border-2 rounded-xl focus:border-indigo-500 outline-none bg-white"
+                                className="w-full p-3 border-2 rounded focus:border-indigo-500 outline-none bg-white"
                                 value={data.plate} onChange={e => setData({...data, plate: e.target.value})}
                                 disabled={!data.companyId}
                             >
@@ -94,7 +94,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, edit
                     </div>
                     <button 
                         onClick={() => setShowSaveConfirm(true)}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingDriver ? t('bus.button.updateDriver') : t('bus.button.saveDriver')}
                     </button>

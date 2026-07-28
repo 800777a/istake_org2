@@ -111,7 +111,7 @@ const UnitAdmin: React.FC = () => {
 
              {/* Tasks */}
             {unitTasks.length > 0 && (
-                <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4 shadow-sm">
+                <div className="mb-6 bg-purple-50 border border-purple-200 rounded p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <h3 className="font-bold text-purple-800 flex items-center text-base">
                             <ClipboardList className="w-5 h-5 mr-2" /> 待辦事項
@@ -127,9 +127,9 @@ const UnitAdmin: React.FC = () => {
                             <div 
                                 key={task.id}
                                 onClick={() => handleTaskToggle(task.id, !!task.status[selectedUnit])}
-                                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${task.status[selectedUnit] ? 'bg-green-50 border-green-200 opacity-60' : 'bg-white border-purple-200 hover:border-purple-400 shadow-sm'} ${isEventClosed ? 'cursor-not-allowed opacity-50' : ''}`}
+                                className={`flex items-center p-3 rounded border cursor-pointer transition-colors ${task.status[selectedUnit] ? 'bg-green-50 border-green-200 opacity-60' : 'bg-white border-purple-200 hover:border-purple-400 shadow-sm'} ${isEventClosed ? 'cursor-not-allowed opacity-50' : ''}`}
                             >
-                                <div className={`w-5 h-5 rounded-lg border mr-3 flex items-center justify-center ${task.status[selectedUnit] ? 'bg-green-500 border-green-500' : 'bg-white border-gray-400'}`}>
+                                <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center ${task.status[selectedUnit] ? 'bg-green-500 border-green-500' : 'bg-white border-gray-400'}`}>
                                     {task.status[selectedUnit] && <CheckSquare className="w-4 h-4 text-white" />}
                                 </div>
                                 <span className={`text-xs font-medium ${task.status[selectedUnit] ? 'text-gray-500 line-through' : 'text-gray-800'}`}>
@@ -157,7 +157,7 @@ const UnitAdmin: React.FC = () => {
             />
 
             {/* Registration List */}
-            <div className="bg-yellow-50 rounded-lg border border-yellow-200 overflow-hidden shadow-sm">
+            <div className="bg-yellow-50 rounded border border-yellow-200 overflow-hidden shadow-sm">
                 <div className="p-4 bg-yellow-100 border-b border-yellow-200 flex justify-between items-center sticky top-0 z-20">
                     <h3 className="font-bold text-yellow-900 text-base">名單</h3>
                 </div>

@@ -31,11 +31,11 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
     });
 
     return (
-        <div className="min-w-full md:min-w-[400px] bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden group/bus transition-all hover:border-indigo-300">
+        <div className="min-w-full md:min-w-[400px] bg-white rounded shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden group/bus transition-all hover:border-indigo-300">
             <div className="bg-indigo-900 p-6 border-b border-indigo-950 shrink-0">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/10">
+                        <div className="p-2 bg-white/10 rounded border border-white/10">
                             <Bus className="text-blue-300" size={20} />
                         </div>
                         <div>
@@ -50,7 +50,7 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                 </div>
                 <button 
                     onClick={onExport}
-                    className="w-full h-10 bg-white text-indigo-900 rounded-lg text-xs font-bold hover:bg-blue-50 flex items-center justify-center shadow-md transition-all active:scale-95 uppercase tracking-widest gap-2"
+                    className="w-full h-10 bg-white text-indigo-900 rounded text-xs font-bold hover:bg-blue-50 flex items-center justify-center shadow-md transition-all active:scale-95 uppercase tracking-widest gap-2"
                 >
                     <Download size={14} className="text-blue-600" /> 
                     匯出搭車名單
@@ -61,13 +61,13 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                 <div className="flex justify-between items-center mb-3">
                     <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">停靠站點與時間</h5>
                     {!isAddingStop ? (
-                        <button onClick={() => setIsAddingStop(true)} className="h-8 w-8 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-all flex items-center justify-center">
+                        <button onClick={() => setIsAddingStop(true)} className="h-8 w-8 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition-all flex items-center justify-center">
                             <Plus size={16} />
                         </button>
                     ) : (
                         <div className="flex items-center gap-2 animate-fade-in">
                             <select 
-                                className="h-8 text-[10px] border border-blue-400 rounded-lg px-2 bg-white font-bold text-slate-900 outline-none shadow-sm"
+                                className="h-8 text-[10px] border border-blue-400 rounded px-2 bg-white font-bold text-slate-900 outline-none shadow-sm"
                                 onChange={e => {
                                     if (e.target.value) {
                                         const found = availableStops.find(s => s.location === e.target.value);
@@ -87,13 +87,13 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                                     <option key={s.stopCode} value={s.location}>{s.location}</option>
                                 ))}
                             </select>
-                            <button onClick={() => setIsAddingStop(false)} className="h-8 w-8 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-all flex items-center justify-center"><X size={14}/></button>
+                            <button onClick={() => setIsAddingStop(false)} className="h-8 w-8 bg-slate-200 text-slate-600 rounded hover:bg-slate-300 transition-all flex items-center justify-center"><X size={14}/></button>
                         </div>
                     )}
                 </div>
                 <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
                     {(busConfig?.stops || []).map((stop, sIdx) => (
-                        <div key={stop.code} className="flex justify-between items-center py-2 px-3 bg-white border border-slate-200 rounded-lg group/stop shadow-sm">
+                        <div key={stop.code} className="flex justify-between items-center py-2 px-3 bg-white border border-slate-200 rounded group/stop shadow-sm">
                             <div className="flex items-center gap-2">
                                 <span className="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-indigo-100">{stop.code}</span>
                                 <span className="text-xs font-bold text-slate-900">{stop.location}</span>
@@ -124,7 +124,7 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                             </div>
                             <div className="space-y-2">
                                 {members.map(m => (
-                                    <div key={m.reg_id} className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm flex justify-between items-center group/member">
+                                    <div key={m.reg_id} className="bg-white p-3 rounded border border-slate-100 shadow-sm flex justify-between items-center group/member">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-bold text-slate-900">{m.name}</span>
                                             <span className="text-[10px] font-bold text-slate-400 uppercase">{m.unit}</span>
@@ -137,7 +137,7 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                                         </button>
                                     </div>
                                 ))}
-                                {members.length === 0 && <div className="text-[10px] text-slate-300 font-bold uppercase tracking-widest text-center py-4 border border-dashed border-slate-200 rounded-lg">無乘車名單</div>}
+                                {members.length === 0 && <div className="text-[10px] text-slate-300 font-bold uppercase tracking-widest text-center py-4 border border-dashed border-slate-200 rounded">無乘車名單</div>}
                             </div>
                         </div>
                     );

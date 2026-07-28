@@ -43,7 +43,7 @@ const TestimonyWallModal: React.FC<TestimonyWallModalProps> = ({ event, registra
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-gradient-to-br from-indigo-50 to-blue-100 w-[800px] max-w-full h-[80vh] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
+      <div className="bg-gradient-to-br from-indigo-50 to-blue-100 w-[800px] max-w-full h-[80vh] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="bg-white/80 backdrop-blur-sm p-4 flex justify-between items-center border-b border-white/50 shrink-0">
@@ -85,7 +85,7 @@ const TestimonyWallModal: React.FC<TestimonyWallModalProps> = ({ event, registra
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {testimonies.map(t => (
-                            <div key={t.id} className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-indigo-50 relative group">
+                            <div key={t.id} className="bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow border border-indigo-50 relative group">
                                 <div className="text-gray-700 text-sm leading-relaxed mb-4 min-h-[80px]">
                                     "{t.content}"
                                 </div>
@@ -100,7 +100,7 @@ const TestimonyWallModal: React.FC<TestimonyWallModalProps> = ({ event, registra
                     </div>
                 )
             ) : (
-                <div className="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg">
+                <div className="max-w-lg mx-auto bg-white p-8 rounded shadow-lg">
                     <h3 className="text-xl font-bold text-gray-800 mb-2 text-center">寫下您的感動</h3>
                     <p className="text-gray-500 text-sm mb-6 text-center">您的分享可能會成為他人的祝福</p>
                     
@@ -109,7 +109,7 @@ const TestimonyWallModal: React.FC<TestimonyWallModalProps> = ({ event, registra
                             value={content}
                             onChange={e => setContent(e.target.value)}
                             placeholder="這次聖殿旅行團中，您有什麼特別的體會或靈性經驗嗎？"
-                            className="w-full h-40 p-4 border border-indigo-100 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-none bg-indigo-50/30"
+                            className="w-full h-40 p-4 border border-indigo-100 rounded focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-none bg-indigo-50/30"
                             required
                         />
                         

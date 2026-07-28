@@ -322,7 +322,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
             {msg && <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />}
 
             {/* Header conforming to Rainbow Depth Level 1 */}
-            <div className="bg-indigo-900 text-white p-3 md:p-4 rounded-[8px] shadow-sm flex items-center gap-3 overflow-hidden">
+            <div className="bg-indigo-900 text-white p-3 md:p-4 rounded shadow-sm flex items-center gap-3 overflow-hidden">
                 <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-indigo-300 shrink-0" />
                 <h2 className="text-sm md:text-xl font-black tracking-tight truncate font-title flex-1">
                     {t('staff.tab_title', '主辦行政與同工管理')}
@@ -330,23 +330,23 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
             </div>
 
             {/* Action Row - Level 2 */}
-            <div className="bg-indigo-100/50 p-2 rounded-[8px] border border-indigo-200 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+            <div className="bg-indigo-100/50 p-2 rounded border border-indigo-200 flex flex-wrap items-center justify-between gap-2 shadow-sm">
                 <div className="flex flex-wrap items-center gap-2">
                     <button 
                         onClick={handleSaveFile} 
-                        className="bg-white text-indigo-700 h-9 px-3 rounded-lg text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center active:scale-95 shadow-sm"
+                        className="bg-white text-indigo-700 h-9 px-3 rounded text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center active:scale-95 shadow-sm"
                     >
                         <Save className="w-4 h-4 mr-1.5" />
                         {t('common.save_file', '存檔')}
                     </button>
-                    <label className="bg-white text-indigo-700 h-9 px-3 rounded-lg text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center cursor-pointer active:scale-95 shadow-sm">
+                    <label className="bg-white text-indigo-700 h-9 px-3 rounded text-[11px] font-bold border border-indigo-200 hover:bg-indigo-50 transition-all flex items-center cursor-pointer active:scale-95 shadow-sm">
                         <Upload className="w-4 h-4 mr-1.5" />
                         {t('common.load_file', '讀取')}
                         <input type="file" className="hidden" accept=".json" onChange={handleImportWorkers}/>
                     </label>
                     <button 
                         onClick={() => setIsExportModalOpen(true)}
-                        className="bg-blue-600 text-white h-9 px-3 rounded-lg text-[11px] font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center active:scale-95 border border-blue-500/50"
+                        className="bg-blue-600 text-white h-9 px-3 rounded text-[11px] font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center active:scale-95 border border-blue-500/50"
                     >
                         <FileOutput className="w-4 h-4 mr-1.5"/>
                         {t('common.export', '導出')}
@@ -354,17 +354,17 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                 </div>
 
                 {/* ViewMode Switcher - Right Aligned */}
-                <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-inner">
+                <div className="flex bg-white p-1 rounded border border-indigo-200 shadow-inner">
                     <button 
                         onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-[11px] font-bold ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
                     >
                         <List size={14} />
                         <span>表格</span>
                     </button>
                     <button 
                         onClick={() => setViewMode('card')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-[11px] font-bold ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
                     >
                         <LayoutDashboard size={14} />
                         <span>卡片</span>
@@ -389,20 +389,20 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                             const hasWorker = !!worker.name;
                             
                             return (
-                                <div key={role.key} className={`flex flex-col gap-1.5 p-3 rounded-lg border transition-all ${hasWorker ? 'bg-white border-indigo-200 shadow-sm' : 'bg-slate-50/50 border-slate-100'}`}>
+                                <div key={role.key} className={`flex flex-col gap-1.5 p-3 rounded border transition-all ${hasWorker ? 'bg-white border-indigo-200 shadow-sm' : 'bg-slate-50/50 border-slate-100'}`}>
                                     <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-relaxed">
                                         {role.label}
                                     </label>
                                     <div className="flex gap-2">
-                                        <div className={`w-20 md:w-24 shrink-0 flex items-center justify-center rounded-md border text-[11px] font-black h-9 transition-all ${hasWorker ? 'bg-indigo-50 border-indigo-100 text-indigo-900' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
+                                        <div className={`w-20 md:w-24 shrink-0 flex items-center justify-center rounded border text-[11px] font-black h-9 transition-all ${hasWorker ? 'bg-indigo-50 border-indigo-100 text-indigo-900' : 'bg-slate-50 border-slate-100 text-slate-300'}`}>
                                             {worker.unit || '-'}
                                         </div>
-                                        <div className={`flex-1 flex items-center justify-between px-3 rounded-md border text-xs h-9 transition-all ${hasWorker ? 'bg-white border-indigo-500 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 italic'}`}>
+                                        <div className={`flex-1 flex items-center justify-between px-3 rounded border text-xs h-9 transition-all ${hasWorker ? 'bg-white border-indigo-500 text-slate-900 font-bold' : 'bg-slate-50 border-slate-100 text-slate-400 italic'}`}>
                                             <span className="truncate">{worker.name || t('staff.awaiting_application', '待申請')}</span>
                                             {worker.name && (
                                                 <button 
                                                     onClick={() => triggerClearWorker(role.key)}
-                                                    className="text-slate-300 hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-50 transition-all ml-1"
+                                                    className="text-slate-300 hover:text-rose-500 p-1.5 rounded hover:bg-rose-50 transition-all ml-1"
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -423,13 +423,13 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                 >
                     <div className="space-y-4">
                         {/* Add Form */}
-                        <div className="bg-indigo-50/50 p-3 md:p-4 rounded-lg border border-indigo-100 space-y-4">
+                        <div className="bg-indigo-50/50 p-3 md:p-4 rounded border border-indigo-100 space-y-4">
                             <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{t('staff.manual_add_volunteer', '手動新增志願者')}</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400">{t('common.unit', '單位')}</label>
                                     <select 
-                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full h-10 border border-slate-200 rounded px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                         value={newVolunteer.unit}
                                         onChange={(e) => setNewVolunteer({...newVolunteer, unit: e.target.value})}
                                     >
@@ -441,7 +441,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                     <label className="text-[10px] font-bold text-slate-400">{t('common.name', '姓名')}</label>
                                     <input 
                                         type="text"
-                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full h-10 border border-slate-200 rounded px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                         placeholder={tString('common.placeholder.input_name', '輸入姓名')}
                                         value={newVolunteer.name}
                                         onChange={(e) => setNewVolunteer({...newVolunteer, name: e.target.value})}
@@ -450,7 +450,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400">{t('staff.role_to_apply', '申請職務')}</label>
                                     <select 
-                                        className="w-full h-10 border border-slate-200 rounded-lg px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full h-10 border border-slate-200 rounded px-3 text-xs bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                         value={newVolunteer.roleKey}
                                         onChange={(e) => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
                                     >
@@ -462,7 +462,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                             <div className="flex justify-end pt-2">
                                 <button 
                                     onClick={handleAddVolunteer}
-                                    className="bg-indigo-600 text-white h-10 px-6 rounded-lg font-bold text-xs shadow-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
+                                    className="bg-indigo-600 text-white h-10 px-6 rounded font-bold text-xs shadow-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-2"
                                 >
                                     <Plus size={16} /> {t('common.add', '新增')}
                                 </button>
@@ -522,13 +522,13 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                                                 <div className="flex items-center justify-center gap-2">
                                                                     <button 
                                                                         onClick={() => handlePromoteVolunteer(v)}
-                                                                        className="bg-emerald-600 text-white h-8 px-3 rounded-md hover:bg-emerald-700 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+                                                                        className="bg-emerald-600 text-white h-8 px-3 rounded hover:bg-emerald-700 text-[11px] font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
                                                                     >
                                                                         <Check size={14} /> {t('common.confirm', '錄用')}
                                                                     </button>
                                                                     <button 
                                                                         onClick={() => handleDeleteVolunteer(v.id)}
-                                                                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 transition-all"
+                                                                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded border border-rose-100 transition-all"
                                                                     >
                                                                         <Trash2 size={16} />
                                                                     </button>
@@ -553,7 +553,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                     {(currentEvent.volunteers || []).map(v => {
                                         const roleLabel = TEMPLE_WORKER_ROLES.find(r => r.key === v.roleKey)?.label || v.roleKey;
                                         return (
-                                            <div key={v.id} className="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-3 hover:shadow-md transition-shadow">
+                                            <div key={v.id} className="bg-white p-3 rounded border border-indigo-100 shadow-sm space-y-3 hover:shadow-md transition-shadow">
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1">
@@ -566,14 +566,14 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                                     </div>
                                                     <button 
                                                         onClick={() => handleDeleteVolunteer(v.id)}
-                                                        className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                                                        className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
                                                 <button 
                                                     onClick={() => handlePromoteVolunteer(v)}
-                                                    className="w-full bg-emerald-600 text-white h-9 rounded-lg font-bold text-xs shadow-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                                                    className="w-full bg-emerald-600 text-white h-9 rounded font-bold text-xs shadow-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                                                 >
                                                     <Check size={16} /> {t('common.confirm', '錄用此位志願者')}
                                                 </button>
@@ -647,7 +647,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
                                                         <select 
-                                                            className="w-full max-w-[200px] h-9 border border-slate-200 rounded-lg px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                            className="w-full max-w-[200px] h-9 border border-slate-200 rounded px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                                             onChange={(e) => handleDelegateFromList(reg, e.target.value)}
                                                             value={assignedRolesMap[reg.reg_id] || ""}
                                                         >
@@ -679,7 +679,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-1">
                                 {serviceList.map(reg => (
-                                    <div key={reg.reg_id} className="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm space-y-3">
+                                    <div key={reg.reg_id} className="bg-white p-3 rounded border border-indigo-100 shadow-sm space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1.5">
                                                 <div className="flex items-center gap-2">
@@ -699,7 +699,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{t('staff.assigned_role_with_promotion', '快速委派職務')}</label>
                                             <select 
-                                                className="w-full h-9 border border-slate-200 rounded-lg px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                className="w-full h-9 border border-slate-200 rounded px-3 text-[11px] font-bold bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                                 onChange={(e) => handleDelegateFromList(reg, e.target.value)}
                                                 value={assignedRolesMap[reg.reg_id] || ""}
                                             >
@@ -718,7 +718,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                     </div>
                                 ))}
                                 {serviceList.length === 0 && (
-                                    <div className="bg-white p-12 rounded-lg border border-indigo-100 text-center text-xs font-bold text-slate-400 italic">
+                                    <div className="bg-white p-12 rounded border border-indigo-100 text-center text-xs font-bold text-slate-400 italic">
                                         {t('staff.msg.no_eligible_service_staff', '查無符合同工資格之人員')}
                                     </div>
                                 )}

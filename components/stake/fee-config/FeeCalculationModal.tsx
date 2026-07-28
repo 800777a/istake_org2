@@ -83,7 +83,7 @@ export const FeeCalculationModal: React.FC<FeeCalculationModalProps> = ({ billin
         </Row>
       </Form>
       
-      <div className="bg-amber-900 text-amber-50 p-6 rounded-2xl shadow-xl border border-amber-400/30 overflow-hidden relative">
+      <div className="bg-amber-900 text-amber-50 p-6 rounded shadow-xl border border-amber-400/30 overflow-hidden relative">
         <div className="flex justify-between items-start relative z-10">
            <div>
               <Text className="text-amber-300 text-xs font-black uppercase tracking-widest block mb-1">{t('stake.fee_config.calc_result', '計算結果 (Live Result)')}</Text>
@@ -102,7 +102,7 @@ export const FeeCalculationModal: React.FC<FeeCalculationModalProps> = ({ billin
               <span>{t('stake.fee_config.calc_path', '計算路徑 (Calculation Path)')}</span>
               <Badge status="processing" text={t('stake.fee_config.realtime_sync', '實時同步')} className="text-[10px] text-amber-200" />
            </div>
-            <div className="bg-black/20 p-3 rounded-lg border border-white/5 space-y-2 text-[11px] font-mono">
+            <div className="bg-black/20 p-3 rounded border border-white/5 space-y-2 text-[11px] font-mono">
               <div className="flex justify-between">
                  <span className="opacity-50">L1/L2 Base:</span>
                  <span className="font-bold">${(billingConfig.baseFees || {})[testUnit] ?? (billingConfig.baseFees || {})['GLOBAL'] ?? 0}</span>

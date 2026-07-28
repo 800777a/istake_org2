@@ -140,7 +140,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[600px] max-w-full rounded-none md:rounded-[8px] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-[600px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header - Gold Gradient */}
         <div className="bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 p-4 text-slate-900 flex justify-between items-center shrink-0">
@@ -154,7 +154,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
         <div className="p-6 overflow-y-auto bg-gray-50 flex-1 space-y-6">
             
             {/* 1. Family Summary - Light Red */}
-            <div className="bg-red-50 p-4 rounded-none md:rounded-[8px] shadow-sm border border-red-200">
+            <div className="bg-red-50 p-4 rounded shadow-sm border border-red-200">
                 <div className="flex justify-between items-center mb-2 border-b border-red-200 pb-2">
                     <div className="text-red-800 text-xs font-bold">代表人</div>
                     <div className="text-red-800 text-xs font-bold">應付總額</div>
@@ -190,7 +190,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
             </div>
 
             {/* 2. Bank Info & Input - Combined Light Green */}
-            <div className="bg-green-50 p-5 rounded-none md:rounded-[8px] border border-green-200">
+            <div className="bg-green-50 p-5 rounded border border-green-200">
                 <h3 className="font-bold text-green-900 mb-4 text-sm flex items-center border-b border-green-200 pb-2">
                     <DollarSign className="w-4 h-4 mr-1 text-green-700" /> 轉帳帳號
                 </h3>
@@ -306,7 +306,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                 {settings.payment_methods?.includes(PaymentMethod.TRANSFER) && (
                     <button 
                         onClick={() => handleUpdatePayment(PaymentMethod.TRANSFER)}
-                        className="flex items-center justify-center h-12 md:h-12 rounded-none md:rounded-[8px] bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-md active:scale-95 font-sans w-full"
+                        className="flex items-center justify-center h-12 md:h-12 rounded bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-md active:scale-95 font-sans w-full"
                     >
                         <ArrowRight className="w-5 h-5 mr-2" />
                         <span className="text-base">轉帳付款</span>
@@ -316,7 +316,7 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
                 {settings.payment_methods?.includes(PaymentMethod.CASH) && (
                     <button 
                         onClick={() => handleUpdatePayment(PaymentMethod.CASH)}
-                        className="flex items-center justify-center h-12 md:h-12 rounded-none md:rounded-[8px] bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors shadow-md active:scale-95 font-sans w-full"
+                        className="flex items-center justify-center h-12 md:h-12 rounded bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors shadow-md active:scale-95 font-sans w-full"
                     >
                         <Wallet className="w-5 h-5 mr-2" />
                         <span className="text-base">現金付款</span>

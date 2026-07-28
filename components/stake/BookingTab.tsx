@@ -204,10 +204,10 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
             />
 
             {/* Main Header conforming to 60-30-10 & RWD rules */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 {/* Row 1: Title Row Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-inner">
                         <Bus className="text-blue-300" size={24} />
                     </div>
                     <div>
@@ -224,19 +224,19 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                 <div className="flex flex-wrap justify-end gap-3">
                     <button 
                         onClick={handleExport}
-                        className="h-10 px-4 bg-white/10 text-white rounded-lg text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 shadow-sm"
+                        className="h-10 px-4 bg-white/10 text-white rounded text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 shadow-sm"
                     >
                         <Download className="w-4 h-4 mr-2" />
                         {t('common.export', '導出')}
                     </button>
-                    <label className="h-10 px-4 bg-white/10 text-white rounded-lg text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 cursor-pointer shadow-sm">
+                    <label className="h-10 px-4 bg-white/10 text-white rounded text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 cursor-pointer shadow-sm">
                         <Upload className="w-4 h-4 mr-2" />
                         {t('common.load_file', '導入')}
                         <input type="file" className="hidden" accept=".json" onChange={handleImport}/>
                     </label>
                     <button 
                         onClick={handleAddBus}
-                        className="h-10 px-6 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center active:scale-95"
+                        className="h-10 px-6 bg-blue-600 text-white rounded text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center active:scale-95"
                     >
                         <Plus className="w-5 h-5 mr-2" />
                         {t('stake.booking.button.addBus', '新增車輛')}
@@ -247,10 +247,10 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
             {/* Dashboard Stats Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Seat Occupancy Block */}
-                <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                <div className="lg:col-span-2 bg-white rounded shadow-sm border border-slate-200 flex flex-col overflow-hidden">
                     <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-blue-50 rounded-lg text-blue-600 shadow-inner">
+                            <div className="p-2.5 bg-blue-50 rounded text-blue-600 shadow-inner">
                                 <Users size={20} />
                             </div>
                             <h3 className="text-base font-black text-slate-900 tracking-widest uppercase">
@@ -283,19 +283,19 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <div className="bg-slate-50 p-5 rounded border border-slate-200 shadow-sm">
                                 <div className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">{t('stake.booking.label.occupiedRiders', '正式名單')}</div>
                                 <div className="text-2xl font-black text-slate-900 tracking-tighter">{currentBusRiders}</div>
                             </div>
-                            <div className="bg-amber-50 p-5 rounded-xl border border-amber-200 shadow-sm">
+                            <div className="bg-amber-50 p-5 rounded border border-amber-200 shadow-sm">
                                 <div className="text-[10px] font-black text-amber-600 mb-2 uppercase tracking-widest">{t('stake.booking.label.waitingCount', '候補名單')}</div>
                                 <div className="text-2xl font-black text-amber-700 tracking-tighter">{waitingCount}</div>
                             </div>
-                            <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200 shadow-sm">
+                            <div className="bg-emerald-50 p-5 rounded border border-emerald-200 shadow-sm">
                                 <div className="text-[10px] font-black text-emerald-600 mb-2 uppercase tracking-widest">{t('stake.booking.label.availableSeats', '剩餘空位')}</div>
                                 <div className="text-2xl font-black text-emerald-700 tracking-tighter">{Math.max(0, busCapacity - currentBusRiders)}</div>
                             </div>
-                            <div className="bg-indigo-900 p-5 rounded-xl shadow-lg border border-indigo-800">
+                            <div className="bg-indigo-900 p-5 rounded shadow-lg border border-indigo-800">
                                 <div className="text-[10px] font-black text-indigo-200 mb-2 uppercase tracking-widest">{t('stake.booking.label.busCount', '營運台數')}</div>
                                 <div className="text-2xl font-black text-white tracking-tighter">{currentEvent.busConfigs?.length || 0}</div>
                             </div>
@@ -304,9 +304,9 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                 </div>
 
                 {/* Fleet Settings Block */}
-                <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-slate-200 flex flex-col overflow-hidden">
                     <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-                        <div className="p-2.5 bg-indigo-50 rounded-lg text-indigo-600 shadow-inner">
+                        <div className="p-2.5 bg-indigo-50 rounded text-indigo-600 shadow-inner">
                             <Settings size={20} />
                         </div>
                         <h3 className="text-base font-black text-slate-900 tracking-widest uppercase">
@@ -326,13 +326,13 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                         setBusCountInput(val);
                                         handleUpdateField('bus_count', val);
                                     }}
-                                    className="flex-1 h-full bg-slate-50 border border-slate-200 rounded-lg px-5 text-lg font-black text-indigo-950 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 shadow-inner"
+                                    className="flex-1 h-full bg-slate-50 border border-slate-200 rounded px-5 text-lg font-black text-indigo-950 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 shadow-inner"
                                 />
                                 <span className="text-xs font-black text-slate-400 px-3 uppercase tracking-widest">{t('bus.label.unitCar', '台')}</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between p-5 bg-[#F0F4F8] rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between p-5 bg-[#F0F4F8] rounded border border-slate-200 shadow-sm">
                             <div>
                                 <h4 className="text-sm font-black text-slate-900 mb-1 tracking-tight">{t('stake.booking.label.seatLimited', '座位硬上限')}</h4>
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cap Reg by Capacity</p>
@@ -355,18 +355,18 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
             {/* Bus Configuration List */}
             <div className="space-y-8">
                 {(currentEvent.busConfigs || []).map((config, i) => (
-                    <div key={i} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden group/bus transition-all duration-300 hover:border-blue-400 hover:shadow-xl">
+                    <div key={i} className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden group/bus transition-all duration-300 hover:border-blue-400 hover:shadow-xl">
                         {/* Bus Title Row */}
                         <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-indigo-900 rounded-xl text-white shadow-lg group-hover/bus:scale-110 transition-transform duration-300">
+                                <div className="p-3 bg-indigo-900 rounded text-white shadow-lg group-hover/bus:scale-110 transition-transform duration-300">
                                     <Bus size={22} />
                                 </div>
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('stake.booking.label.alias', '車輛代稱')}</span>
                                     <input 
                                         type="text" 
-                                        className={`h-10 text-xl font-black bg-white border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all px-4 w-32 shadow-inner ${!config.name ? 'text-rose-500 border-rose-500' : 'text-slate-900'}`}
+                                        className={`h-10 text-xl font-black bg-white border border-slate-200 rounded focus:border-blue-600 focus:ring-4 focus:ring-blue-50 outline-none transition-all px-4 w-32 shadow-inner ${!config.name ? 'text-rose-500 border-rose-500' : 'text-slate-900'}`}
                                         value={config.name} 
                                         onChange={e => handleBusConfigChange(config.name, { name: e.target.value })}
                                         placeholder="EX: A車"
@@ -375,7 +375,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                             </div>
                             <button 
                                 onClick={() => handleRemoveBus(config.name)}
-                                className="p-3 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-90 border border-transparent hover:border-rose-100"
+                                className="p-3 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-all active:scale-90 border border-transparent hover:border-rose-100"
                             >
                                 <Trash2 size={20} />
                             </button>
@@ -393,7 +393,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.busCompany', '配合遊覽車公司')}</label>
                                             <select 
-                                                className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded-lg px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
+                                                className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
                                                 value={config.companyId || ''} 
                                                 onChange={e => {
                                                     const comp = (settings.busCompanies || []).find(c => c.id === e.target.value);
@@ -414,7 +414,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.licensePlate', '車牌號碼')}</label>
                                             <select 
-                                                className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded-lg px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
+                                                className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
                                                 value={config.licensePlate || ''} 
                                                 onChange={e => {
                                                     const veh = (settings.busVehicles || []).find(v => v.plate === e.target.value);
@@ -435,7 +435,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                             <div className="relative h-12">
                                                 <input 
                                                     type="number"
-                                                    className="w-full h-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded-lg px-4 text-sm font-black outline-none transition-all shadow-inner"
+                                                    className="w-full h-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded px-4 text-sm font-black outline-none transition-all shadow-inner"
                                                     value={config.capacity || ''} 
                                                     onChange={e => {
                                                         const updates: Partial<BusConfig> = { capacity: parseInt(e.target.value) || 0 };
@@ -451,7 +451,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.driverName1', '主駕司機姓名')}</label>
                                                 <select 
-                                                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded-lg px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
+                                                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded px-4 text-sm font-black outline-none cursor-pointer transition-all shadow-inner" 
                                                     value={config.driverName1 || ''} 
                                                     onChange={e => {
                                                         const dri = (settings.busDrivers || []).find(d => d.name === e.target.value);
@@ -471,7 +471,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.driverPhone1', '司機聯繫電話')}</label>
                                                 <input 
                                                     type="text" 
-                                                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded-lg px-4 text-sm font-black outline-none transition-all shadow-inner" 
+                                                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 rounded px-4 text-sm font-black outline-none transition-all shadow-inner" 
                                                     value={config.driverPhone1 || ''} 
                                                     onChange={e => handleBusConfigChange(config.name, { driverPhone1: e.target.value })} 
                                                     placeholder="0912-345-678" 
@@ -482,7 +482,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                 </div>
 
                                 {/* Financial Info Section */}
-                                <div className="bg-[#F0F4F8] rounded-2xl p-8 border border-slate-200 flex flex-col shadow-inner relative overflow-hidden">
+                                <div className="bg-[#F0F4F8] rounded p-8 border border-slate-200 flex flex-col shadow-inner relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-8 opacity-5">
                                         <DollarSign size={120} className="text-indigo-900" />
                                     </div>
@@ -493,23 +493,23 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.bookingCost', '租車費用')}</label>
-                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded-lg px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.bookingCost || 0} onChange={e => handleBusConfigChange(config.name, { bookingCost: parseInt(e.target.value) || 0 })} />
+                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.bookingCost || 0} onChange={e => handleBusConfigChange(config.name, { bookingCost: parseInt(e.target.value) || 0 })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">所得稅扣繳 (5%)</label>
-                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded-lg px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.taxCost || 0} onChange={e => handleBusConfigChange(config.name, { taxCost: parseInt(e.target.value) || 0 })} />
+                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.taxCost || 0} onChange={e => handleBusConfigChange(config.name, { taxCost: parseInt(e.target.value) || 0 })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.driverMealCost', '司機餐費')}</label>
-                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded-lg px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.driverMealCost || 0} onChange={e => handleBusConfigChange(config.name, { driverMealCost: parseInt(e.target.value) || 0 })} />
+                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.driverMealCost || 0} onChange={e => handleBusConfigChange(config.name, { driverMealCost: parseInt(e.target.value) || 0 })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.parkingCost', '路費/停車費')}</label>
-                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded-lg px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.parkingCost || 0} onChange={e => handleBusConfigChange(config.name, { parkingCost: parseInt(e.target.value) || 0 })} />
+                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.parkingCost || 0} onChange={e => handleBusConfigChange(config.name, { parkingCost: parseInt(e.target.value) || 0 })} />
                                         </div>
                                         <div className="sm:col-span-2 space-y-2">
                                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('stake.booking.label.otherCost', '雜項支出')}</label>
-                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded-lg px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.otherCost || 0} onChange={e => handleBusConfigChange(config.name, { otherCost: parseInt(e.target.value) || 0 })} />
+                                            <input type="number" className="w-full h-12 bg-white border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 rounded px-5 text-right font-black text-slate-900 outline-none transition-all shadow-sm" value={config.otherCost || 0} onChange={e => handleBusConfigChange(config.name, { otherCost: parseInt(e.target.value) || 0 })} />
                                         </div>
                                     </div>
 
@@ -530,7 +530,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                 ))}
 
                 {(currentEvent.busConfigs || []).length === 0 && (
-                    <div className="bg-white rounded-2xl border-4 border-dashed border-slate-100 p-20 text-center group hover:border-blue-100 transition-all duration-500 shadow-sm">
+                    <div className="bg-white rounded border-4 border-dashed border-slate-100 p-20 text-center group hover:border-blue-100 transition-all duration-500 shadow-sm">
                         <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-inner">
                             <Bus className="text-slate-200" size={48} />
                         </div>

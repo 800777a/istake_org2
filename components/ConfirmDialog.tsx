@@ -32,10 +32,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-60 p-4 animate-fade-in">
-      <div className="bg-white rounded-none md:rounded-[8px] shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100">
-        <div className={`p-4 flex items-center ${isDangerous ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-800'}`}>
-          <AlertTriangle className="w-6 h-6 mr-3 flex-shrink-0" />
-          <h3 className="font-bold text-lg">{title}</h3>
+      <div className="bg-white rounded shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100">
+        <div className={`p-4 flex items-center ${isDangerous ? 'bg-red-50 text-red-700 border-b-2 border-red-100' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950'}`}>
+          <AlertTriangle className={`w-6 h-6 mr-3 flex-shrink-0 ${isDangerous ? 'text-red-600' : 'text-amber-900'}`} />
+          <h3 className="font-black text-lg tracking-tight">{title}</h3>
         </div>
         
         <div className="p-6 text-gray-700 text-sm leading-relaxed">
@@ -45,13 +45,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="p-4 bg-gray-50 flex flex-col md:flex-row justify-end gap-3 border-t border-gray-100">
           <button 
             onClick={onCancel}
-            className="w-full md:w-auto h-10 md:h-10 px-4 rounded-none md:rounded-[8px] text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 font-bold text-xs flex items-center justify-center transition-colors"
+            className="w-full md:w-auto h-10 md:h-10 px-4 rounded text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 font-bold text-xs flex items-center justify-center transition-colors"
           >
             <X className="w-4 h-4 mr-1" /> {displayCancelText}
           </button>
           <button 
             onClick={onConfirm}
-            className={`w-full md:w-auto h-10 md:h-10 px-4 rounded-none md:rounded-[8px] text-white font-bold text-xs flex items-center justify-center shadow-sm transition-colors ${isDangerous ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+            className={`w-full md:w-auto h-10 md:h-10 px-4 rounded text-white font-bold text-xs flex items-center justify-center shadow-sm transition-colors ${isDangerous ? 'bg-red-600 hover:bg-red-700 shadow-red-200' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-200'}`}
           >
             <Check className="w-4 h-4 mr-1" /> {displayConfirmText}
           </button>

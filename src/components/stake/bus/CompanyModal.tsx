@@ -40,7 +40,7 @@ const CompanyModal: React.FC<CompanyModalProps> = ({ isOpen, onClose, onSave, ed
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
+                className="relative bg-white rounded shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
             >
                 <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 className="font-black text-xl text-gray-900 uppercase tracking-tighter">
@@ -52,33 +52,33 @@ const CompanyModal: React.FC<CompanyModalProps> = ({ isOpen, onClose, onSave, ed
                     <div className="space-y-1">
                         <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.companyName')}</label>
                         <input 
-                            className="w-full p-3 border-2 rounded-xl focus:border-blue-500 outline-none font-black" 
+                            className="w-full p-3 border-2 rounded focus:border-blue-500 outline-none font-black" 
                             value={data.name1} onChange={e => setData({...data, name1: e.target.value})} 
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.name2')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-blue-500 outline-none" value={data.name2} onChange={e => setData({...data, name2: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-blue-500 outline-none" value={data.name2} onChange={e => setData({...data, name2: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.name3')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-blue-500 outline-none" value={data.name3} onChange={e => setData({...data, name3: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-blue-500 outline-none" value={data.name3} onChange={e => setData({...data, name3: e.target.value})} />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.manager')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-blue-500 outline-none" value={data.manager} onChange={e => setData({...data, manager: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-blue-500 outline-none" value={data.manager} onChange={e => setData({...data, manager: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.phone')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-blue-500 outline-none font-mono" value={data.phone} onChange={e => setData({...data, phone: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-blue-500 outline-none font-mono" value={data.phone} onChange={e => setData({...data, phone: e.target.value})} />
                         </div>
                     </div>
                     <button 
                         onClick={() => setShowSaveConfirm(true)}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingCompany ? t('bus.button.updateCompany') : t('bus.button.saveCompany')}
                     </button>

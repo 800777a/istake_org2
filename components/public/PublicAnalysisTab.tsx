@@ -1,8 +1,8 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EventData, Registration, GlobalSettings, TripType, OrdinanceType, OrdinanceItem, PaymentMethod, InsuranceType, RegStatus } from '../../types';
-import { BookOpen, Bus, DollarSign, Activity, TrendingDown, Users, Wallet, ChevronUp, ChevronDown } from 'lucide-react';
+import { BookOpen, Bus, DollarSign, Activity, TrendingDown, Users, Wallet, ChevronUp, ChevronDown, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PublicAnalysisTabProps {
     activeEvent: EventData;
@@ -68,6 +68,27 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
     const toggleBlock = (blockId: string) => {
         setCollapsedBlocks(prev => ({ ...prev, [blockId]: !prev[blockId] }));
+    };
+
+    // Orientation Reset補丁 (Hard Reset)
+    const [remountKey, setRemountKey] = useState(0);
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('orientationchange', handleResize);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const scroll = (id: string, direction: 'left' | 'right') => {
+        const el = scrollRefs.current[id];
+        if (el) {
+            const amount = direction === 'left' ? -200 : 200;
+            el.scrollBy({ left: amount, behavior: 'smooth' });
+        }
     };
 
     // Yearly Stats Calculation
@@ -351,14 +372,14 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
         };
 
         return (
-            <div className={`w-full max-w-full min-w-0 rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6`}>
+            <div className={`w-full max-w-full min-w-0 rounded shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6`}>
                 {/* Independent Header Row - 200 depth */}
                 <div 
                     className={`w-full flex items-center justify-between px-4 md:px-5 py-2.5 md:py-3.5 ${theme.title} border-b border-inherit cursor-pointer transition-all hover:opacity-90`}
                     onClick={() => toggleBlock(blockId)}
                 >
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className={`p-1.5 md:p-2 rounded-lg bg-white/40 border ${theme.border} shadow-sm ${theme.accent}`}>
+                        <div className={`p-1.5 md:p-2 rounded bg-white/40 border ${theme.border} shadow-sm ${theme.accent}`}>
                             {React.cloneElement(icon as React.ReactElement, { size: 16 })}
                         </div>
                         <h4 className="font-bold text-xs md:text-base lg:text-lg text-slate-900 tracking-tight">{title}</h4>
@@ -370,12 +391,19 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
                 {!isCollapsed && (
                     <div className={`flex-1 flex flex-col ${theme.content} p-1 md:p-6 pb-4 md:pb-6 gap-2 w-full max-w-full min-w-0`}>
-                        <div className="md:hidden text-right text-[10px] font-black text-slate-400 select-none animate-pulse mb-1">
-                            👈 左右滑動查看完整資訊 👉
+                        {/* Mobile Scroll Assist */}
+                        <div className="lg:hidden flex items-center justify-between px-2 py-1 bg-white/50 border-b border-slate-200">
+                            <span className="text-[10px] font-bold text-slate-400 animate-pulse flex items-center gap-1">
+                                <Smartphone className="w-3 h-3" /> 左右滑動
+                            </span>
+                            <div className="flex gap-1">
+                                <button onClick={() => scroll(blockId, 'left')} className="p-1 bg-white border border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronLeft className="w-3 h-3 text-slate-600" /></button>
+                                <button onClick={() => scroll(blockId, 'right')} className="p-1 bg-white border border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronRight className="w-3 h-3 text-slate-600" /></button>
+                            </div>
                         </div>
-                        <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-2 md:pb-0">
+                        <div ref={el => scrollRefs.current[blockId] = el} className="overflow-x-auto overscroll-x-contain -mx-1 px-1 custom-scrollbar pb-2 md:pb-0 w-full max-w-full min-w-0">
                             <div className="min-w-full inline-block align-middle">
-                                <table className="w-full min-w-[550px] table-fixed md:table-auto text-[10px] md:text-xs border-collapse">
+                                <table className="w-full min-w-[1200px] [width:max-content] table-auto text-[10px] md:text-xs border-collapse">
                                     <thead>
                                         <tr className={`border-b ${theme.header} text-slate-900 ${theme.border}`}>
                                             <th 
@@ -430,7 +458,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
     };
 
     return (
-        <div className="space-y-4 md:space-y-8 pb-12 animate-fade-in w-full max-w-full min-w-0 overflow-hidden px-2.5 md:px-0">
+        <div key={remountKey} className="space-y-1 pb-12 animate-fade-in w-full max-w-full min-w-0 bg-[#F8F9FA]">
             {/* Grid Layout for Blocks */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
                 
@@ -504,13 +532,13 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                 )}
 
                 {/* 6. Expenses */}
-                <div className="w-full max-w-full min-w-0 rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-indigo-200 overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6">
+                <div className="w-full max-w-full min-w-0 rounded shadow-none md:shadow-sm border-none md:border border-indigo-200 overflow-hidden flex flex-col h-full bg-white transition-all duration-300 mb-4 md:mb-6">
                     <div 
                         className="w-full px-4 md:px-5 py-2.5 md:py-3.5 bg-indigo-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-indigo-200"
                         onClick={() => toggleBlock('expenses')}
                     >
                         <div className="flex items-center gap-2 md:gap-3">
-                            <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-indigo-200 shadow-sm text-indigo-800">
+                            <div className="p-1.5 md:p-2 rounded bg-white/40 border border-indigo-200 shadow-sm text-indigo-800">
                                 <TrendingDown size={16}/>
                             </div>
                             <h4 className="font-bold text-xs md:text-base lg:text-lg text-slate-900 tracking-tight">費用支出</h4>
@@ -560,13 +588,13 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
             </div>
             
             {/* 當月統計 (Monthly Stats) - Purple (6) */}
-            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-purple-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300 mb-4 md:mb-6`}>
+            <div className={`rounded shadow-none md:shadow-sm border-none md:border border-purple-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300 mb-4 md:mb-6`}>
                 <div 
                     className="w-full px-4 md:px-6 py-3 md:py-4 bg-purple-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-purple-200"
                     onClick={() => toggleBlock('monthly')}
                 >
                     <div className="flex items-center gap-2 md:gap-4">
-                        <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-purple-200 shadow-sm text-purple-800">
+                        <div className="p-1.5 md:p-2 rounded bg-white/40 border border-purple-200 shadow-sm text-purple-800">
                             <Activity size={18}/>
                         </div>
                         <h4 className="font-black text-xs md:text-base lg:text-xl text-slate-900 tracking-tight uppercase">本次活動總結</h4>
@@ -581,7 +609,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
                         <div className="p-2 md:p-10">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-10">
-                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded border border-purple-200 shadow-md">
                                     <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">人數統計</h5>
                                     {[
                                         { label: '總人數', val: totalStats.transport.total, unit: '人' },
@@ -596,7 +624,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                                     ))}
                                 </div>
 
-                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded border border-purple-200 shadow-md">
                                     <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">收入統計</h5>
                                     {[
                                         { label: '車資收入', val: totalStats.income.total },
@@ -610,7 +638,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                                     ))}
                                 </div>
 
-                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded-lg border border-purple-200 shadow-md">
+                                <div className="space-y-2 md:space-y-4 bg-white p-3 md:p-6 rounded border border-purple-200 shadow-md">
                                     <h5 className="font-black text-purple-900 border-b-2 border-purple-200 pb-2 md:pb-3 mb-2 md:mb-4 text-xs md:text-base">收支對帳</h5>
                                     {[
                                         { label: '支出總計', val: expenses.total },
@@ -627,7 +655,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                                             </div>
                                         );
                                     })}
-                                    <div className="mt-4 md:mt-6 p-3 md:p-4 bg-indigo-900 rounded-lg text-center shadow-lg transform hover:scale-[1.02] transition-transform">
+                                    <div className="mt-4 md:mt-6 p-3 md:p-4 bg-indigo-900 rounded text-center shadow-lg transform hover:scale-[1.02] transition-transform">
                                         <span className="text-[8px] md:text-[10px] text-indigo-300 font-bold block uppercase tracking-widest mb-1">最終活動補助金額</span>
                                         <span className="text-sm md:text-2xl font-black text-white">${Math.max(0, expenses.total - (totalStats.income.total + expenses.selfPaidInsuranceTotal)).toLocaleString()}</span>
                                     </div>
@@ -639,13 +667,13 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
             </div>
 
             {/* 年度統計 (Yearly Stats) - Red (0) */}
-            <div className="rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-red-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300">
+            <div className="rounded shadow-none md:shadow-sm border-none md:border border-red-200 overflow-visible md:overflow-hidden bg-white transition-all duration-300">
                 <div 
                     className="w-full px-4 md:px-5 py-2.5 md:py-4 bg-red-200 flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b border-red-200"
                     onClick={() => toggleBlock('yearly')}
                 >
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className="p-1.5 md:p-2 rounded-lg bg-white/40 border border-red-200 shadow-sm text-red-800">
+                        <div className="p-1.5 md:p-2 rounded bg-white/40 border border-red-200 shadow-sm text-red-800">
                             <TrendingDown size={16}/>
                         </div>
                         <h4 className="font-black text-xs md:text-base lg:text-lg text-slate-900 tracking-tight uppercase">{yearlyStats.year} 年度累積</h4>
@@ -669,7 +697,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-8 lg:gap-12">
                             {/* Annual Totals Table */}
                             <div className="overflow-x-auto">
-                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded-lg md:border md:border-red-200 md:shadow-sm overflow-hidden">
+                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded md:border md:border-red-200 md:shadow-sm overflow-hidden">
                                     <thead>
                                         <tr className="bg-red-100 border-b border-red-200 text-slate-900">
                                             <th colSpan={2} className="px-1 py-1 text-left font-black uppercase tracking-wider">
@@ -700,7 +728,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
 
                             {/* Average Performance Table */}
                             <div className="overflow-x-auto">
-                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded-lg md:border md:border-amber-200 md:shadow-sm overflow-hidden">
+                                <table className="w-full text-[10px] md:text-xs border-collapse bg-white md:rounded md:border md:border-amber-200 md:shadow-sm overflow-hidden">
                                     <thead>
                                         <tr className="bg-amber-100 border-b border-amber-200 text-slate-900">
                                             <th colSpan={2} className="px-1 py-1 text-left font-black uppercase tracking-wider">

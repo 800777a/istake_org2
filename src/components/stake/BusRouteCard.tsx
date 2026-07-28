@@ -79,13 +79,13 @@ const BusRouteCard: React.FC<BusRouteCardProps> = ({
     };
 
     return (
-        <div className={`${theme.bg} rounded-2xl border ${theme.border} overflow-hidden shadow-sm transition-all duration-300`}>
+        <div className={`${theme.bg} rounded border ${theme.border} overflow-hidden shadow-sm transition-all duration-300`}>
             <div 
                 className={`px-4 py-3 flex items-center justify-between cursor-pointer ${theme.header}`}
                 onClick={onToggleCollapse}
             >
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl bg-white/80 ${theme.text} shadow-sm`}>
+                    <div className={`p-2 rounded bg-white/80 ${theme.text} shadow-sm`}>
                         <Bus size={20} />
                     </div>
                     <div>

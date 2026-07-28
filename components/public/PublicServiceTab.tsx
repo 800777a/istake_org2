@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { EventData, GlobalSettings, Volunteer, Registration, BusRatingRecord } from '../../types';
 import { updateEvent, updateSettings } from '../../services/sheetService';
-import { Badge, HeartHandshake, Plus, Star, CheckCircle2, User, AlertCircle, Lock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Badge, HeartHandshake, Plus, Star, CheckCircle2, User, AlertCircle, Lock, ChevronDown, ChevronUp, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
 import { maskName } from '../../utils/validation';
 
 import Toast, { ToastType } from '../Toast';
@@ -51,6 +51,27 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
         workers: false,
         volunteers: false
     });
+
+    // Orientation Reset補丁 (Hard Reset)
+    const [remountKey, setRemountKey] = useState(0);
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('orientationchange', handleResize);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const scroll = (id: string, direction: 'left' | 'right') => {
+        const el = scrollRefs.current[id];
+        if (el) {
+            const amount = direction === 'left' ? -200 : 200;
+            el.scrollBy({ left: amount, behavior: 'smooth' });
+        }
+    };
 
     const toggleCollapse = (id: string) => {
         setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }));
@@ -133,15 +154,15 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
     const myRatings = (settings.busRatings || []).filter(r => r.eventId === activeEvent.event_id);
 
     return (
-        <div className="space-y-4 md:space-y-8 animate-fade-in pb-12 w-full max-w-full min-w-0 overflow-hidden px-2.5 md:px-0">
+        <div key={remountKey} className="space-y-1 animate-fade-in pb-12 w-full max-w-full min-w-0 bg-[#F8F9FA]">
             {/* Service Rating Section - Rainbow 0 (Red) */}
-            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[0].border} overflow-hidden bg-white transition-all duration-300`}>
+            <div className={`rounded shadow-none md:shadow-sm border-none md:border ${rainbowThemes[0].border} overflow-hidden bg-white transition-all duration-300 w-full max-w-full min-w-0`}>
                 <div 
                     className={`w-full px-5 py-3.5 ${rainbowThemes[0].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[0].border}`}
                     onClick={() => toggleCollapse('rating')}
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[0].accent}`}>
+                        <div className={`p-1.5 rounded border shadow-sm bg-white/50 ${rainbowThemes[0].accent}`}>
                             <Star size={18}/>
                         </div>
                         <h4 className="font-bold text-sm md:text-base lg:text-lg text-slate-900 tracking-tight uppercase">車次服務評分 (SERVICE RATING)</h4>
@@ -152,8 +173,8 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                 </div>
 
                 {!collapsedSections['rating'] && (
-                    <div className={`p-1 md:p-6 space-y-4 md:space-y-6 ${rainbowThemes[0].content}`}>
-                        <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-red-200 text-xs text-slate-600 leading-relaxed shadow-inner">
+                    <div className={`p-1 md:p-6 space-y-4 md:space-y-6 ${rainbowThemes[0].content} w-full max-w-full min-w-0`}>
+                        <div className="bg-white/60 backdrop-blur-sm p-4 rounded border border-red-200 text-xs text-slate-600 leading-relaxed shadow-inner">
                             <h5 className={`font-black ${rainbowThemes[0].accent} mb-1 flex items-center gap-2 uppercase tracking-wider`}>
                                 <AlertCircle size={14}/> 計分規則說明
                             </h5>
@@ -169,20 +190,20 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                 return (
                                     <div 
                                         key={record.id} 
-                                        className={`rounded-lg border transition-all duration-300 overflow-hidden flex flex-col ${isLocked ? 'bg-slate-100 border-slate-200 opacity-80' : 'bg-white border-red-200 shadow-sm hover:shadow-md'}`}
+                                        className={`rounded border transition-all duration-300 overflow-hidden flex flex-col ${isLocked ? 'bg-slate-100 border-slate-200 opacity-80' : 'bg-white border-red-200 shadow-sm hover:shadow-md'}`}
                                     >
                                         <div className={`px-4 py-3 flex justify-between items-center border-b ${isLocked ? 'border-slate-200' : 'border-red-100'}`}>
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-black text-xs md:text-sm text-slate-800">{record.busId} ({record.plate})</span>
-                                                    {isLocked && <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-[4px] text-[8px] font-black uppercase flex items-center gap-1"><Lock size={10}/> 已送出</span>}
+                                                    {isLocked && <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded text-[8px] font-black uppercase flex items-center gap-1"><Lock size={10}/> 已送出</span>}
                                                 </div>
                                                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">司機: {record.driver1Name}</div>
                                             </div>
                                             {!isLocked && (
                                                 <button 
                                                     onClick={() => setRatingForm({ ...ratingForm, activeRatingId: isActive ? null : record.id })}
-                                                    className={`h-8 px-3 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-slate-200 text-slate-600' : 'bg-red-600 text-white hover:bg-red-700 shadow-sm'}`}
+                                                    className={`h-8 px-3 rounded text-[10px] font-black uppercase tracking-widest transition-all ${isActive ? 'bg-slate-200 text-slate-600' : 'bg-red-600 text-white hover:bg-red-700 shadow-sm'}`}
                                                 >
                                                     {isActive ? '取消' : '開始評分'}
                                                 </button>
@@ -232,7 +253,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                                         <div className="space-y-1">
                                                             <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">反應備註</label>
                                                             <textarea 
-                                                                className="w-full border border-red-200 rounded-md p-2 text-xs focus:ring-2 focus:ring-red-300 outline-none bg-white min-h-[60px]"
+                                                                className="w-full border border-red-200 rounded p-2 text-xs focus:ring-2 focus:ring-red-300 outline-none bg-white min-h-[60px]"
                                                                 placeholder="請輸入具體意見或建議..."
                                                                 value={ratingForm.remarks}
                                                                 onChange={e => setRatingForm({ ...ratingForm, remarks: e.target.value })}
@@ -242,7 +263,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                                             <div className="space-y-1">
                                                                 <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">評分者單位</label>
                                                                 <select 
-                                                                    className="w-full border border-red-200 h-9 rounded-md px-2 text-xs bg-white font-bold text-slate-700"
+                                                                    className="w-full border border-red-200 h-9 rounded px-2 text-xs bg-white font-bold text-slate-700"
                                                                     value={ratingForm.raterUnit}
                                                                     onChange={e => setRatingForm({ ...ratingForm, raterUnit: e.target.value })}
                                                                 >
@@ -254,7 +275,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                                                 <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">評分者姓名</label>
                                                                 <input 
                                                                     type="text" 
-                                                                    className="w-full border border-red-200 h-9 rounded-md px-2 text-xs font-bold text-slate-700"
+                                                                    className="w-full border border-red-200 h-9 rounded px-2 text-xs font-bold text-slate-700"
                                                                     placeholder="請輸入您的真實姓名"
                                                                     value={ratingForm.raterName}
                                                                     onChange={e => setRatingForm({ ...ratingForm, raterName: e.target.value })}
@@ -263,7 +284,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                                         </div>
                                                         <button 
                                                             onClick={() => handleRatingSubmit(record)}
-                                                            className="w-full h-8 md:h-10 lg:h-12 bg-red-800 text-white rounded-md text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-red-900 transition-all flex items-center justify-center gap-2"
+                                                            className="w-full h-8 md:h-10 lg:h-12 bg-red-800 text-white rounded text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-red-900 transition-all flex items-center justify-center gap-2"
                                                         >
                                                             <CheckCircle2 size={18}/> 送出評分
                                                         </button>
@@ -280,13 +301,13 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
             </div>
 
             {/* Temple Workers - Rainbow 1 (Orange) */}
-            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[1].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+            <div className={`rounded shadow-none md:shadow-sm border-none md:border ${rainbowThemes[1].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
                 <div 
                     className={`w-full px-5 py-3.5 ${rainbowThemes[1].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[1].border}`}
                     onClick={() => toggleCollapse('workers')}
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[1].accent}`}>
+                        <div className={`p-1.5 rounded border shadow-sm bg-white/50 ${rainbowThemes[1].accent}`}>
                             <Badge size={18}/>
                         </div>
                         <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">指定教儀/領車服務人員 (ASSIGNED STAFF)</h4>
@@ -308,10 +329,10 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                     <div key={role.key} className="flex flex-col space-y-1 group">
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{role.label}</label>
                                         <div className="flex gap-1.5">
-                                            <div className={`w-24 border rounded-md h-9 md:h-10 flex items-center justify-center text-[10px] md:text-xs font-black shadow-sm transition-all ${hasWorker ? 'bg-orange-800 border-orange-900 text-white' : 'bg-slate-50 border-slate-200 text-slate-300'}`}>
+                                            <div className={`w-24 border rounded h-9 md:h-10 flex items-center justify-center text-[10px] md:text-xs font-black shadow-sm transition-all ${hasWorker ? 'bg-orange-800 border-orange-900 text-white' : 'bg-slate-50 border-slate-200 text-slate-300'}`}>
                                                 {worker.unit || '-'}
                                             </div>
-                                            <div className={`flex-1 border rounded-md h-9 md:h-10 px-3 flex items-center text-[10px] md:text-xs shadow-sm transition-all ${hasWorker ? 'bg-white border-orange-300 text-slate-900 font-black' : 'bg-slate-50 border-slate-200 text-slate-300 italic'}`}>
+                                            <div className={`flex-1 border rounded h-9 md:h-10 px-3 flex items-center text-[10px] md:text-xs shadow-sm transition-all ${hasWorker ? 'bg-white border-orange-300 text-slate-900 font-black' : 'bg-slate-50 border-slate-200 text-slate-300 italic'}`}>
                                                 {maskName(worker.name) || '待指派...'}
                                             </div>
                                         </div>
@@ -324,13 +345,13 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
             </div>
 
             {/* Volunteers Section - Rainbow 2 (Amber) */}
-            <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${rainbowThemes[2].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
+            <div className={`rounded shadow-none md:shadow-sm border-none md:border ${rainbowThemes[2].border} overflow-hidden w-full max-w-full min-w-0 bg-white transition-all duration-300`}>
                 <div 
                     className={`w-full px-5 py-3.5 ${rainbowThemes[2].title} flex justify-between items-center cursor-pointer hover:opacity-90 transition-all border-b ${rainbowThemes[2].border}`}
                     onClick={() => toggleCollapse('volunteers')}
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${rainbowThemes[2].accent}`}>
+                        <div className={`p-1.5 rounded border shadow-sm bg-white/50 ${rainbowThemes[2].accent}`}>
                             <HeartHandshake size={18}/>
                         </div>
                         <h4 className="font-bold text-xs md:text-sm lg:text-base text-slate-900 tracking-tight uppercase">主動申請服務 (VOLUNTEERS)</h4>
@@ -344,12 +365,12 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                     <div className={`p-1 md:p-3 lg:p-4 xl:p-6 space-y-6 ${rainbowThemes[2].content}`}>
                         {/* Add Form Area - Right Aligned below title */}
                         <div className="flex justify-end">
-                            <div className="w-full lg:w-3/4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded-xl border border-amber-200 shadow-sm space-y-4">
+                            <div className="w-full lg:w-3/4 bg-white/80 backdrop-blur-md p-4 md:p-6 rounded border border-amber-200 shadow-sm space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的單位</label>
                                         <select 
-                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
                                             value={newVolunteer.unit}
                                             onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
                                         >
@@ -361,7 +382,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的姓名</label>
                                         <input 
                                             type="text" 
-                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold focus:ring-2 focus:ring-amber-300 outline-none"
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded px-3 text-xs md:text-sm font-bold focus:ring-2 focus:ring-amber-300 outline-none"
                                             placeholder="請輸入姓名"
                                             value={newVolunteer.name}
                                             onChange={e => setNewVolunteer({...newVolunteer, name: e.target.value})}
@@ -370,7 +391,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                     <div className="space-y-1">
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">欲擔任職務</label>
                                         <select 
-                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded-md px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
+                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
                                             value={newVolunteer.roleKey}
                                             onChange={e => setNewVolunteer({...newVolunteer, roleKey: e.target.value})}
                                         >
@@ -385,7 +406,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                     <button 
                                         onClick={handleAddVolunteer}
                                         disabled={!newVolunteer.name || !newVolunteer.unit || !newVolunteer.roleKey}
-                                        className="h-8 md:h-10 lg:h-12 px-8 bg-amber-600 text-white rounded-md text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-amber-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                                        className="h-8 md:h-10 lg:h-12 px-8 bg-amber-600 text-white rounded text-xs md:text-sm lg:text-base font-black uppercase tracking-widest shadow-md hover:bg-amber-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                                     >
                                         <Plus size={18} /> 提交服務申請
                                     </button>
@@ -394,37 +415,46 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                         </div>
 
                         {/* Volunteer List Table */}
-                        <div className="overflow-x-auto w-full min-w-0 custom-scrollbar pb-6 md:pb-0 rounded-none md:rounded-lg border-none md:border border-amber-200 shadow-sm bg-white p-1">
-                            <div className="md:hidden text-right mb-1 text-[10px] font-black text-slate-400 select-none animate-pulse">
-                                👈 左右滑動查看完整資訊 👉
+                        <div className="space-y-1">
+                            {/* Mobile Scroll Assist */}
+                            <div className="lg:hidden flex items-center justify-between px-2 py-1 bg-white/50 border-b border-slate-200">
+                                <span className="text-[10px] font-bold text-slate-400 animate-pulse flex items-center gap-1">
+                                    <Smartphone className="w-3 h-3" /> 左右滑動
+                                </span>
+                                <div className="flex gap-1">
+                                    <button onClick={() => scroll('volunteers', 'left')} className="p-1 bg-white border border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronLeft className="w-3 h-3 text-slate-600" /></button>
+                                    <button onClick={() => scroll('volunteers', 'right')} className="p-1 bg-white border border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronRight className="w-3 h-3 text-slate-600" /></button>
+                                </div>
                             </div>
-                            <table className="w-full text-left border-collapse min-w-[500px]">
-                                <thead className={`${rainbowThemes[2].header} ${rainbowThemes[2].accent} border-b ${rainbowThemes[2].border}`}>
-                                    <tr className="text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-widest">
-                                        <th className="px-1 py-1 pl-3 w-1/4 border-r border-amber-100">所屬單位</th>
-                                        <th className="px-1 py-1 w-1/4 border-r border-amber-100">志願人員</th>
-                                        <th className="px-1 py-1">擔任職務標籤</th>
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${rainbowThemes[2].border.replace('border', 'divide')} text-[10px] md:text-xs lg:text-sm`}>
-                                    {(activeEvent.volunteers || []).length === 0 ? (
-                                        <tr>
-                                            <td colSpan={3} className="p-12 text-center text-slate-300 text-xs font-bold uppercase tracking-widest">目前尚無人員申請服務</td>
+                            <div ref={el => scrollRefs.current['volunteers'] = el} className="overflow-x-auto overscroll-x-contain -mx-1 px-1 custom-scrollbar pb-6 md:pb-0 rounded-none md:rounded border-none md:border border-amber-200 shadow-sm bg-white p-1 w-full max-w-full min-w-0">
+                                <table className="w-full text-left border-collapse min-w-[1200px] [width:max-content] table-auto">
+                                    <thead className={`${rainbowThemes[2].header} ${rainbowThemes[2].accent} border-b ${rainbowThemes[2].border}`}>
+                                        <tr className="text-[10px] md:text-sm font-black uppercase tracking-widest">
+                                            <th className="px-2 py-2 pl-3 w-1/4 border-r border-amber-100">所屬單位</th>
+                                            <th className="px-2 py-2 w-1/4 border-r border-amber-100">志願人員</th>
+                                            <th className="px-2 py-2">擔任職務標籤</th>
                                         </tr>
-                                    ) : (
-                                        (activeEvent.volunteers || []).map((v: Volunteer) => {
-                                            const roleLabel = TEMPLE_WORKER_ROLES.find((r: { key: string }) => r.key === v.roleKey)?.label || v.roleKey;
-                                            return (
-                                                <tr key={v.id} className="hover:bg-amber-50/50 transition-colors group">
-                                                    <td className="px-1 py-1 pl-3 font-black text-amber-900 border-r border-amber-100">{v.unit}</td>
-                                                    <td className="px-1 py-1 text-slate-900 font-bold border-r border-amber-100">{maskName(v.name)}</td>
-                                                    <td className="px-1 py-1 text-slate-500 font-medium">{roleLabel}</td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className={`divide-y ${rainbowThemes[2].border.replace('border', 'divide')} text-[10px] md:text-sm`}>
+                                        {(activeEvent.volunteers || []).length === 0 ? (
+                                            <tr>
+                                                <td colSpan={3} className="p-12 text-center text-slate-300 text-xs font-bold uppercase tracking-widest">目前尚無人員申請服務</td>
+                                            </tr>
+                                        ) : (
+                                            (activeEvent.volunteers || []).map((v: Volunteer) => {
+                                                const roleLabel = TEMPLE_WORKER_ROLES.find((r: { key: string }) => r.key === v.roleKey)?.label || v.roleKey;
+                                                return (
+                                                    <tr key={v.id} className="hover:bg-amber-50/50 transition-colors group">
+                                                        <td className="px-2 py-2 pl-3 font-black text-amber-900 border-r border-amber-100">{v.unit}</td>
+                                                        <td className="px-2 py-2 text-slate-900 font-bold border-r border-amber-100">{maskName(v.name)}</td>
+                                                        <td className="px-2 py-2 text-slate-500 font-medium">{roleLabel}</td>
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}

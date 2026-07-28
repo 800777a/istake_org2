@@ -124,14 +124,14 @@ const UnitFeeTable: React.FC<UnitFeeTableProps> = ({
     const hasUnpaidCash = registrations.some(r => !r.is_paid && r.amount_due > 0 && r.payment_method === PaymentMethod.CASH);
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-fade-in mb-6">
+        <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden animate-fade-in mb-6">
             {/* Unit Header: Row 1 Title */}
             <div 
                 className="bg-indigo-900 text-white p-4 flex justify-between items-center cursor-pointer"
                 onClick={() => setIsCollapsed(!isCollapsed)}
             >
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-white/10 rounded-lg border border-white/10">
+                    <div className="p-2 bg-white/10 rounded border border-white/10">
                         <CheckCircle className="text-blue-300" size={20} />
                     </div>
                     <h3 className="text-base md:text-lg font-bold tracking-tight">
@@ -172,7 +172,7 @@ const UnitFeeTable: React.FC<UnitFeeTableProps> = ({
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); if (!isLocked) onBatchPaid(unitName); }}
                                         disabled={isLocked}
-                                        className={`flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-bold transition-all shadow-sm ${isLocked ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'}`}
+                                        className={`flex items-center gap-2 px-4 h-10 rounded text-sm font-bold transition-all shadow-sm ${isLocked ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'}`}
                                     >
                                         <CheckCircle className="w-4 h-4" />
                                         {t('fee.button.cashAllPaid', '批次執行現金全收')}

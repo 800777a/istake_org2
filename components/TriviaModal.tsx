@@ -64,7 +64,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
-      <div className="bg-white w-[500px] max-w-full h-[600px] rounded-3xl shadow-2xl relative overflow-hidden flex flex-col">
+      <div className="bg-white w-[500px] max-w-full h-[600px] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white flex justify-between items-center shrink-0">
@@ -103,7 +103,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
                             <span className="text-sm font-bold text-teal-600">Score: {score}</span>
                         </div>
                         
-                        <div className="bg-white p-6 rounded-2xl shadow-sm mb-6 flex-1 flex items-center justify-center text-center">
+                        <div className="bg-white p-6 rounded shadow-sm mb-6 flex-1 flex items-center justify-center text-center">
                             <h3 className="text-xl font-bold text-gray-800 leading-relaxed">
                                 {questions[currentQ].q}
                             </h3>
@@ -123,7 +123,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
                                         key={i}
                                         onClick={() => !showResult && handleAnswer(i)}
                                         disabled={showResult}
-                                        className={`w-full py-4 rounded-xl font-bold transition-all transform active:scale-95 ${btnClass}`}
+                                        className={`w-full py-4 rounded font-bold transition-all transform active:scale-95 ${btnClass}`}
                                     >
                                         {opt}
                                         {showResult && i === questions[currentQ].ans && <CheckCircle className="inline ml-2 w-5 h-5"/>}
@@ -142,7 +142,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
                         <p className="text-gray-500 mb-6">您的得分</p>
                         <div className="text-6xl font-black text-teal-600 mb-8">{score}</div>
                         {score >= 80 && (
-                            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold mb-6 flex items-center">
+                            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded font-bold mb-6 flex items-center">
                                 <Award className="w-5 h-5 mr-2" /> 獲得「知識守護者」徽章！
                             </div>
                         )}
@@ -156,7 +156,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
                 )
             ) : (
                 <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
+                    <div className="bg-blue-50 p-4 rounded border border-blue-100 mb-4">
                         <h4 className="font-bold text-blue-800 flex items-center mb-2">
                             <BookOpen className="w-4 h-4 mr-2" /> 經文分享
                         </h4>
@@ -167,7 +167,7 @@ const TriviaModal: React.FC<TriviaModalProps> = ({ registration, onClose }) => {
 
                     <h3 className="font-bold text-gray-700 mb-2 ml-1">精選詩歌</h3>
                     {hymns.map((h, i) => (
-                        <div key={i} className="bg-white p-4 rounded-xl shadow-sm flex items-center justify-between group hover:border-teal-300 border border-transparent transition-all">
+                        <div key={i} className="bg-white p-4 rounded shadow-sm flex items-center justify-between group hover:border-teal-300 border border-transparent transition-all">
                             <div className="flex items-center">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 transition-colors ${playingIndex === i ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-500'}`}>
                                     <Music className="w-5 h-5" />

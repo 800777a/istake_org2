@@ -63,20 +63,29 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
     }
   };
 
-  const enabledIdentities = settings.active_identities && settings.active_identities.length > 0 
-    ? settings.active_identities 
-    : [...Object.values(IdentityType), ...(settings.custom_identities || [])];
+  const enabledIdentities = React.useMemo(() => {
+    // Priority 1: Billing Engine Identity rules (Step 2 in Fee Config)
+    if (settings.billingConfig?.identityPricings && settings.billingConfig.identityPricings.length > 0) {
+      return settings.billingConfig.identityPricings.map(ip => ip.identity);
+    }
+    // Priority 2: Active identities list from Sidebar settings
+    if (settings.active_identities && settings.active_identities.length > 0) {
+      return settings.active_identities;
+    }
+    // Fallback: Default enum + custom identities
+    return [...Object.values(IdentityType), ...(settings.custom_identities || [])];
+  }, [settings]);
 
   const isSpecialStatus = [RegStatus.RESTRICTED, RegStatus.DELETED, RegStatus.RETAINED, RegStatus.REFUNDED].includes(formData.status);
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in text-sans">
-      <div className="bg-white w-[600px] max-w-full rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] border-4 border-white/50">
+      <div className="bg-white w-[600px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] border-4 border-white/50">
         
         {/* Internal custom confirmation overlay to avoid sandbox block */}
         {pendingStatus && (
             <div className="absolute inset-0 z-[130] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
-                <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-sm text-center border-4 border-yellow-400">
+                <div className="bg-white rounded p-6 shadow-2xl w-full max-w-sm text-center border-4 border-yellow-400">
                     <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertTriangle className="w-8 h-8" />
                     </div>
@@ -90,8 +99,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
                         {pendingStatus === 'HARD_DELETE' && t('stake.edit_member.confirm_hard_delete', "確定要「完全刪除」此筆資料嗎？此操作不可恢復！")}
                     </p>
                     <div className="flex gap-3">
-                        <button onClick={() => setPendingStatus(null)} className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-black text-sm hover:bg-gray-200 transition-all active:scale-95">{t('common.cancel', '取消')}</button>
-                        <button onClick={confirmAction} className="flex-1 px-4 py-2.5 bg-yellow-600 text-white rounded-xl font-black text-sm hover:bg-yellow-700 transition-all active:scale-95 shadow-lg shadow-yellow-600/20">{t('common.confirm', '確定')}</button>
+                        <button onClick={() => setPendingStatus(null)} className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-600 rounded font-black text-sm hover:bg-gray-200 transition-all active:scale-95">{t('common.cancel', '取消')}</button>
+                        <button onClick={confirmAction} className="flex-1 px-4 py-2.5 bg-yellow-600 text-white rounded font-black text-sm hover:bg-yellow-700 transition-all active:scale-95 shadow-lg shadow-yellow-600/20">{t('common.confirm', '確定')}</button>
                     </div>
                 </div>
             </div>
@@ -119,7 +128,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
                     <label className="block text-xs font-bold text-gray-500 mb-1">{t('common.name', '姓名')}</label>
                     <input type="text" className="w-full border rounded p-2 text-sm" value={formData.name} onChange={e => handleChange('name', e.target.value)} />
                 </div>
-                
+
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">{t('registration.field.ordinance_type', '教儀性質')}</label>
                     <select className="w-full border rounded p-2 text-sm" value={formData.ordinance_type} onChange={e => handleChange('ordinance_type', e.target.value as OrdinanceType)}>
@@ -199,31 +208,31 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
             <div className="flex flex-wrap gap-2.5">
                 {!isSpecialStatus ? (
                     <>
-                        <button onClick={() => handleStatusChange(RegStatus.RESTRICTED)} disabled={isSaving} className="px-4 py-2.5 bg-red-50 text-red-700 border-2 border-red-100 rounded-xl font-black text-xs flex items-center hover:bg-red-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange(RegStatus.RESTRICTED)} disabled={isSaving} className="px-4 py-2.5 bg-red-50 text-red-700 border-2 border-red-100 rounded font-black text-xs flex items-center hover:bg-red-100 transition-all active:scale-95">
                             <Shield className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.restricted', '限制')}
                         </button>
-                        <button onClick={() => handleStatusChange(RegStatus.DELETED)} disabled={isSaving} className="px-4 py-2.5 bg-orange-50 text-orange-700 border-2 border-orange-100 rounded-xl font-black text-xs flex items-center hover:bg-orange-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange(RegStatus.DELETED)} disabled={isSaving} className="px-4 py-2.5 bg-orange-50 text-orange-700 border-2 border-orange-100 rounded font-black text-xs flex items-center hover:bg-orange-100 transition-all active:scale-95">
                             <Trash2 className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.deleted', '刪除')}
                         </button>
-                        <button onClick={() => handleStatusChange(RegStatus.RETAINED)} disabled={isSaving} className="px-4 py-2.5 bg-yellow-50 text-yellow-700 border-2 border-yellow-100 rounded-xl font-black text-xs flex items-center hover:bg-yellow-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange(RegStatus.RETAINED)} disabled={isSaving} className="px-4 py-2.5 bg-yellow-50 text-yellow-700 border-2 border-yellow-100 rounded font-black text-xs flex items-center hover:bg-yellow-100 transition-all active:scale-95">
                             <FileSearch className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.retained', '留用')}
                         </button>
-                        <button onClick={() => handleStatusChange(RegStatus.REFUNDED)} disabled={isSaving} className="px-4 py-2.5 bg-green-50 text-green-700 border-2 border-green-100 rounded-xl font-black text-xs flex items-center hover:bg-green-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange(RegStatus.REFUNDED)} disabled={isSaving} className="px-4 py-2.5 bg-green-50 text-green-700 border-2 border-green-100 rounded font-black text-xs flex items-center hover:bg-green-100 transition-all active:scale-95">
                             <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.refunded', '退款')}
                         </button>
-                        <button disabled className="px-4 py-2.5 bg-gray-50 text-gray-300 border-2 border-gray-100 rounded-xl font-black text-xs flex items-center opacity-40 cursor-not-allowed">
+                        <button disabled className="px-4 py-2.5 bg-gray-50 text-gray-300 border-2 border-gray-100 rounded font-black text-xs flex items-center opacity-40 cursor-not-allowed">
                             <UserCheck className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.normal', '報名')}
                         </button>
                     </>
                 ) : (
                     <>
-                        <button onClick={() => handleStatusChange('HARD_DELETE')} disabled={isSaving} className="px-4 py-2.5 bg-red-50 text-red-700 border-2 border-red-100 rounded-xl font-black text-xs flex items-center hover:bg-red-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange('HARD_DELETE')} disabled={isSaving} className="px-4 py-2.5 bg-red-50 text-red-700 border-2 border-red-100 rounded font-black text-xs flex items-center hover:bg-red-100 transition-all active:scale-95">
                             <Trash2 className="w-3.5 h-3.5 mr-1.5" /> {t('common.hard_delete', '完全刪除')}
                         </button>
-                        <button onClick={() => handleStatusChange(RegStatus.NORMAL)} disabled={isSaving} className="px-4 py-2.5 bg-indigo-50 text-indigo-700 border-2 border-indigo-100 rounded-xl font-black text-xs flex items-center hover:bg-indigo-100 transition-all active:scale-95">
+                        <button onClick={() => handleStatusChange(RegStatus.NORMAL)} disabled={isSaving} className="px-4 py-2.5 bg-indigo-50 text-indigo-700 border-2 border-indigo-100 rounded font-black text-xs flex items-center hover:bg-indigo-100 transition-all active:scale-95">
                             <UserCheck className="w-3.5 h-3.5 mr-1.5" /> {t('common.status.normal', '報名')}
                         </button>
-                        <div className="ml-auto px-4 py-2 bg-gray-200 text-gray-500 rounded-xl font-black text-[10px] flex items-center uppercase tracking-widest shadow-inner">
+                        <div className="ml-auto px-4 py-2 bg-gray-200 text-gray-500 rounded font-black text-[10px] flex items-center uppercase tracking-widest shadow-inner">
                             {t('common.current_status', '目前狀態')}: {formData.status}
                         </div>
                     </>
@@ -231,8 +240,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
             </div>
             
             <div className="flex gap-4 justify-end pt-4 border-t border-gray-200/50">
-                <button onClick={onClose} disabled={isSaving} className="px-6 py-2.5 bg-white border-2 border-gray-200 rounded-xl text-gray-400 font-black text-sm hover:bg-gray-50 transition-all active:scale-95">{t('common.cancel', '取消')}</button>
-                <button onClick={handleSave} disabled={isSaving} className="px-10 py-2.5 bg-yellow-600 text-white rounded-xl font-black text-sm flex items-center hover:bg-yellow-700 shadow-lg shadow-yellow-600/20 transition-all active:scale-95 active:shadow-none">
+                <button onClick={onClose} disabled={isSaving} className="px-6 py-2.5 bg-white border-2 border-gray-200 rounded text-gray-400 font-black text-sm hover:bg-gray-50 transition-all active:scale-95">{t('common.cancel', '取消')}</button>
+                <button onClick={handleSave} disabled={isSaving} className="px-10 py-2.5 bg-yellow-600 text-white rounded font-black text-sm flex items-center hover:bg-yellow-700 shadow-lg shadow-yellow-600/20 transition-all active:scale-95 active:shadow-none">
                     <Save className="w-4 h-4 mr-2" /> {isSaving ? t('common.processing', "處理中...") : t('common.save', "儲存")}
                 </button>
             </div>

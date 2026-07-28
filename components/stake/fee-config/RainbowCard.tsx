@@ -52,15 +52,15 @@ export const RainbowCard: React.FC<RainbowCardProps> = ({
   
   return (
     <div 
-      className={`mb-6 shadow-sm overflow-hidden border rounded-lg transition-all ${style.bg} ${style.border} md:rounded-lg rounded-none md:border border-none md:shadow-sm shadow-none`}
+      className={`mb-4 shadow-md border-2 rounded transition-all ${style.bg} ${style.border}`}
     >
       {/* Level 1: Block Title Row */}
       <div 
-        className={`w-full flex justify-between items-center cursor-pointer select-none transition-colors ${style.title} px-4 py-3 md:px-6 md:py-4`}
+        className={`w-full flex justify-between items-center cursor-pointer select-none transition-colors ${style.title} px-4 py-3 md:px-6 md:py-4 border-b-2 rounded-t-[10px] ${style.border}`}
         onClick={onToggle}
       >
         <div className="flex items-center gap-3 md:gap-4">
-          <div className="p-1.5 md:p-2 bg-white/40 rounded-lg flex items-center justify-center border border-white/20">
+          <div className="p-1.5 md:p-2 bg-white/40 rounded flex items-center justify-center border border-white/20">
              {icon}
           </div>
           <h3 className="font-black text-sm md:text-lg tracking-tight">
@@ -78,7 +78,7 @@ export const RainbowCard: React.FC<RainbowCardProps> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
+            className="overflow-visible"
           >
             {/* Level 2: Action/Extra Row */}
             {extra && (

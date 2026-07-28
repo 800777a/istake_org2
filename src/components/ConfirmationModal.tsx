@@ -28,14 +28,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   const colors = {
     danger: 'bg-rose-600 text-white',
-    warning: 'bg-amber-500 text-white',
-    info: 'bg-indigo-600 text-white'
+    warning: 'bg-gradient-to-r from-amber-600 to-amber-700 text-white',
+    info: 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950'
   };
 
   const btnColors = {
     danger: 'bg-rose-600 hover:bg-rose-700 text-white',
-    warning: 'bg-amber-500 hover:bg-amber-600 text-white',
-    info: 'bg-indigo-600 hover:bg-indigo-700 text-white'
+    warning: 'bg-amber-600 hover:bg-amber-700 text-white',
+    info: 'bg-amber-700 hover:bg-amber-800 text-white'
   };
 
   return (
@@ -53,12 +53,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative w-full max-w-sm bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200"
+            className="relative w-full max-w-sm bg-white rounded shadow-2xl overflow-hidden border border-slate-200"
           >
             <div className={`flex items-center gap-3 px-4 py-3 ${colors[type]}`}>
               <AlertTriangle size={18} />
               <span className="text-sm font-bold">{title || t('common.notice', '通知')}</span>
-              <button onClick={onClose} className="ml-auto hover:bg-white/20 p-1 rounded-md transition-colors">
+              <button onClick={onClose} className="ml-auto hover:bg-white/20 p-1 rounded transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -72,7 +72,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <div className="p-4 bg-slate-50 flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 h-10 rounded-lg text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all"
+                className="flex-1 h-10 rounded text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-all"
               >
                 {cancelText || t('common.cancel', '取消')}
               </button>
@@ -81,7 +81,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                   onConfirm();
                   onClose();
                 }}
-                className={`flex-1 h-10 rounded-lg text-sm font-bold transition-all shadow-md ${btnColors[type]}`}
+                className={`flex-1 h-10 rounded text-sm font-bold transition-all shadow-md ${btnColors[type]}`}
               >
                 {confirmText || t('common.confirm', '確定')}
               </button>

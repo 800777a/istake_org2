@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useI18n } from '../../contexts/LanguageContext';
-import { User, Plus, Edit, Trash2, Download, Upload } from 'lucide-react';
+import { User, Plus, Edit, Trash2, Download, Upload, Clock } from 'lucide-react';
 import { EventData } from '../../../types';
 import { isCancellationDisabled } from '../../utils/registrationUtils';
 import ConfirmationModal from '../ConfirmationModal';
@@ -46,87 +46,86 @@ const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({
     if (mode !== 'register') return null;
 
     return (
-        <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 border-b border-slate-100 pb-6">
-                <div className="flex items-center gap-4">
-                    <div className="bg-indigo-100 p-2 rounded-lg">
-                        <User className="w-6 h-6 text-indigo-600" />
+        <div className="space-y-2 mb-4 min-w-0">
+            {/* Level 1: Page Header */}
+            <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950 px-3 py-2 md:px-6 md:py-3 shadow-lg flex items-center justify-between rounded border-2 border-amber-500/50 min-w-0">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                    <div className="p-1 md:p-1.5 bg-black/5 rounded border-2 border-black/10 shrink-0">
+                        <User className="text-amber-900 w-4 h-4 md:w-5 md:h-5" />
                     </div>
-                    <div>
-                        <h2 className="text-lg md:text-xl font-bold text-slate-900 tracking-tight">
-                            登記
+                    <div className="flex flex-col min-w-0">
+                        <h2 className="text-xs md:text-lg font-black tracking-tight leading-tight uppercase truncate">
+                            {t('stake.registration.form.title', '登記')}
                         </h2>
                     </div>
                 </div>
-                
-                <button 
-                    onClick={() => setLang && setLang(lang === 'zh' ? 'en' : 'zh')}
-                    className="h-10 px-6 rounded-full bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-all border border-slate-200 flex items-center justify-center self-start md:self-auto"
-                >
-                    <span className="mr-1 opacity-60">LANGUAGE:</span> {lang === 'zh' ? 'ENGLISH' : '繁體中文'}
-                </button>
             </div>
             
+            {/* Action Row */}
             {!hideModeButtons && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    <button 
-                        onClick={handleResetAndRegister}
-                        className={`h-12 md:h-11 lg:h-10 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center border text-sm md:text-base lg:text-sm ${lockCountdown > 0 ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-red-50 text-red-700 hover:bg-red-100 border-red-200'}`}
-                        disabled={lockCountdown > 0}
-                    >
-                        {lockCountdown > 0 ? (
-                            <span>{t('stake.registration.form.wait_label')} {lockCountdown}s</span>
-                        ) : (
-                            <>
-                                <Plus className="w-4 h-4 mr-2" /> {t('stake.registration.form.register_btn')}
-                            </>
-                        )}
-                    </button>
-                    <button 
-                        onClick={() => { 
-                            setLookupIntent('edit');
-                            if (isFormDirty()) {
-                                setConfirmAction({ type: 'abandonToLookup' });
-                            } else {
-                                setMode('lookup'); 
-                                setMsg(null); 
-                            }
-                        }}
-                        className="h-12 md:h-11 lg:h-10 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 text-sm md:text-base lg:text-sm"
-                    >
-                        <Edit className="w-4 h-4 mr-2" /> {t('stake.registration.form.edit_btn')}
-                    </button>
-                    <button 
-                        onClick={() => { 
-                            setLookupIntent('delete');
-                            if (isFormDirty()) {
-                                setConfirmAction({ type: 'abandonToLookup' });
-                            } else {
-                                setMode('lookup'); 
-                                setMsg(null); 
-                            }
-                        }}
-                        disabled={isCancellationDisabled(activeEvent)}
-                        className={`h-12 md:h-11 lg:h-10 rounded-lg font-bold transition-all shadow-sm flex items-center justify-center border text-sm md:text-base lg:text-sm ${isCancellationDisabled(activeEvent) ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200'}`}
-                    >
-                        <Trash2 className="w-4 h-4 mr-2" /> {t('stake.registration.form.delete_btn')}
-                    </button>
-                    
-                    <button 
-                        type="button"
-                        onClick={() => setShowSaveConfirm(true)}
-                        className="h-12 md:h-11 lg:h-10 rounded-lg font-bold transition-all shadow-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center text-sm md:text-base lg:text-sm"
-                        title={t('stake.registration.form.save_tooltip')}
-                    >
-                        <Download className="w-4 h-4 mr-2" /> {t('stake.registration.form.save_btn')}
-                    </button>
-                    <button 
-                        type="button"
-                        onClick={() => setShowLoadConfirm(true)}
-                        className="h-12 md:h-11 lg:h-10 rounded-lg font-bold transition-all shadow-sm bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 flex items-center justify-center text-sm md:text-base lg:text-sm"
-                    >
-                        <Upload className="w-4 h-4 mr-2" /> {t('stake.registration.form.read_btn')}
-                    </button>
+                <div className="bg-indigo-100 text-indigo-900 px-2 py-3 md:px-4 md:py-3 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 rounded border-2 border-indigo-200 min-w-0">
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0 overflow-x-auto no-scrollbar py-0.5 overscroll-x-contain">
+                        <button 
+                            onClick={handleResetAndRegister}
+                            className={`flex-1 sm:flex-none h-11 px-3 md:px-6 rounded font-black transition-all shadow-md flex items-center justify-center border-2 text-[10px] md:text-sm active:scale-95 whitespace-nowrap shrink-0 ${lockCountdown > 0 ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700 border-red-800 shadow-red-200'}`}
+                            disabled={lockCountdown > 0}
+                        >
+                            {lockCountdown > 0 ? (
+                                <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1 animate-spin" /> {lockCountdown}s</span>
+                            ) : (
+                                <>
+                                    <Plus className="w-4 h-4 mr-1" /> {t('stake.registration.form.register_btn')}
+                                </>
+                            )}
+                        </button>
+                        <button 
+                            onClick={() => { 
+                                setLookupIntent('edit');
+                                if (isFormDirty()) {
+                                    setConfirmAction({ type: 'abandonToLookup' });
+                                } else {
+                                    setMode('lookup'); 
+                                    setMsg(null); 
+                                }
+                            }}
+                            className="flex-1 sm:flex-none h-11 px-3 md:px-6 rounded font-black transition-all shadow-md flex items-center justify-center bg-white text-orange-800 hover:bg-orange-50 border-2 border-orange-300 text-[10px] md:text-sm active:scale-95 whitespace-nowrap shrink-0"
+                        >
+                            <Edit className="w-4 h-4 mr-1" /> {t('stake.registration.form.edit_btn')}
+                        </button>
+                        <button 
+                            onClick={() => { 
+                                setLookupIntent('delete');
+                                if (isFormDirty()) {
+                                    setConfirmAction({ type: 'abandonToLookup' });
+                                } else {
+                                    setMode('lookup'); 
+                                    setMsg(null); 
+                                }
+                            }}
+                            disabled={isCancellationDisabled(activeEvent)}
+                            className={`flex-1 sm:flex-none h-11 px-3 md:px-6 rounded font-black transition-all shadow-md flex items-center justify-center border-2 text-[10px] md:text-sm active:scale-95 whitespace-nowrap shrink-0 ${isCancellationDisabled(activeEvent) ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-amber-900 hover:bg-amber-50 border-2 border-amber-300'}`}
+                        >
+                            <Trash2 className="w-4 h-4 mr-1" /> {t('stake.registration.form.delete_btn')}
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
+                        <button 
+                            type="button"
+                            onClick={() => setShowSaveConfirm(true)}
+                            className="flex-1 sm:flex-none h-11 px-3 md:px-6 rounded font-black transition-all shadow-md bg-emerald-600 text-white hover:bg-emerald-700 border-2 border-emerald-800 flex items-center justify-center text-[10px] md:text-sm active:scale-95 whitespace-nowrap min-w-0"
+                            title={t('stake.registration.form.save_tooltip')}
+                        >
+                            <Download className="w-4 h-4 mr-1" /> {t('stake.registration.form.save_btn')}
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setShowLoadConfirm(true)}
+                            className="flex-1 sm:flex-none h-11 px-3 md:px-6 rounded font-black transition-all shadow-md bg-blue-600 text-white hover:bg-blue-700 border-2 border-blue-800 flex items-center justify-center text-[10px] md:text-sm active:scale-95 whitespace-nowrap min-w-0"
+                        >
+                            <Upload className="w-4 h-4 mr-1" /> {t('stake.registration.form.read_btn')}
+                        </button>
+                    </div>
                     <input 
                         type="file" 
                         ref={fileInputRef}

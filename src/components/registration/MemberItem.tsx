@@ -4,7 +4,7 @@ import { useI18n } from '../../../src/contexts/LanguageContext';
 import { Trash2 } from 'lucide-react';
 import Toast, { ToastType } from '../../../components/Toast';
 import { RegistrationMemberInput, TripType, OrdinanceType, OrdinanceItem, EventData, GlobalSettings } from '../../../types';
-import { getGenderFromId, calculateAge } from '../../../utils/validation';
+import { getGenderFromId, calculateAge, validateNameFormat, validateIdentityId } from '../../../utils/validation';
 
 interface MemberItemProps {
     member: RegistrationMemberInput;
@@ -28,6 +28,7 @@ interface MemberItemProps {
     calculatePrice: (m: RegistrationMemberInput) => number;
     stopCancellation?: boolean;
     forceShowPersonalInfo?: boolean;
+    errorField?: string | null;
 }
 
 const MemberItem: React.FC<MemberItemProps> = ({
@@ -51,7 +52,8 @@ const MemberItem: React.FC<MemberItemProps> = ({
     onDelete,
     calculatePrice,
     stopCancellation,
-    forceShowPersonalInfo
+    forceShowPersonalInfo,
+    errorField
 }) => {
     const { t, tString, tAttr, isEditMode, setActiveKey } = useI18n();
     const [msg, setMsg] = useState<string | null>(null);
@@ -61,8 +63,31 @@ const MemberItem: React.FC<MemberItemProps> = ({
 
     const [isGuardianVisible, setIsGuardianVisible] = useState(false);
 
+    const nameCheck = validateNameFormat(member.name);
+    const isEnglishName = nameCheck.isValid && nameCheck.isEnglish;
+
+    const isNameError = errorField === `member-${index}-name`;
+    const isBirthError = errorField === `member-${index}-birth`;
+    const isIdError = errorField === `member-${index}-id`;
+
     // Check if personal info matches
     const isMatched = !!member.name.trim() && personalInfoList.some(p => p.unit === primaryUnit && p.name === member.name.trim());
+    
+    // Helper to extract date parts correctly
+    const getDateParts = () => {
+        if (!member.birth_date) return { year: '', month: '', day: '' };
+        const parts = member.birth_date.split('-');
+        if (parts.length === 3) {
+            return {
+                year: parseInt(parts[0]) || '',
+                month: parseInt(parts[1]) || '',
+                day: parseInt(parts[2]) || ''
+            };
+        }
+        return { year: '', month: '', day: '' };
+    };
+
+    const { year: birthYear, month: birthMonth, day: birthDay } = getDateParts();
 
     const translateTripType = (val: string) => {
         const keyMap: Record<string, string> = {
@@ -119,26 +144,6 @@ const MemberItem: React.FC<MemberItemProps> = ({
         const key = keyMap[val] || val;
         return tString(`stake.registration.form.ordinances.${key}`);
     };
-
-    let birthYear: number | '' = '';
-    let birthMonth: number | '' = '';
-    let birthDay: number | '' = '';
-    
-    if (member.birth_date) {
-        const parts = member.birth_date.split('-');
-        if (parts.length === 3) {
-            birthYear = parseInt(parts[0]) || '';
-            birthMonth = parseInt(parts[1]) || '';
-            birthDay = parseInt(parts[2]) || '';
-        } else {
-            const birth = new Date(member.birth_date);
-            if (!isNaN(birth.getFullYear())) {
-                birthYear = birth.getFullYear();
-                birthMonth = birth.getMonth() + 1;
-                birthDay = birth.getDate();
-            }
-        }
-    }
 
     const gender = getGenderFromId(member.identity_id);
     const age = member.birth_date ? calculateAge(member.birth_date, activeEvent.event_date) : 0;
@@ -222,104 +227,110 @@ const MemberItem: React.FC<MemberItemProps> = ({
     const serviceOptions = getServiceOptions();
 
     return (
-        <div className="bg-green-50 p-6 rounded-xl shadow-sm border border-green-200 relative">
-            <div className="flex items-center mb-4">
-                <div className="w-6 h-6 rounded-full bg-green-700 text-white flex items-center justify-center text-xs font-bold mr-3">
-                    {index + 1}
+        <div className="bg-white overflow-visible border-2 border-orange-200 rounded shadow-sm relative transition-all hover:shadow-md animate-fade-in min-w-0">
+            {/* Level 2: Member Header */}
+            <div className="bg-orange-100 px-3 py-3 md:px-6 md:py-4 flex items-center justify-between border-b-2 border-orange-200/50 gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-[10px] md:text-sm font-black border-2 border-white shadow-sm shrink-0">
+                        {index + 1}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        {/* 姓名已在下方姓名欄顯示，此處移除 */}
+                    </div>
                 </div>
-                <div className="flex-1 border-b border-green-200"></div>
                 
                 <button 
                     type="button" 
                     onClick={() => onDelete(member)} 
                     disabled={stopCancellation}
-                    className={`ml-3 transition-colors p-1 ${stopCancellation ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-red-500'}`}
+                    className={`transition-all p-2 rounded border-2 shrink-0 ${stopCancellation ? 'text-slate-200 border-transparent cursor-not-allowed' : 'text-slate-400 border-transparent hover:text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-90'}`}
                     title={stopCancellation ? t('stake.registration.form.insured_cannot_cancel') : t('stake.registration.form.delete_member_tooltip')}
                 >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">
-                        {t('stake.registration.form.name_label')}
-                        {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.real_name_placeholder')} title="Click to edit placeholder key">[P]</span>}
-                    </label>
-                    <input 
-                        type="text" 
-                        value={member.name} 
-                        onChange={e => { 
-                            onUpdate(member.temp_id, 'name', e.target.value);
-                            setIsNameFinished(false);
-                            // V320: Clear guardian and hide field when name changes
-                            if (member.guardian) onUpdate(member.temp_id, 'guardian', '');
-                            setIsGuardianVisible(false);
-                        }} 
-                        onBlur={() => {
-                            setIsNameFinished(true);
-                            handleCheckGuardian();
-                        }}
-                        className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black underline-offset-4 focus:ring-2 focus:ring-green-400 outline-none transition-all"
-                        placeholder={tAttr('stake.registration.form.real_name_placeholder')}
-                    />
-                </div>
-                {!!member.name.trim() && (isNameFinished || forceShowPersonalInfo) && !isMatched && (
-                    <>
-                        <div>
-                            <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.birth_date_label')}</label>
-                            <div className="flex gap-2">
-                                <select 
-                                    className="border rounded h-[38px] px-2 text-xs flex-1 bg-white text-black"
-                                    value={birthYear}
-                                    onChange={e => onUpdateBirthday(member.temp_id, 'year', parseInt(e.target.value))}
-                                    onBlur={handleCheckGuardian}
-                                >
-                                    <option value="" disabled>{tString('stake.registration.form.year_label', { forceString: true })}</option>
-                                    {years.map(y => <option key={y} value={y}>{y}{tString('stake.registration.form.year_label', { forceString: true })}</option>)}
-                                </select>
-                                <select 
-                                    className="border rounded h-[38px] px-2 text-xs w-20 bg-white text-black"
-                                    value={birthMonth}
-                                    onChange={e => onUpdateBirthday(member.temp_id, 'month', parseInt(e.target.value))}
-                                    onBlur={handleCheckGuardian}
-                                >
-                                    <option value="" disabled>{tString('stake.registration.form.month_label', { forceString: true })}</option>
-                                    {months.map(m => <option key={m} value={m}>{m}{tString('stake.registration.form.month_label', { forceString: true })}</option>)}
-                                </select>
-                                <select 
-                                    className="border rounded h-[38px] px-2 text-xs w-20 bg-white text-black"
-                                    value={birthDay}
-                                    onChange={e => onUpdateBirthday(member.temp_id, 'day', parseInt(e.target.value))}
-                                    onBlur={handleCheckGuardian}
-                                >
-                                    <option value="" disabled>{tString('stake.registration.form.day_label', { forceString: true })}</option>
-                                    {days.map(d => <option key={d} value={d}>{d}{tString('stake.registration.form.day_label', { forceString: true })}</option>)}
-                                </select>
+            <div className="p-3 md:p-6 space-y-4 md:space-y-6 min-w-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 min-w-0">
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
+                            {t('stake.registration.form.name_label')}
+                        </label>
+                        <input 
+                            id={`member-${index}-name`}
+                            type="text" 
+                            value={member.name} 
+                            onChange={e => { 
+                                onUpdate(member.temp_id, 'name', e.target.value);
+                                setIsNameFinished(false);
+                                // V320: Clear guardian and hide field when name changes
+                                if (member.guardian) onUpdate(member.temp_id, 'guardian', '');
+                                setIsGuardianVisible(false);
+                            }} 
+                            onBlur={() => {
+                                setIsNameFinished(true);
+                                handleCheckGuardian();
+                            }}
+                            className={`w-full border-2 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 outline-none transition-all font-black ${isNameError ? 'border-red-500 ring-4 ring-red-200 animate-pulse' : 'border-orange-200 focus:ring-orange-500'}`}
+                            placeholder={tAttr('stake.registration.form.real_name_placeholder')}
+                        />
+                    </div>
+                    {!!member.name.trim() && (isNameFinished || forceShowPersonalInfo || isEnglishName) && (!isMatched || isEnglishName) && (
+                        <>
+                            <div className="min-w-0">
+                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.birth_date_label')}</label>
+                                <div className={`flex gap-1 p-1 rounded border-2 transition-all min-w-0 ${isBirthError ? 'border-red-500 ring-4 ring-red-200 animate-pulse bg-red-50' : 'border-orange-200 bg-white'}`}>
+                                    <select 
+                                        id={`member-${index}-birth`}
+                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-[1.5] min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        value={birthYear}
+                                        onChange={e => onUpdateBirthday(member.temp_id, 'year', parseInt(e.target.value))}
+                                        onBlur={handleCheckGuardian}
+                                    >
+                                        <option value="" disabled>{tString('stake.registration.form.year_label', { forceString: true })}</option>
+                                        {years.map(y => <option key={y} value={y}>{y}{tString('stake.registration.form.year_label', { forceString: true })}</option>)}
+                                    </select>
+                                    <select 
+                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-1 min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        value={birthMonth}
+                                        onChange={e => onUpdateBirthday(member.temp_id, 'month', parseInt(e.target.value))}
+                                        onBlur={handleCheckGuardian}
+                                    >
+                                        <option value="" disabled>{tString('stake.registration.form.month_label', { forceString: true })}</option>
+                                        {months.map(m => <option key={m} value={m}>{m}{tString('stake.registration.form.month_label', { forceString: true })}</option>)}
+                                    </select>
+                                    <select 
+                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-1 min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        value={birthDay}
+                                        onChange={e => onUpdateBirthday(member.temp_id, 'day', parseInt(e.target.value))}
+                                        onBlur={handleCheckGuardian}
+                                    >
+                                        <option value="" disabled>{tString('stake.registration.form.day_label', { forceString: true })}</option>
+                                        {days.map(d => <option key={d} value={d}>{d}{tString('stake.registration.form.day_label', { forceString: true })}</option>)}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs text-green-900 font-bold mb-1">
-                                {t('stake.registration.form.id_label')}
-                                {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.id_placeholder')} title="Click to edit placeholder key">[P]</span>}
-                            </label>
-                            <input 
-                                type="text" 
-                                value={member.identity_id} 
-                                onChange={e => onUpdate(member.temp_id, 'identity_id', e.target.value.toUpperCase())} 
-                                className="w-full border rounded h-[38px] px-2 text-xs uppercase bg-white text-black"
-                                placeholder={tAttr('stake.registration.form.id_placeholder')}
-                                maxLength={10}
-                            />
-                        </div>
-                    </>
-                )}
-            </div>
+                            <div className="min-w-0">
+                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
+                                    {t('stake.registration.form.id_label')}
+                                </label>
+                                <input 
+                                    id={`member-${index}-id`}
+                                    type="text" 
+                                    value={member.identity_id} 
+                                    onChange={e => onUpdate(member.temp_id, 'identity_id', e.target.value.toUpperCase())} 
+                                    className={`w-full border-2 rounded h-11 md:h-12 px-3 text-sm uppercase bg-white text-black focus:ring-4 outline-none transition-all font-black font-mono ${isIdError ? 'border-red-500 ring-4 ring-red-200 animate-pulse' : 'border-orange-200 focus:ring-orange-500'}`}
+                                    placeholder={tAttr('stake.registration.form.id_placeholder')}
+                                    maxLength={15}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
 
-            {isGuardianVisible && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 animate-fade-in">
-                    <div>
-                        <label className="block text-xs text-green-900 font-bold mb-1">
+                {isGuardianVisible && (
+                    <div className="animate-fade-in pt-1">
+                        <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
                             {t('stake.registration.form.guardian_label')}
                             {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.guardian_placeholder')} title="Click to edit placeholder key">[P]</span>}
                         </label>
@@ -333,98 +344,102 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                     setMsg(t('stake.registration.form.guardian_error'));
                                 }
                             }}
-                            className="w-full border border-green-200 rounded h-[38px] px-2 text-xs bg-white text-black focus:ring-2 focus:ring-green-300 outline-none"
+                            className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
                             placeholder={tAttr('stake.registration.form.guardian_placeholder')}
                         />
                     </div>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.ordinance_participation')}</label>
-                    <select 
-                        value={member.ordinance_type} 
-                        onChange={e => {
-                            onUpdate(member.temp_id, 'ordinance_type', e.target.value as OrdinanceType);
-                        }}
-                        className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black focus:ring-1 focus:ring-green-500 outline-none"
-                    >
-                        {[OrdinanceType.PROXY, OrdinanceType.LIVING, OrdinanceType.CHILD, OrdinanceType.NONE].map(tOrdinance => (
-                            <option key={tOrdinance} value={tOrdinance}>
-                                {translateOrdinance(tOrdinance)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">
-                        {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) 
-                            ? t('stake.registration.form.participating_activity') 
-                            : t('stake.registration.form.ordinance_item')}
-                    </label>
-                    {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) ? (
-                        <select 
-                            value={member.ordinance_item} 
-                            onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value)} 
-                            className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black focus:ring-1 focus:ring-green-500 outline-none"
-                        >
-                            {['不會參加', '聖殿廣場導覽', '家譜中心導覽', '其他活動'].map(opt => (
-                                <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
-                            ))}
-                        </select>
-                    ) : (
-                        <select 
-                            value={member.ordinance_item} 
-                            onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value as OrdinanceItem)} 
-                            className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black focus:ring-1 focus:ring-green-500 outline-none"
-                        >
-                            {(member.ordinance_type === OrdinanceType.PROXY ? proxyOptions : livingOptions).map(opt => (
-                                <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
-                            ))}
-                        </select>
-                    )}
-                </div>
-                
-                {serviceOptions.length > 0 && (
-                    <div>
-                        <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.qualification_label')}</label>
-                        <select 
-                            value={member.service_qualification || ''} 
-                            onChange={e => onUpdate(member.temp_id, 'service_qualification', e.target.value)} 
-                            className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black"
-                        >
-                            <option value="">{tString('stake.registration.form.select_hint')}</option>
-                            {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                        </select>
-                    </div>
                 )}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.trip_label')}</label>
-                    <select 
-                        value={member.trip_type}
-                        onChange={e => onUpdate(member.temp_id, 'trip_type', e.target.value as TripType)}
-                        className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black"
-                    >
-                        {enabledTripTypes.map(tTrip => <option key={tTrip} value={tTrip}>{translateTripType(tTrip)}</option>)}
-                    </select>
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 min-w-0">
+                    <div className="space-y-4 min-w-0">
+                        <div className="min-w-0">
+                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.ordinance_participation')}</label>
+                            <select 
+                                value={member.ordinance_type} 
+                                onChange={e => {
+                                    onUpdate(member.temp_id, 'ordinance_type', e.target.value as OrdinanceType);
+                                }}
+                                className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                            >
+                                {[OrdinanceType.PROXY, OrdinanceType.LIVING, OrdinanceType.CHILD, OrdinanceType.NONE].map(tOrdinance => (
+                                    <option key={tOrdinance} value={tOrdinance}>
+                                        {translateOrdinance(tOrdinance)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.identity_label')}</label>
-                    <select value={member.identity_type} onChange={e => onUpdate(member.temp_id, 'identity_type', e.target.value)} className="w-full border rounded h-[38px] px-2 text-xs bg-white text-black">
-                        {enabledIdentities.map(tIden => <option key={tIden} value={tIden}>{translateIdentityType(tIden)}</option>)}
-                    </select>
-                </div>
+                        <div className="min-w-0">
+                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
+                                {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) 
+                                    ? t('stake.registration.form.participating_activity') 
+                                    : t('stake.registration.form.ordinance_item')}
+                            </label>
+                            {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) ? (
+                                <select 
+                                    value={member.ordinance_item} 
+                                    onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value)} 
+                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                                >
+                                    {['不會參加', '聖殿廣場導覽', '家譜中心導覽', '其他活動'].map(opt => (
+                                        <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <select 
+                                    value={member.ordinance_item} 
+                                    onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value as OrdinanceItem)} 
+                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                                >
+                                    {(member.ordinance_type === OrdinanceType.PROXY ? proxyOptions : livingOptions).map(opt => (
+                                        <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                        
+                        {serviceOptions.length > 0 && (
+                            <div className="min-w-0">
+                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.qualification_label')}</label>
+                                <select 
+                                    value={member.service_qualification || ''} 
+                                    onChange={e => onUpdate(member.temp_id, 'service_qualification', e.target.value)} 
+                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                                >
+                                    <option value="">{tString('stake.registration.form.select_hint')}</option>
+                                    {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                </select>
+                            </div>
+                        )}
+                    </div>
 
-                <div>
-                    <label className="block text-xs text-green-900 font-bold mb-1">{t('stake.registration.form.fee_label')}</label>
-                    <div className="w-full border rounded h-[38px] px-3 bg-white text-right font-bold text-red-500 flex items-center justify-end text-sm">
-                        ${calculatePrice(member)}
+                    <div className="space-y-4 min-w-0">
+                        <div className="min-w-0">
+                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.trip_label')}</label>
+                            <select 
+                                value={member.trip_type}
+                                onChange={e => onUpdate(member.temp_id, 'trip_type', e.target.value as TripType)}
+                                className="w-full border-2 border-orange-200 rounded h-11 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                            >
+                                {enabledTripTypes.map(tTrip => <option key={tTrip} value={tTrip}>{translateTripType(tTrip)}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="min-w-0">
+                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.identity_label')}</label>
+                            <select value={member.identity_type} onChange={e => onUpdate(member.temp_id, 'identity_type', e.target.value)} className="w-full border-2 border-orange-200 rounded h-11 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black">
+                                {enabledIdentities.map(tIden => <option key={tIden} value={tIden}>{translateIdentityType(tIden)}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="min-w-0">
+                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.fee_label')}</label>
+                            <div className="bg-orange-50 h-11 md:h-12 rounded border-2 border-orange-200 flex items-center justify-center shadow-inner">
+                                <div className="text-lg md:text-xl font-black text-red-600 font-mono tracking-tighter">
+                                    ${calculatePrice(member)}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

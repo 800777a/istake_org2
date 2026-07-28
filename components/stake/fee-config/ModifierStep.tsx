@@ -340,7 +340,7 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       extra={
         <button 
           onClick={addModifier}
-          className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+          className="h-10 px-5 rounded text-xs font-bold transition-all flex items-center gap-2"
           style={{ 
             backgroundColor: style.bg,
             color: style.text,

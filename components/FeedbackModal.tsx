@@ -55,7 +55,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ registration, onClose, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 animate-fade-in">
-      <div className="bg-white w-[400px] max-w-full rounded-2xl shadow-xl relative overflow-hidden">
+      <div className="bg-white w-[400px] max-w-full rounded shadow-xl relative overflow-hidden">
         <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 text-white text-center relative">
             <h2 className="text-xl font-bold">活動滿意度調查</h2>
             <p className="text-sm opacity-90">您的回饋是我們進步的動力</p>
@@ -72,7 +72,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ registration, onClose, on
             <div className="mt-4">
                 <label className="block text-sm font-bold text-gray-700 mb-1">其他建議或心得 (選填)</label>
                 <textarea 
-                    className="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                     rows={3}
                     placeholder="例如：冷氣太冷、便當很好吃..."
                     value={comment}
@@ -82,7 +82,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ registration, onClose, on
 
             <button 
                 onClick={handleSubmit}
-                className="w-full mt-6 bg-purple-600 text-white py-3 rounded-lg font-bold shadow hover:bg-purple-700 transition-colors"
+                className="w-full mt-6 bg-purple-600 text-white py-3 rounded font-bold shadow hover:bg-purple-700 transition-colors"
             >
                 送出回饋
             </button>

@@ -170,9 +170,9 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
             <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />
             
             {/* Page Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 backdrop-blur-sm p-5 md:p-8 rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border border-indigo-100">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 backdrop-blur-sm p-5 md:p-8 rounded-none md:rounded shadow-none md:shadow-sm border-none md:border border-indigo-100">
                 <div className="flex items-center gap-5">
-                    <div className="bg-indigo-900 p-4 rounded-xl text-white shadow-lg">
+                    <div className="bg-indigo-900 p-4 rounded text-white shadow-lg">
                         <MessageSquare className="w-6 h-6 md:w-8 md:h-8" />
                     </div>
                     <div>
@@ -189,7 +189,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                 
                 <button 
                     onClick={() => setSortOrder(sortOrder === 'oldest' ? 'newest' : 'oldest')}
-                    className="h-8 md:h-10 lg:h-12 px-6 rounded-md bg-slate-100 border border-slate-200 text-slate-600 text-xs md:text-sm lg:text-base font-black hover:bg-slate-900 hover:text-white transition-all flex items-center gap-2 active:scale-95 group shadow-sm"
+                    className="h-8 md:h-10 lg:h-12 px-6 rounded bg-slate-100 border border-slate-200 text-slate-600 text-xs md:text-sm lg:text-base font-black hover:bg-slate-900 hover:text-white transition-all flex items-center gap-2 active:scale-95 group shadow-sm"
                 >
                     {sortOrder === 'oldest' ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
                     <span>{sortOrder === 'oldest' ? t('舊留言在上面', 'Oldest first') : t('新留言在上面', 'Newest first')}</span>
@@ -208,7 +208,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         <div className="space-y-1">
                             <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('所屬單位 (Unit)', 'Unit')}</label>
                             <select 
-                                className="w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded-md px-3 focus:ring-2 focus:ring-indigo-300 outline-none bg-white font-bold text-slate-900 transition-all shadow-sm"
+                                className="w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded px-3 focus:ring-2 focus:ring-indigo-300 outline-none bg-white font-bold text-slate-900 transition-all shadow-sm"
                                 value={authorUnit}
                                 onChange={e => setAuthorUnit(e.target.value)}
                             >
@@ -222,7 +222,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                             <input 
                                 type="text" 
                                 placeholder={t("選填 (預設為成員)", "Optional")}
-                                className="w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded-md px-3 focus:ring-2 focus:ring-indigo-300 outline-none font-bold text-slate-900 bg-white transition-all shadow-sm"
+                                className="w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded px-3 focus:ring-2 focus:ring-indigo-300 outline-none font-bold text-slate-900 bg-white transition-all shadow-sm"
                                 value={authorName}
                                 onChange={e => setAuthorName(e.target.value)}
                             />
@@ -231,7 +231,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         <div className="space-y-1">
                             <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('留言分類 (Category)', 'Category')}</label>
                             <select 
-                                className={`w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded-md px-3 focus:ring-2 focus:ring-indigo-300 outline-none bg-white font-bold transition-all shadow-sm ${category ? 'text-indigo-600' : 'text-slate-400'}`}
+                                className={`w-full h-8 md:h-10 lg:h-12 text-xs md:text-sm border-slate-200 border rounded px-3 focus:ring-2 focus:ring-indigo-300 outline-none bg-white font-bold transition-all shadow-sm ${category ? 'text-indigo-600' : 'text-slate-400'}`}
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
                             >
@@ -255,7 +255,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('內容詳述 (Content)', 'Description')}</label>
                         <textarea 
                             placeholder={t("想對主辦單位說什麼，或對這次活動有什麼建議嗎？", "Any suggestions or questions?")}
-                            className="w-full text-xs md:text-sm border-slate-200 border rounded-md p-4 min-h-[120px] focus:ring-2 focus:ring-indigo-300 outline-none resize-none font-medium text-slate-700 leading-relaxed bg-white transition-all shadow-sm"
+                            className="w-full text-xs md:text-sm border-slate-200 border rounded p-4 min-h-[120px] focus:ring-2 focus:ring-indigo-300 outline-none resize-none font-medium text-slate-700 leading-relaxed bg-white transition-all shadow-sm"
                             value={newComment}
                             onChange={e => setNewComment(e.target.value)}
                         />
@@ -271,7 +271,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         <button 
                             disabled={isSubmitting || !newComment.trim() || !category || cooldown > 0}
                             className={`
-                                w-full md:w-auto h-8 md:h-10 lg:h-12 px-10 rounded-md font-black text-xs md:text-sm lg:text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 uppercase tracking-widest
+                                w-full md:w-auto h-8 md:h-10 lg:h-12 px-10 rounded font-black text-xs md:text-sm lg:text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-95 uppercase tracking-widest
                                 ${isSubmitting || !newComment.trim() || !category || cooldown > 0 
                                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
                                     : 'bg-indigo-800 text-white hover:bg-indigo-900 shadow-indigo-200'
@@ -288,7 +288,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
             {/* Comment List Area */}
             <div className="space-y-4 md:space-y-6">
                 {sortedComments.length === 0 ? (
-                    <div className="p-16 text-center text-slate-300 bg-white rounded-lg border border-dashed border-slate-200 font-bold uppercase tracking-widest text-xs md:text-sm">
+                    <div className="p-16 text-center text-slate-300 bg-white rounded border border-dashed border-slate-200 font-bold uppercase tracking-widest text-xs md:text-sm">
                         {t('目前還沒有留言', 'No comments yet')}
                     </div>
                 ) : (
@@ -297,7 +297,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         const style = rainbowThemes[index % rainbowThemes.length];
 
                         return (
-                            <div key={comment.id} className={`rounded-none md:rounded-lg border-none md:border shadow-none md:shadow-sm overflow-hidden transition-all bg-white ${style.border}`}>
+                            <div key={comment.id} className={`rounded-none md:rounded border-none md:border shadow-none md:shadow-sm overflow-hidden transition-all bg-white ${style.border}`}>
                                 <div className={`px-5 py-4 ${style.header} flex justify-between items-start border-b ${style.border}`}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black border-2 border-white shadow-sm ${style.title.replace('bg-', 'bg-')}`}>
@@ -367,7 +367,7 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                                     )}
 
                                     {replyTo === comment.id && !comment.is_spam && (
-                                        <form onSubmit={e => handleSubmit(e, comment.id)} className="mt-4 p-4 bg-white rounded-md border border-slate-200 shadow-lg animate-slide-down">
+                                        <form onSubmit={e => handleSubmit(e, comment.id)} className="mt-4 p-4 bg-white rounded border border-slate-200 shadow-lg animate-slide-down">
                                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
                                                 <Reply size={12} />
                                                 <span>{t('撰寫回覆 (WRITE REPLY)', 'Write Reply')}</span>
@@ -457,19 +457,19 @@ const PublicCommentTab: React.FC<PublicCommentTabProps> = ({ activeEvent, settin
                         {t('我們非常重視您的聲音！如果不確定要說什麼，可以參考以下問題：', 'We value your voice! If unsure what to say, consider these:')}
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white p-5 rounded-lg border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
+                        <div className="bg-white p-5 rounded border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
                             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-black text-purple-800 shadow-sm mb-3 border border-purple-200 group-hover:scale-110 transition-transform">1</div>
                             <span className="font-bold text-slate-700 text-xs leading-relaxed uppercase tracking-wide">
                                 {t('對本次活動的教儀安排有什麼感想 or 建議嗎？', 'Thoughts or suggestions for temple ordinances?')}
                             </span>
                         </div>
-                        <div className="bg-white p-5 rounded-lg border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
+                        <div className="bg-white p-5 rounded border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
                             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-black text-purple-800 shadow-sm mb-3 border border-purple-200 group-hover:scale-110 transition-transform">2</div>
                             <span className="font-bold text-slate-700 text-xs leading-relaxed uppercase tracking-wide">
                                 {t('交通接駁安排是否還有改進的空間？', 'Any improvements for transport?')}
                             </span>
                         </div>
-                        <div className="bg-white p-5 rounded-lg border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
+                        <div className="bg-white p-5 rounded border border-purple-200 flex flex-col items-center text-center group hover:bg-purple-50 transition-colors shadow-sm">
                             <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center font-black text-purple-800 shadow-sm mb-3 border border-purple-200 group-hover:scale-110 transition-transform">3</div>
                             <span className="font-bold text-slate-700 text-xs leading-relaxed uppercase tracking-wide">
                                 {t('您最期待在未來的聖殿旅行團中看到什麼樣的新服務？', 'What new services do you look forward to in future Temple Trips?')}
@@ -498,13 +498,13 @@ const SectionWrapper: React.FC<{
     const [isExpanded, setIsExpanded] = useState(true);
     
     return (
-        <div className={`rounded-none md:rounded-lg shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden bg-white transition-all duration-300`}>
+        <div className={`rounded-none md:rounded shadow-none md:shadow-sm border-none md:border ${theme.border} overflow-hidden bg-white transition-all duration-300`}>
             <div 
                 className={`w-full flex items-center justify-between px-5 py-3.5 ${theme.title} cursor-pointer hover:opacity-90 transition-all border-b ${theme.border} select-none group`}
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex items-center gap-3">
-                    <div className={`p-1.5 rounded-lg border shadow-sm bg-white/50 ${theme.accent}`}>
+                    <div className={`p-1.5 rounded border shadow-sm bg-white/50 ${theme.accent}`}>
                         {icon}
                     </div>
                     <h3 className="text-sm md:text-base lg:text-lg font-black text-slate-900 tracking-tight leading-none uppercase">{title}</h3>

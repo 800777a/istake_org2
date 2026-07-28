@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useI18n } from '../src/contexts/LanguageContext';
-import { LogOut, Search, Check, XCircle, Clock, Shield, X, CheckCircle } from 'lucide-react';
+import { LogOut, Search, Check, XCircle, Clock, Shield, X, CheckCircle, Bus, LayoutGrid } from 'lucide-react';
 import { 
     RegistrationMemberInput, IdentityType, OrdinanceItem, PaymentMethod, Registration, 
-    DietaryType, TripType 
+    DietaryType, TripType, User
 } from '../types';
+import { validateNameFormat, validateIdentityId } from '../utils/validation';
 import * as sheetService from '../services/sheetService';
 import MemberSection from '../src/components/registration/MemberSection';
 import RegistrationDashboard from '../src/components/registration/RegistrationDashboard';
@@ -21,16 +22,31 @@ import { useRegistrationForm } from '../hooks/useRegistrationForm';
 
 interface RegistrationFormProps {
   onGoHome?: () => void;
-  onGoToStats?: () => void;
+  onGoToStats?: (msg?: string) => void;
   setIsDirty?: (dirty: boolean) => void; 
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  onRoleChange?: (role: any, subTab?: string) => void;
+  currentUser?: User | null;
 }
 
-const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToStats, setIsDirty, activeTab, onTabChange }) => {
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToStats, setIsDirty, activeTab, onTabChange, onRoleChange, currentUser }) => {
   const { currentLang, setLang } = useI18n();
   const lang = currentLang as 'zh' | 'en';
   const { t, tString } = useI18n();
+
+  // Rule 4.2: Orientation & Hard Reset
+  const [remountKey, setRemountKey] = React.useState(0);
+  React.useEffect(() => {
+    const handleResize = () => setRemountKey(k => k + 1);
+    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const {
       mode, setMode,
       lookupIntent, setLookupIntent,
@@ -55,7 +71,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       addMember,
       isFormDirty,
       validateForm,
-      executeSubmit,
+      executeSubmit: baseExecuteSubmit,
       handleReset,
       removeMember,
       updateMember,
@@ -84,7 +100,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
     }
   }, [activeTab]);
 
-  const [confirmAction, setConfirmAction] = useState<{ type: 'abandon' | 'cancelReg' | 'cancelAll' | 'abandonToLookup' | 'backToRegister', payload?: any } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: 'abandon' | 'cancelReg' | 'cancelAll' | 'abandonToLookup' | 'backToRegister' | 'confirmSubmit' | 'directSubmit', payload?: any } | null>(null);
   const [showQueryConfirm, setShowQueryConfirm] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
@@ -103,11 +119,64 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
 
   const isClosed = isRegistrationClosedCheck();
 
+  const [errorField, setErrorField] = useState<string | null>(null);
+
   const handleSubmitTrigger = async (e: React.FormEvent) => { 
       e.preventDefault();
+      setErrorField(null);
+
+      // Manual check for first missing field for smooth scrolling
+      if (!primaryUnit) { scrollToField('primaryUnit'); return; }
+      if (!primaryName) { scrollToField('primaryName'); return; }
+      if (!primaryContactPhone) { scrollToField('primaryContactPhone'); return; }
+      if (!primaryPassword) { scrollToField('primaryPassword'); return; }
+      if ((!activeEvent?.paymentDisplayMode || activeEvent.paymentDisplayMode !== 'none') && !paymentMethod) { scrollToField('paymentMethod'); return; }
+
+      for (let i = 0; i < members.length; i++) {
+          const m = members[i];
+          if (!m.name) { scrollToField(`member-${i}-name`); return; }
+          if (!m.birth_date) { scrollToField(`member-${i}-birth`); return; }
+          if (!m.identity_id) { scrollToField(`member-${i}-id`); return; }
+          
+          // 身份證格式校驗 (身分證/居留證)
+          const nameCheck = validateNameFormat(m.name);
+          if (!nameCheck.isEnglish && !validateIdentityId(m.identity_id)) {
+              setMsg({ type: 'error', text: `第 ${i + 1} 位成員身份證格式不正確` });
+              scrollToField(`member-${i}-id`);
+              setTimeout(() => setMsg(null), 5000);
+              return;
+          }
+          
+          // 身份證重複校驗
+          if (members.some((other, idx) => idx !== i && other.identity_id === m.identity_id)) {
+              setMsg({ type: 'error', text: `第 ${i + 1} 位成員身份證字號與他人重複` });
+              scrollToField(`member-${i}-id`);
+              setTimeout(() => setMsg(null), 5000);
+              return;
+          }
+      }
+
       const isValid = await validateForm();
       if (isValid) setShowSubmitConfirm(true);
   };
+
+  const scrollToField = (fieldId: string) => {
+      setErrorField(fieldId);
+      const element = document.getElementById(fieldId);
+      if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+      }
+      setTimeout(() => setErrorField(null), 5000);
+  };
+
+  // Sync dirty state to global for Layout navigation guard
+  useEffect(() => {
+    (window as any).__IS_REG_DIRTY__ = isFormDirty();
+    return () => {
+      (window as any).__IS_REG_DIRTY__ = false;
+    };
+  }, [members, primaryName, primaryUnit]);
 
   const executeAbandon = () => {
       if (onGoHome) onGoHome();
@@ -223,6 +292,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       setConfirmAction(null);
   };
 
+  // 處理直接送出 (不儲存)
+  React.useEffect(() => {
+      if (confirmAction?.type === 'directSubmit') {
+          setConfirmAction(null);
+          baseExecuteSubmit();
+      }
+  }, [confirmAction]);
+
   if (!activeEvent) return <div className="p-8 text-center text-gray-500">{t('stake.registration.form.no_active_event')}</div>;
 
   const enabledIdentities = settings.billingConfig?.identityPricings?.length ? [...settings.billingConfig.identityPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.identity) : (settings.active_identities?.length ? settings.active_identities : Object.values(IdentityType));
@@ -230,91 +307,161 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
   const unitsOptions = settings.billingConfig?.units?.length ? [...settings.billingConfig.units].sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0)).map(u => ({ value: u.shortName, label: u.shortName })) : (settings.units || []).map(u => ({ value: u, label: u }));
 
   return (
-    <div className="p-6 relative">
-      {/* Hidden input for loading config from sidebar/tab */}
-      <input 
-        ref={sidebarFileInputRef}
-        type="file" 
-        accept=".json" 
-        onChange={handleUploadConfig} 
-        className="hidden" 
-      />
+    <div key={remountKey} className="min-h-screen bg-[#F8F9FA] pb-12 animate-fade-in font-['微軟正黑體',_sans-serif] w-full min-w-0 overflow-x-visible">
+      <div className="max-w-6xl mx-auto px-1 md:px-4 lg:px-8 pt-2 md:pt-6 space-y-2 min-w-0 flex flex-col">
+        {/* Hidden input for loading config from sidebar/tab */}
+        <input 
+          ref={sidebarFileInputRef}
+          type="file" 
+          accept=".json" 
+          onChange={handleUploadConfig} 
+          className="hidden" 
+        />
 
-      {msg && (
-          <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded-lg shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.type === 'error' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-black border-transparent'}`}>
-              {msg.type === 'error' ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-black" />}
-              <span className="font-bold">{msg.text}</span>
-              <button onClick={() => setMsg(null)} className="ml-4 p-1 hover:bg-white/20 rounded-full"><X className="w-4 h-4" /></button>
-          </div>
-      )}
-
-      <FormDialogs 
-          showSubmitConfirm={showSubmitConfirm} setShowSubmitConfirm={setShowSubmitConfirm} showQueryConfirm={showQueryConfirm} setShowQueryConfirm={setShowQueryConfirm}
-          confirmAction={confirmAction} setConfirmAction={setConfirmAction} handleSaveAndSubmit={() => { handleDownloadConfig(); setTimeout(executeSubmit, 500); }}
-          executeGoToStats={() => { setShowQueryConfirm(false); if (onGoToStats) onGoToStats(); }} executeAbandon={executeAbandon} executeAbandonToLookup={() => { handleReset(); setMode('lookup'); setMsg(null); setConfirmAction(null); }}
-          executeBackToRegister={() => { setLookupUnit(''); setLookupName(''); setLookupPassword(''); setMode('register'); setMsg(null); setConfirmAction(null); }}
-          executeCancelMember={executeCancelMember} executeCancelFamily={executeCancelFamily} lockCountdown={lockCountdown} showLockModal={showLockModal} setShowLockModal={setShowLockModal}
-      />
-      
-      {/* Sidebar Save Confirmation */}
-      <ConfirmationModal
-          isOpen={showSidebarSaveConfirm}
-          onClose={() => setShowSidebarSaveConfirm(false)}
-          onConfirm={() => {
-              handleDownloadConfig();
-              setShowSidebarSaveConfirm(false);
-          }}
-          title={t('common.notice', '通知')}
-          message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
-          confirmText={t('common.confirm', '確定')}
-          type="info"
-      />
-
-      {/* Sidebar Load Confirmation */}
-      <ConfirmationModal
-          isOpen={showSidebarLoadConfirm}
-          onClose={() => setShowSidebarLoadConfirm(false)}
-          onConfirm={() => {
-              sidebarFileInputRef.current?.click();
-              setShowSidebarLoadConfirm(false);
-          }}
-          title={t('common.notice', '通知')}
-          message={t('common.confirm_load', '確定要讀取存檔嗎？這將會覆蓋目前正在填寫的資料。')}
-          confirmText={t('common.confirm', '確定')}
-          type="warning"
-      />
-      
-      <RegistrationHeader 
-          mode={mode} setMode={(m) => { setMode(m); onTabChange?.(m === 'register' ? 'register' : 'edit'); }} lang={lang} setLang={setLang} activeEvent={activeEvent}
-          lockCountdown={lockCountdown} handleResetAndRegister={() => { setMode('register'); handleReset(); onTabChange?.('register'); }}
-          isFormDirty={isFormDirty} setLookupIntent={() => {}} setConfirmAction={setConfirmAction}
-          setMsg={setMsg} handleDownloadConfig={handleDownloadConfig} handleUploadConfig={handleUploadConfig}
-          hideModeButtons={!!activeTab}
-      />
-
-      <LookupSection 
-          mode={mode} lookupIntent={lookupIntent} lookupLockCountdown={lookupLockCountdown} lookupUnit={lookupUnit} setLookupUnit={setLookupUnit} lookupName={lookupName} setLookupName={setLookupName}
-          lookupPassword={lookupPassword} setLookupPassword={setLookupPassword} handleLookup={(e) => { e.preventDefault(); refreshLookup(); }} handleBackToRegister={() => setMode('register')} settings={settings}
-      />
-
-      {mode === 'lookup' && (
-        <div className="mt-6">
-          <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
-          <RegistrationDashboard activeEvent={activeEvent} eventStats={eventStats} ordinanceStats={ordinanceStats} deadlineDisplay={activeEvent.registrationDeadline ? new Date(activeEvent.registrationDeadline).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('common.status.notSet')} isClosed={isClosed} lang={lang} />
-        </div>
-      )}
-
-      {mode === 'register' && (
-      <form onSubmit={handleSubmitTrigger} className="space-y-6">
-        <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
-        <RegistrationDashboard activeEvent={activeEvent} eventStats={eventStats} ordinanceStats={ordinanceStats} deadlineDisplay={activeEvent.registrationDeadline ? new Date(activeEvent.registrationDeadline).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('common.status.notSet')} isClosed={isClosed} lang={lang} />
-
-        {activeEvent?.stop_cancellation && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl shadow-sm mb-6 flex items-center animate-fade-in ring-1 ring-amber-100">
-                <Shield className="w-5 h-5 mr-3 text-amber-600 shrink-0" />
-                <span className="font-bold text-sm">{t('stake.registration.form.insured_not_cancel_hint')}</span>
+        {msg && (
+            <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.type === 'error' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-black border-transparent'}`}>
+                {msg.type === 'error' ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-black" />}
+                <span className="font-bold">{msg.text}</span>
+                <button onClick={() => setMsg(null)} className="ml-4 p-1 hover:bg-white/20 rounded-full"><X className="w-4 h-4" /></button>
             </div>
         )}
+
+        <FormDialogs 
+            showSubmitConfirm={showSubmitConfirm} setShowSubmitConfirm={setShowSubmitConfirm} showQueryConfirm={showQueryConfirm} setShowQueryConfirm={setShowQueryConfirm}
+            confirmAction={confirmAction} setConfirmAction={setConfirmAction} handleSaveAndSubmit={() => { handleDownloadConfig(); setTimeout(baseExecuteSubmit, 500); }}
+            executeGoToStats={() => { setShowQueryConfirm(false); if (onGoToStats) onGoToStats(); }} executeAbandon={executeAbandon} executeAbandonToLookup={() => { handleReset(); setMode('lookup'); setMsg(null); setConfirmAction(null); }}
+            executeBackToRegister={() => { setLookupUnit(''); setLookupName(''); setLookupPassword(''); setMode('register'); setMsg(null); setConfirmAction(null); }}
+            executeCancelMember={executeCancelMember} executeCancelFamily={executeCancelFamily} lockCountdown={lockCountdown} showLockModal={showLockModal} setShowLockModal={setShowLockModal}
+        />
+        
+        {/* Sidebar Save Confirmation */}
+        <ConfirmationModal
+            isOpen={showSidebarSaveConfirm}
+            onClose={() => setShowSidebarSaveConfirm(false)}
+            onConfirm={() => {
+                handleDownloadConfig();
+                setShowSidebarSaveConfirm(false);
+            }}
+            title={t('common.notice', '通知')}
+            message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
+            confirmText={t('common.confirm', '確定')}
+            type="info"
+        />
+
+        {/* Sidebar Load Confirmation */}
+        <ConfirmationModal
+            isOpen={showSidebarLoadConfirm}
+            onClose={() => setShowSidebarLoadConfirm(false)}
+            onConfirm={() => {
+                sidebarFileInputRef.current?.click();
+                setShowSidebarLoadConfirm(false);
+            }}
+            title={t('common.notice', '通知')}
+            message={t('common.confirm_load', '確定要讀取存檔嗎？這將會覆蓋目前正在填寫的資料。')}
+            confirmText={t('common.confirm', '確定')}
+            type="warning"
+        />
+        
+        <RegistrationHeader 
+            mode={mode} setMode={(m) => { setMode(m); onTabChange?.(m === 'register' ? 'register' : 'edit'); }} lang={lang} setLang={setLang} activeEvent={activeEvent}
+            lockCountdown={lockCountdown} handleResetAndRegister={() => { setMode('register'); handleReset(); onTabChange?.('register'); }}
+            isFormDirty={isFormDirty} setLookupIntent={() => {}} setConfirmAction={setConfirmAction}
+            setMsg={setMsg} handleDownloadConfig={handleDownloadConfig} handleUploadConfig={handleUploadConfig}
+            hideModeButtons={!!activeTab}
+        />
+
+        {/* Dashboard Statistics - Perfectly Matched to Admin Style (Unwrapped) - Rule 3.2 Compliance */}
+        <div className="w-full max-w-full px-1 pt-1 shrink-0 space-y-1">
+            {/* 1. 車輛座位預約 (Bus Seats) - 複製自後台結構 */}
+            <div className="flex flex-col min-w-0">
+                <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Bus className="w-4 h-4 text-amber-950" />
+                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">車輛座位預約</h2>
+                    </div>
+                </div>
+                <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
+                    <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1 truncate">總座位數</div>
+                        <div className="text-xl font-black text-slate-900">{eventStats.capacity} <span className="text-[10px] text-slate-400">人</span></div>
+                    </div>
+                    <div className="bg-emerald-50 p-2 rounded border border-emerald-100">
+                        <div className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 truncate">預約位數</div>
+                        <div className="text-xl font-black text-slate-900">{(eventStats.occupied + eventStats.waiting)} <span className="text-[10px] text-slate-400">人</span></div>
+                    </div>
+                    <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                        <div className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 truncate">剩餘位數</div>
+                        <div className="text-xl font-black text-amber-900">{eventStats.remaining} <span className="text-[10px] text-slate-400">人</span></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. 教儀座位預約 (Ordinance Seats) - 複製自後台結構 */}
+            <div className="flex flex-col min-w-0">
+                <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <LayoutGrid className="w-4 h-4 text-amber-950" />
+                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">教儀座位預約</h2>
+                    </div>
+                </div>
+                <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
+                    <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                        <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1 truncate">洗禮</div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-black text-blue-900">{ordinanceStats.baptism.occupied + ordinanceStats.baptism.waiting}</span>
+                            <span className="text-[10px] text-slate-400">/ {ordinanceStats.baptism.capacity}</span>
+                        </div>
+                        <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                            <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.baptism.occupied + ordinanceStats.baptism.waiting) / (ordinanceStats.baptism.capacity || 1)) * 100)}%` }}></div>
+                        </div>
+                    </div>
+                    <div className="bg-indigo-50 p-2 rounded border border-indigo-100">
+                        <div className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1 truncate">恩道門</div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-black text-indigo-900">{ordinanceStats.endowment.occupied + ordinanceStats.endowment.waiting}</span>
+                            <span className="text-[10px] text-slate-400">/ {ordinanceStats.endowment.capacity}</span>
+                        </div>
+                        <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                            <div className="bg-indigo-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.endowment.occupied + ordinanceStats.endowment.waiting) / (ordinanceStats.endowment.capacity || 1)) * 100)}%` }}></div>
+                        </div>
+                    </div>
+                    <div className="bg-rose-50 p-2 rounded border border-rose-100">
+                        <div className="text-[10px] text-rose-600 font-black uppercase tracking-widest mb-1 truncate">印證</div>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-black text-rose-900">{ordinanceStats.sealing.occupied + ordinanceStats.sealing.waiting}</span>
+                            <span className="text-[10px] text-slate-400">/ {ordinanceStats.sealing.capacity}</span>
+                        </div>
+                        <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                            <div className="bg-rose-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.sealing.occupied + ordinanceStats.sealing.waiting) / (ordinanceStats.sealing.capacity || 1)) * 100)}%` }}></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="space-y-4 min-w-0 w-full">
+          <LookupSection 
+              mode={mode} lookupIntent={lookupIntent} lookupLockCountdown={lookupLockCountdown} lookupUnit={lookupUnit} setLookupUnit={setLookupUnit} lookupName={lookupName} setLookupName={setLookupName}
+              lookupPassword={lookupPassword} setLookupPassword={setLookupPassword} handleLookup={(e) => { e.preventDefault(); refreshLookup(); }} handleBackToRegister={() => setMode('register')} settings={settings}
+              units={unitsOptions}
+          />
+
+          {mode === 'lookup' && lookupIntent !== 'edit' && lookupIntent !== 'delete' && (
+            <div className="mt-4 min-w-0 w-full space-y-4">
+              <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <form onSubmit={handleSubmitTrigger} className="space-y-4 min-w-0 w-full">
+              <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
+
+              {activeEvent?.stop_cancellation && (
+                  <div className="bg-amber-50 border-2 border-amber-200 text-amber-800 p-3 md:p-4 rounded shadow-sm mb-4 flex items-center animate-fade-in ring-1 ring-amber-100 min-w-0 mx-1 md:mx-0">
+                      <Shield className="w-5 h-5 mr-3 text-amber-600 shrink-0" />
+                      <span className="font-bold text-xs md:text-sm">{t('stake.registration.form.insured_not_cancel_hint')}</span>
+                  </div>
+              )}
 
         <PrimaryContactSection 
             primaryName={primaryName} setPrimaryName={setPrimaryName} primaryUnit={primaryUnit} setPrimaryUnit={setPrimaryUnit}
@@ -322,6 +469,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
             units={unitsOptions} isRepresentativeMatched={isRepresentativeMatched} setIsRepresentativeMatched={setIsRepresentativeMatched}
             isPrimaryNameFinished={isPrimaryNameFinished} setIsPrimaryNameFinished={setIsPrimaryNameFinished} representatives={representatives}
             editingFamilyGroupId={editingFamilyGroupId} members={members} setMembers={setMembers} personalInfoList={personalInfoList}
+            errorField={errorField}
         />
 
         <MemberSection 
@@ -329,6 +477,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
             years={years} months={months} days={days} proxyOptions={proxyOptions} livingOptions={livingOptions} lockCountdown={lockCountdown} personalInfoList={personalInfoList}
             primaryUnit={primaryUnit} primaryName={primaryName} isPrimaryNameFinished={isPrimaryNameFinished} onAddMember={addMember} onUpdateMember={updateMember}
             onUpdateBirthday={updateMemberBirthday} onDeleteMember={(m) => setConfirmAction({ type: 'cancelReg', payload: m })} calculateMemberPrice={calculateMemberPrice}
+            errorField={errorField}
         />
 
         {(!activeEvent?.paymentDisplayMode || activeEvent.paymentDisplayMode !== 'none') && (
@@ -345,24 +494,33 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
                 availablePaymentMethods={[PaymentMethod.CASH, PaymentMethod.TRANSFER].filter(m => !settings.payment_methods || settings.payment_methods.includes(m))} 
                 settings={settings} 
                 lang={lang} 
+                errorField={errorField}
             />
         )}
         
-        <div className="pt-4 border-t flex gap-4 w-full flex-wrap md:flex-nowrap">
-             <button type="button" onClick={() => isFormDirty() ? setConfirmAction({ type: 'abandon' }) : executeAbandon()} disabled={loading} className={`w-full md:flex-1 py-3 bg-red-100 text-red-700 font-bold rounded-lg shadow hover:bg-red-200 focus:outline-none transition-colors text-sm flex items-center justify-center ring-1 ring-red-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                 <LogOut className="w-4 h-4 mr-2" /> {t('stake.registration.form.discard_btn')}
+        <div className="pt-8 border-t border-slate-200 flex flex-row gap-4 w-full">
+             <button 
+                type="button" 
+                onClick={() => isFormDirty() ? setConfirmAction({ type: 'abandon' }) : executeAbandon()} 
+                disabled={loading} 
+                className="flex-1 py-4 bg-red-100 text-red-800 border-2 border-red-200 font-black rounded shadow-lg hover:bg-red-200 focus:outline-none transition-all text-base flex items-center justify-center active:scale-[0.98]"
+             >
+                 <LogOut className="w-5 h-5 mr-2" /> {t('stake.registration.form.discard_btn')}
              </button>
-             <button type="button" onClick={() => isFormDirty() ? setShowQueryConfirm(true) : (onGoToStats && onGoToStats())} className="w-full md:flex-1 py-3 bg-green-100 text-green-700 font-bold rounded-lg shadow hover:bg-green-200 focus:outline-none transition-colors text-sm flex items-center justify-center ring-1 ring-green-200">
-                 <Search className="w-4 h-4 mr-2" /> {t('stake.registration.form.lookup_btn')}
-             </button>
-             <button type="submit" disabled={loading || settings.maintenance_mode || isClosed || lockCountdown > 0} className={`w-full md:flex-1 py-3 bg-blue-100 text-blue-700 font-bold rounded-lg shadow hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors text-sm ring-1 ring-blue-200 ${loading || settings.maintenance_mode || isClosed || lockCountdown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                 {settings.maintenance_mode ? <Shield className="w-4 h-4 mr-2" /> : isClosed ? <XCircle className="w-4 h-4 mr-2" /> : lockCountdown > 0 ? <Clock className="w-4 h-4 mr-2" /> : <Check className="w-4 h-4 mr-2" />}
-                 {settings.maintenance_mode ? t('stake.registration.form.maintenance_label') : isClosed ? t('stake.registration.form.reg_closed_label') : lockCountdown > 0 ? `${lockCountdown}s` : (loading ? t('stake.registration.form.processing_label') : (editingFamilyGroupId ? t('stake.registration.form.confirm_edit_btn', '確認修改') : t('stake.registration.form.submit_btn', '提交')))}
+             <button 
+                type="submit" 
+                disabled={loading || settings.maintenance_mode || isClosed || lockCountdown > 0} 
+                className={`flex-1 py-4 bg-emerald-100 text-emerald-900 border-2 border-emerald-200 font-black rounded shadow-xl hover:bg-emerald-200 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition-all text-lg flex items-center justify-center active:scale-[0.98] ${loading || settings.maintenance_mode || isClosed || lockCountdown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+             >
+                 {settings.maintenance_mode ? <Shield className="w-5 h-5 mr-2" /> : isClosed ? <XCircle className="w-5 h-5 mr-2" /> : lockCountdown > 0 ? <Clock className="w-5 h-5 mr-2" /> : <CheckCircle className="w-6 h-6 mr-2" />}
+                 {settings.maintenance_mode ? t('stake.registration.form.maintenance_label') : isClosed ? t('stake.registration.form.reg_closed_label') : lockCountdown > 0 ? `${lockCountdown}s` : (loading ? t('stake.registration.form.processing_label') : (editingFamilyGroupId ? t('stake.registration.form.confirm_edit_btn', '確認修改') : t('stake.registration.form.submit_btn', '提交報名')))}
              </button>
         </div>
       </form>
       )}
+      </div>
     </div>
+  </div>
   );
 };
 

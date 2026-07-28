@@ -262,7 +262,7 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
             {/* Actual Content Container - Integrated with Layout Unified Header */}
             <div id="admin-scroll-container" className={`flex-1 overflow-y-auto p-1 md:p-3 lg:p-4 scroll-smooth min-h-0 ${isReadOnly ? 'relative' : ''}`}>
                 {isReadOnly && (
-                    <div className="sticky top-0 z-50 mb-6 bg-amber-50 border border-amber-200 px-4 py-2 rounded-lg flex items-center justify-center gap-2 shadow-sm">
+                    <div className="sticky top-0 z-50 mb-6 bg-amber-50 border border-amber-200 px-4 py-2 rounded flex items-center justify-center gap-2 shadow-sm">
                         <Shield className="w-4 h-4 text-amber-700" />
                         <span className="text-amber-800 font-bold text-xs">{t('stake.admin.read_only_mode', '唯讀模式：您目前僅有檢視權限，無法修改資料。')}</span>
                     </div>
@@ -270,7 +270,7 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
                 
                 <div className={`max-w-full mx-auto space-y-6 ${isReadOnly ? 'pointer-events-none opacity-80' : ''}`}>
                     {!currentEvent && !['events', 'announcement', 'feeConfig', 'notice', 'tutorial', 'backup', 'history'].includes(activeTab) ? (
-                        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-xl border-2 border-dashed border-slate-200 p-12 text-center">
+                        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded border-2 border-dashed border-slate-200 p-12 text-center">
                             <Calendar className="w-16 h-16 text-slate-200 mb-4" />
                             <h3 className="text-slate-900 font-bold mb-2">{t('stake.admin.no_event_selected', '尚未選擇活動')}</h3>
                             <p className="text-slate-500 text-sm max-w-xs mx-auto">{t('stake.admin.please_select_event_hint', '請先到「活動設定」選擇一個進行中的活動。')}</p>
@@ -357,7 +357,7 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
 };
 
 const Placeholder = ({ name, icon: Icon }: { name: string, icon?: any }) => (
-    <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-xl border-2 border-dashed border-slate-200 p-12 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded border-2 border-dashed border-slate-200 p-12 text-center">
         <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
             {Icon ? <Icon size={32} /> : <Settings size={32} />}
         </div>

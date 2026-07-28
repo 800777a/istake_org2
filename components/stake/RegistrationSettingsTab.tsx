@@ -25,15 +25,15 @@ interface RegistrationSettingsTabProps {
 // Modern Business Style constants (High-Contrast Theme)
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-6 py-4 flex items-center justify-between cursor-pointer select-none',
     sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
     pageTitle: 'text-xl md:text-2xl font-bold tracking-tight text-slate-900',
     bodyText: 'text-sm text-slate-600',
-    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnTemple: 'bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all',
+    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnTemple: 'bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    input: 'w-full bg-white border border-slate-200 rounded px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all',
     badge: {
         success: 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300 px-2.5 py-0.5 rounded text-[10px]',
         warning: 'bg-amber-100 text-amber-900 font-semibold border border-amber-300 px-2.5 py-0.5 rounded text-[10px]',
@@ -161,9 +161,9 @@ const RegistrationSettingsTab: React.FC<RegistrationSettingsTabProps> = ({
 
                             <div className="grid grid-cols-1 gap-3 border-t border-slate-200 pt-6">
                                 {groupData.map((group) => (
-                                    <div key={group.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-white group hover:border-blue-400 transition-all shadow-sm">
+                                    <div key={group.id} className="flex items-center justify-between p-4 rounded border border-slate-200 bg-white group hover:border-blue-400 transition-all shadow-sm">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 flex items-center justify-center bg-indigo-900 rounded-lg text-white font-bold text-sm shadow-md">
+                                            <div className="w-10 h-10 flex items-center justify-center bg-indigo-900 rounded text-white font-bold text-sm shadow-md">
                                                 {group.id}
                                             </div>
                                             <div>
@@ -212,7 +212,7 @@ const RegistrationSettingsTab: React.FC<RegistrationSettingsTabProps> = ({
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-200 pt-6">
                                     {/* Endowment */}
-                                    <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
+                                    <div className="bg-white p-4 rounded border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
                                         <div className="text-indigo-900 text-[10px] font-bold tracking-widest uppercase border-b border-slate-100 pb-2 flex justify-between items-center">
                                             {t('stake.registration.form.dashboard.ordinance_endowment')}
                                             <TrendingUp className="w-3 h-3 text-amber-500" />
@@ -238,7 +238,7 @@ const RegistrationSettingsTab: React.FC<RegistrationSettingsTabProps> = ({
                                     </div>
                                     
                                     {/* Baptism */}
-                                    <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
+                                    <div className="bg-white p-4 rounded border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
                                         <div className="text-indigo-900 text-[10px] font-bold tracking-widest uppercase border-b border-slate-100 pb-2 flex justify-between items-center">
                                             {t('stake.registration.form.dashboard.ordinance_baptism')}
                                             <TrendingUp className="w-3 h-3 text-amber-500" />
@@ -264,7 +264,7 @@ const RegistrationSettingsTab: React.FC<RegistrationSettingsTabProps> = ({
                                     </div>
             
                                     {/* Sealing */}
-                                    <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
+                                    <div className="bg-white p-4 rounded border border-slate-200 flex flex-col gap-4 group hover:border-amber-400 transition-all shadow-sm">
                                         <div className="text-indigo-900 text-[10px] font-bold tracking-widest uppercase border-b border-slate-100 pb-2 flex justify-between items-center">
                                             {t('stake.registration.form.dashboard.ordinance_sealing', '印證')}
                                             <TrendingUp className="w-3 h-3 text-amber-500" />

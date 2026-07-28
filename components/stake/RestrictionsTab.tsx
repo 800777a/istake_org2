@@ -18,16 +18,16 @@ interface RestrictionsTabProps {
 // Modern Business Style constants (High-Contrast Theme)
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-6 py-4 flex items-center justify-between cursor-pointer select-none',
     sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
     pageTitle: 'text-xl md:text-2xl font-bold tracking-tight text-slate-900',
     bodyText: 'text-sm text-slate-600',
-    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnDanger: 'bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all font-bold',
-    select: 'w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all cursor-pointer font-bold',
+    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnDanger: 'bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    input: 'w-full bg-white border border-slate-200 rounded px-4 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all font-bold',
+    select: 'w-full bg-white border border-slate-200 rounded px-4 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none transition-all cursor-pointer font-bold',
     badge: {
         success: 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300 px-2.5 py-0.5 rounded text-[10px]',
         warning: 'bg-amber-100 text-amber-900 font-semibold border border-amber-300 px-2.5 py-0.5 rounded text-[10px]',
@@ -87,10 +87,10 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
     return (
         <div className="space-y-6 animate-fade-in relative pb-20">
             {/* Main Header conforming to 60-30-10 & RWD rules */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 {/* Row 1: Title Row Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-inner">
                         <Shield className="text-rose-400" size={24} />
                     </div>
                     <div>
@@ -105,7 +105,7 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
                 
                 {/* Row 2: Info Aligned Right beneath title row */}
                 <div className="flex justify-end items-center gap-3">
-                    <div className="bg-rose-600/20 border border-rose-500/30 px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-rose-300 shadow-inner flex items-center gap-3">
+                    <div className="bg-rose-600/20 border border-rose-500/30 px-5 py-2 rounded text-[10px] font-black uppercase tracking-widest text-rose-300 shadow-inner flex items-center gap-3">
                         <AlertTriangle size={14} className="text-rose-400" />
                         {t('stake.restrictions.current_count', '目前列管人員: {{count}} 人', { count: blacklist.length })}
                     </div>
@@ -183,22 +183,22 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {blacklist.map(item => (
-                        <div key={item.id} className="bg-white border-2 border-slate-100 rounded-lg p-6 shadow-sm relative group hover:border-rose-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                        <div key={item.id} className="bg-white border-2 border-slate-100 rounded p-6 shadow-sm relative group hover:border-rose-400 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                             <button 
                                 onClick={() => setDeleteId(item.id)}
-                                className="absolute top-4 right-4 p-2.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-sm bg-white border border-slate-100"
+                                className="absolute top-4 right-4 p-2.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded opacity-0 group-hover:opacity-100 transition-all shadow-sm bg-white border border-slate-100"
                             >
                                 <Trash2 className="w-4 h-4" />
                             </button>
                             <div className="flex items-start gap-5">
-                                <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 shadow-inner">
+                                <div className="bg-rose-50 p-4 rounded border border-rose-100 shadow-inner">
                                     <AlertTriangle className="w-6 h-6 text-rose-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="font-black text-lg text-slate-900 mb-0.5 truncate">{item.name}</h4>
                                     <div className="text-[10px] font-black text-slate-400 mb-4 tracking-[0.2em] uppercase">{item.unit}</div>
                                     <div className="flex flex-col gap-2.5">
-                                        <span className="bg-rose-50 text-rose-700 text-[10px] font-black px-3 py-1.5 rounded-lg border border-rose-200 uppercase tracking-widest inline-flex items-center gap-2">
+                                        <span className="bg-rose-50 text-rose-700 text-[10px] font-black px-3 py-1.5 rounded border border-rose-200 uppercase tracking-widest inline-flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                             {t('stake.restrictions.reason_label', '原因')}: {
                                                 item.reason === 'unpaid' || item.reason === '欠費' ? t('stake.restrictions.reason_unpaid', '欠費') :
@@ -216,7 +216,7 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
                         </div>
                     ))}
                     {blacklist.length === 0 && (
-                        <div className="col-span-full py-24 text-center text-slate-400 font-black bg-[#F0F4F8]/50 rounded-lg border-2 border-dashed border-slate-200 uppercase tracking-widest">
+                        <div className="col-span-full py-24 text-center text-slate-400 font-black bg-[#F0F4F8]/50 rounded border-2 border-dashed border-slate-200 uppercase tracking-widest">
                             <Shield size={64} className="mx-auto mb-4 opacity-5" />
                             {t('stake.restrictions.no_data', '目前無限制人員資料')}
                         </div>
@@ -259,7 +259,7 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
                                     <td className="px-6 py-4 text-center">
                                         <button 
                                             onClick={() => setEditTarget(r)}
-                                            className="p-2.5 hover:bg-slate-200 rounded-lg transition-all text-blue-600 shadow-sm bg-white border border-slate-100 active:scale-90"
+                                            className="p-2.5 hover:bg-slate-200 rounded transition-all text-blue-600 shadow-sm bg-white border border-slate-100 active:scale-90"
                                             title={t('stake.restrictions.edit_btn', "編輯成員資料")}
                                         >
                                             <Edit2 className="w-4 h-4" />

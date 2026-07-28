@@ -205,25 +205,33 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
             setMsg({ type: 'error', text: t('stake.registration.form.password_format_error') });
             return false;
         }
-        if (!(settings.units || []).includes(primaryUnit)) {
+        const unitsList = settings.billingConfig?.units?.length 
+            ? settings.billingConfig.units.map(u => u.shortName) 
+            : (settings.units || []);
+
+        if (!unitsList.includes(primaryUnit)) {
             setMsg({ type: 'error', text: t('stake.registration.form.invalid_unit_msg') });
             return false;
         }
-        if (!paymentMethod) {
+        if ((!activeEvent.paymentDisplayMode || activeEvent.paymentDisplayMode !== 'none') && !paymentMethod) {
             setMsg({ type: 'error', text: t('stake.registration.form.select_payment_msg') });
             return false;
         }
         for (const m of members) { 
             if (!m.name || !m.birth_date || !m.identity_id) { setMsg({ type: 'error', text: t('stake.registration.form.missing_fields_msg') }); return false; } 
-            if (!validateIdentityId(m.identity_id)) { 
-                setMsg({ type: 'error', text: t('stake.registration.form.id_format_error', { name: m.name }) }); 
-                return false; 
-            } 
+            
             const nameCheck = validateNameFormat(m.name);
             if (!nameCheck.isValid) {
                 setMsg({ type: 'error', text: `${t('stake.registration.form.member_name_error', { name: m.name })}: ${nameCheck.error}` });
                 return false;
             }
+            
+            // 如果姓名是外文 (isEnglish 為 true)，則不檢查身分證字號正確性 (可能輸入護照號碼)
+            if (!nameCheck.isEnglish && !validateIdentityId(m.identity_id)) { 
+                setMsg({ type: 'error', text: t('stake.registration.form.id_format_error', { name: m.name }) }); 
+                return false; 
+            } 
+            
             if (/^\d+$/.test(m.name)) {
                 setMsg({ type: 'error', text: t('stake.registration.form.member_name_number_error', { name: m.name }) });
                 return false;

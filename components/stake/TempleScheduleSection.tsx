@@ -101,13 +101,13 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                 isDangerous={true}
             />
 
-            <div className="rounded-lg border border-indigo-200 shadow-sm overflow-hidden mb-12 animate-fade-in transition-all bg-white/60 backdrop-blur-sm">
+            <div className="rounded border border-indigo-200 shadow-sm overflow-hidden mb-12 animate-fade-in transition-all bg-white/60 backdrop-blur-sm">
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <Clock className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">聖殿教儀時間安排 (TEMPLE ORDINANCE SCHEDULE)</h4>
@@ -119,9 +119,9 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                 
                 {!isCollapsed && (
                     <div className="p-6 flex flex-col gap-6 bg-white/40">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 p-4 rounded-lg border border-indigo-100 shadow-sm backdrop-blur-sm">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 p-4 rounded border border-indigo-100 shadow-sm backdrop-blur-sm">
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-md border border-indigo-100 shadow-sm">
+                                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded border border-indigo-100 shadow-sm">
                                     {config.items?.length || 0} SESSIONS CONFIGURED
                                 </span>
                             </div>
@@ -136,11 +136,11 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                         a.click();
                                         URL.revokeObjectURL(url);
                                     }}
-                                    className="h-10 px-5 rounded-lg bg-white border border-indigo-200 text-indigo-700 text-sm font-bold hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2"
+                                    className="h-10 px-5 rounded bg-white border border-indigo-200 text-indigo-700 text-sm font-bold hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2"
                                 >
                                     <Plus size={16} /> 匯出資料
                                 </button>
-                                <div className="flex items-center gap-3 bg-white px-5 h-10 rounded-lg border border-indigo-200 shadow-sm">
+                                <div className="flex items-center gap-3 bg-white px-5 h-10 rounded border border-indigo-200 shadow-sm">
                                     <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">公開發佈</span>
                                     <button 
                                         onClick={(e) => {
@@ -158,7 +158,7 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                         </div>
 
                         {/* Items Table */}
-                        <div className="rounded-lg shadow-sm border border-indigo-100 overflow-hidden bg-white/60">
+                        <div className="rounded shadow-sm border border-indigo-100 overflow-hidden bg-white/60">
                             <div className="overflow-x-auto custom-scrollbar">
                                 <table className="w-full text-sm text-left border-collapse min-w-[800px]">
                                     <thead>
@@ -183,22 +183,22 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                                     </div>
                                                 </td>
                                                 <td className="p-2 border-r border-indigo-50">
-                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-3 py-2 text-center font-bold text-indigo-700 focus:bg-white outline-none transition-all shadow-sm text-sm" value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder="如：洗禮" />
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-3 py-2 text-center font-bold text-indigo-700 focus:bg-white outline-none transition-all shadow-sm text-sm" value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder="如：洗禮" />
                                                 </td>
                                                 <td className="p-2 border-r border-indigo-50">
-                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-slate-900 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.arrivalTime} onChange={e => handleItemUpdate(idx, 'arrivalTime', e.target.value)} placeholder="00:00" />
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-2 py-2 text-center font-bold text-slate-900 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.arrivalTime} onChange={e => handleItemUpdate(idx, 'arrivalTime', e.target.value)} placeholder="00:00" />
                                                 </td>
                                                 <td className="p-2 border-r border-indigo-50">
-                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-emerald-600 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.departureTime} onChange={e => handleItemUpdate(idx, 'departureTime', e.target.value)} placeholder="00:00" />
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-2 py-2 text-center font-bold text-emerald-600 focus:bg-white outline-none transition-all shadow-sm text-base" value={item.departureTime} onChange={e => handleItemUpdate(idx, 'departureTime', e.target.value)} placeholder="00:00" />
                                                 </td>
                                                 <td className="p-2 border-r border-indigo-50">
-                                                    <input className="w-full bg-indigo-50/50 border border-indigo-100 rounded-lg px-2 py-2 text-center font-bold text-indigo-900 focus:bg-white outline-none transition-all shadow-sm" value={item.stay} onChange={e => handleItemUpdate(idx, 'stay', e.target.value)} placeholder="分" />
+                                                    <input className="w-full bg-indigo-50/50 border border-indigo-100 rounded px-2 py-2 text-center font-bold text-indigo-900 focus:bg-white outline-none transition-all shadow-sm" value={item.stay} onChange={e => handleItemUpdate(idx, 'stay', e.target.value)} placeholder="分" />
                                                 </td>
                                                 <td className="p-2">
-                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 focus:bg-white outline-none transition-all shadow-sm" value={item.address || ''} onChange={e => handleItemUpdate(idx, 'address', e.target.value)} placeholder="請輸入相關事項..." />
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-4 py-2 text-sm font-medium text-slate-600 focus:bg-white outline-none transition-all shadow-sm" value={item.address || ''} onChange={e => handleItemUpdate(idx, 'address', e.target.value)} placeholder="請輸入相關事項..." />
                                                 </td>
                                                 <td className="p-2 text-right">
-                                                    <button onClick={() => setDeleteTargetIdx(idx)} className="text-slate-300 hover:text-rose-600 transition-all p-2 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-100"><Trash2 size={16}/></button>
+                                                    <button onClick={() => setDeleteTargetIdx(idx)} className="text-slate-300 hover:text-rose-600 transition-all p-2 hover:bg-rose-50 rounded border border-transparent hover:border-rose-100"><Trash2 size={16}/></button>
                                                 </td>
                                             </tr>
                                             );

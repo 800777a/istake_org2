@@ -9,7 +9,7 @@ import {
   PlusCircle, Edit, Trash2, Download, Upload, Layers,
   Users2, Activity, ClipboardCheck, Truck, Wallet, FileEdit, 
   UserCheck, Contact, Users, Badge, Calendar, Settings, BookOpen, 
-  Star, Landmark, Coins, FileSearch, RefreshCw, Bell, Languages, History, Database
+  Star, Landmark, Coins, FileSearch, RefreshCw, Bell, Languages, History, Database, Search
 } from 'lucide-react';
 import AnnouncementDisplay from './AnnouncementDisplay';
 import EmergencyOverlay from './EmergencyOverlay';
@@ -47,7 +47,7 @@ const rainbowColors = [
 
 const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTab, activeInstructionsTab, activeRegistrationTab, activeAdminTab, activeEngineerTab, onLogout, onGoHome, onRoleChange, onLoginSuccess }) => {
   const { t } = useTranslation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isQueryExpanded, setIsQueryExpanded] = useState(true);
   const [isInstructionsExpanded, setIsInstructionsExpanded] = useState(true);
   const [isRegistrationExpanded, setIsRegistrationExpanded] = useState(true);
@@ -57,8 +57,11 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
     const [settings, setSettings] = useState<GlobalSettings>(getSettings());
     const [activeEvent, setActiveEvent] = useState<EventData | null>(null);
     const [showHeader, setShowHeader] = useState(true);
+    const [pendingNav, setPendingNav] = useState<{ role: any, subTab?: string } | null>(null);
+    const [showAbandonConfirm, setShowAbandonConfirm] = useState(false);
     const lastScrollY = useRef(0);
     const navRef = useRef<HTMLElement>(null);
+    const mainScrollRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -100,10 +103,48 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
       };
   }, []);
 
+    const handleNavAction = (role: any, subTab?: string) => {
+        const isDirty = (window as any).__IS_REG_DIRTY__;
+        const isCurrentlyReg = viewMode === 'guest' || viewMode === 'member';
+        const isTargetReg = role === 'member' || role === 'guest';
+
+        if (isCurrentlyReg && !isTargetReg && isDirty) {
+            setPendingNav({ role, subTab });
+            setShowAbandonConfirm(true);
+        } else {
+            onRoleChange(role, subTab);
+        }
+    };
+
+    const handleGoHomeAction = () => {
+        const isDirty = (window as any).__IS_REG_DIRTY__;
+        const isCurrentlyReg = viewMode === 'guest' || viewMode === 'member';
+
+        if (isCurrentlyReg && isDirty) {
+            setPendingNav({ role: 'home' });
+            setShowAbandonConfirm(true);
+        } else {
+            onGoHome();
+        }
+    };
+
+    const confirmAbandon = () => {
+        setShowAbandonConfirm(false);
+        if (pendingNav) {
+            if (pendingNav.role === 'home') {
+                onGoHome();
+            } else {
+                onRoleChange(pendingNav.role, pendingNav.subTab);
+            }
+            setPendingNav(null);
+            (window as any).__IS_REG_DIRTY__ = false;
+        }
+    };
+
   const getRoleName = (r: Role | string) => {
     switch (r) {
-      case 'engineer': return '資管同工';
-      case 'stake_admin': return '主辦行政';
+      case 'engineer': return '資管';
+      case 'stake_admin': return '主辦';
       case 'admin': return '管理中心';
       case 'stake': return '主辦中心';
       case 'ward': return '單位中心';
@@ -120,7 +161,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
   };
 
   const getBreadcrumb = () => {
-      const items = [{ label: '首頁', action: onGoHome, icon: Home }];
+      const items = [{ label: '首頁', action: handleGoHomeAction, icon: Home }];
       
       // If viewMode is 'login', we are at the landing page (Root).
       // Otherwise, we show the current view as the second crumb.
@@ -128,7 +169,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
           const mainRole = (viewMode === 'guest' || viewMode === 'member') ? 'member' : viewMode;
           items.push({ 
               label: getRoleName(mainRole), 
-              action: () => onRoleChange(mainRole as any), 
+              action: () => handleNavAction(mainRole as any), 
               icon: (mainRole === 'public_stats' ? BarChart3 : 
                      mainRole === 'instructions' ? Info : 
                      mainRole === 'feedback' ? MessageSquare : 
@@ -143,6 +184,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
           if (viewMode === 'public_stats' && activeStatsTab) {
               const subLabels: any = { list: '報名', schedule: '行程', service: '服務', stats: '統計' };
               const subIcons: any = { list: List, schedule: CalendarCheck, service: HeartHandshake, stats: BarChart3 };
+              
+              // Ensure category "查詢" is present
+              if (items.length === 1) {
+                  items.push({
+                      label: '查詢',
+                      action: () => onRoleChange('public_stats'),
+                      icon: Search
+                  });
+              }
+              
               items.push({
                   label: subLabels[activeStatsTab] || activeStatsTab,
                   action: () => {},
@@ -207,7 +258,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
 
 
   const publicNavItems = [
-      { id: 'home', label: '首頁', icon: Home, action: onGoHome },
+      { id: 'home', label: '首頁', icon: Home, action: handleGoHomeAction },
       { 
         id: 'member', 
         label: '報名', 
@@ -249,7 +300,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
             { id: 'terms', label: '服務條款', icon: FileText },
         ]
       },
-      { id: 'feedback', label: '留言', icon: MessageSquare, action: () => onRoleChange('feedback') },
+      { id: 'feedback', label: '留言', icon: MessageSquare, action: () => handleNavAction('feedback') },
   ];
 
   const scrollToTop = () => {
@@ -263,7 +314,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
   const breadcrumbs = getBreadcrumb();
 
   return (
-    <div className="flex-1 bg-[#F0F4F8] flex flex-col font-sans overflow-hidden">
+    <div className="flex-1 bg-[#F8F9FA] flex flex-col font-sans overflow-visible">
       {/* Maintenance Overlay */}
       {settings.maintenance_mode && user?.role !== 'engineer' && (
           <div className="bg-rose-600 text-white text-center py-2 text-xs font-bold animate-pulse sticky top-0 z-[70] shadow-md">
@@ -282,7 +333,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
           />
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-visible">
         {/* Sidebar Backdrop (Mobile) */}
         <AnimatePresence>
             {isSidebarOpen && (
@@ -291,49 +342,49 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsSidebarOpen(false)}
-                    className="fixed inset-0 bg-indigo-900/60 backdrop-blur-sm z-[998] lg:hidden"
+                    className={`fixed inset-0 ${isManagement ? 'bg-[#4B0091]/60' : 'bg-amber-950/60'} backdrop-blur-sm z-[998] lg:hidden`}
                 />
             )}
         </AnimatePresence>
 
         {/* Unified Sidebar */}
         <aside className={`
-            w-64 bg-indigo-900 flex flex-col shrink-0 z-[999] shadow-2xl border-r border-indigo-800
-            fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0
-            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            w-64 ${isManagement ? 'bg-indigo-950' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} flex flex-col shrink-0 z-[999] shadow-2xl border-r ${isManagement ? 'border-indigo-800' : 'border-amber-700/50'}
+            fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
             {/* Sidebar Branding */}
-            <div className="p-6 border-b border-indigo-800 flex items-center justify-between">
-                <div onClick={onGoHome} className="flex items-center gap-3 cursor-pointer group">
-                    <div className="bg-white/10 p-2 rounded-lg group-hover:bg-white/20 border border-white/10 transition-colors">
-                        <Bus className="h-5 w-5 text-white" />
+            <div className={`p-6 border-b ${isManagement ? 'border-indigo-800' : 'border-amber-900/10'} flex items-center justify-between`}>
+                <div onClick={handleGoHomeAction} className="flex items-center gap-3 cursor-pointer group">
+                    <div className="bg-white/10 p-2 rounded group-hover:bg-white/20 border border-white/10 transition-colors">
+                        <Bus className={`h-5 w-5 ${isManagement ? 'text-white' : 'text-amber-950'}`} />
                     </div>
                     <div>
-                        <h2 className="text-white font-bold text-lg md:text-xl lg:text-2xl tracking-tight leading-none mb-1">
+                        <h2 className={`${isManagement ? 'text-white' : 'text-amber-950'} font-bold text-lg md:text-xl lg:text-2xl tracking-tight leading-none mb-1`}>
                             {settings.stake_name || '聖殿旅行'}
                         </h2>
                         {activeEvent && (
-                            <p className="text-white text-xl font-black mb-1">
+                            <p className={`${isManagement ? 'text-white' : 'text-amber-950'} text-xl font-black mb-1`}>
                                 {activeEvent.event_date}
                             </p>
                         )}
                     </div>
                 </div>
-                <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-indigo-100 hover:text-white">
-                    <X className="w-6 h-6" />
+                <button onClick={() => setIsSidebarOpen(false)} className={`p-2 ${isManagement ? 'text-indigo-100' : 'text-amber-950'} hover:scale-110 transition-transform`}>
+                    <X size={24} />
                 </button>
             </div>
 
             {/* Navigation Content */}
-            <nav ref={navRef} className="flex-1 overflow-y-scroll py-6 px-4 space-y-4 scrollbar-thin scrollbar-thumb-indigo-800">
+            <nav ref={navRef} className={`flex-1 overflow-y-scroll py-6 px-4 space-y-4 scrollbar-thin ${isManagement ? 'scrollbar-thumb-white/20' : 'scrollbar-thumb-amber-600/30'}`}>
                 {/* Section: User Profile & Controls (Top) */}
                 <div className="space-y-1 mb-6">
                     {user && (
                         <div className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all shadow-md brightness-105 border border-white/10">
-                            <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white">
+                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
                                 <UserCircle size={14} />
                             </div>
-                            <div className="bg-white text-indigo-950 flex-1 flex items-center justify-between px-3 text-[10px] font-black overflow-hidden">
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black overflow-hidden`}>
                                 <span className="font-bold truncate">{user.name}</span>
                                 <span className="text-[8px] opacity-70 ml-2 whitespace-nowrap">{getRoleName(user.role)}</span>
                             </div>
@@ -342,13 +393,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     
                     {user?.originalRole && (
                         <button 
-                            onClick={() => onRoleChange('back_to_admin')}
+                            onClick={() => handleNavAction('back_to_admin')}
                             className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/10"
                         >
-                            <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white">
+                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
                                 <Shield size={14} />
                             </div>
-                            <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] font-black">
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center px-3 text-[10px] font-black`}>
                                 <span>切換到後台</span>
                             </div>
                         </button>
@@ -362,8 +413,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     <div className="px-4 mb-6 space-y-4">
                         {/* Front-end Switch */}
                         <button 
-                            onClick={() => { onRoleChange('member'); setIsSidebarOpen(false); }}
-                            className="w-full h-7 flex items-stretch overflow-hidden rounded-[4px] transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+                            onClick={() => { handleNavAction('member'); setIsSidebarOpen(false); }}
+                            className="w-full h-7 flex items-stretch overflow-hidden rounded transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
                         >
                             <div className="bg-indigo-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                 <Home size={14} />
@@ -398,26 +449,26 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                         className="overflow-hidden space-y-1"
                                     >
                                         <button 
-                                            onClick={() => { onRoleChange('engineer'); setIsSidebarOpen(false); }}
-                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded-[4px] transition-all group ${user?.role === 'engineer' ? 'shadow-md brightness-105' : 'opacity-90'}`}
+                                            onClick={() => { handleNavAction('engineer'); setIsSidebarOpen(false); }}
+                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded transition-all group ${user?.role === 'engineer' ? 'shadow-md brightness-105' : 'opacity-90'}`}
                                         >
                                             <div className="bg-emerald-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                                 <ShieldCheck size={14} />
                                             </div>
                                             <div className={`${user?.role === 'engineer' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black`}>
-                                                <span>資管同工後台</span>
+                                                <span>資管</span>
                                                 {user?.role === 'engineer' && <Check size={12} />}
                                             </div>
                                         </button>
                                         <button 
-                                            onClick={() => { onRoleChange('stake_admin'); setIsSidebarOpen(false); }}
-                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded-[4px] transition-all group ${user?.role === 'stake_admin' ? 'shadow-md brightness-105' : 'opacity-90'}`}
+                                            onClick={() => { handleNavAction('stake_admin'); setIsSidebarOpen(false); }}
+                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded transition-all group ${user?.role === 'stake_admin' ? 'shadow-md brightness-105' : 'opacity-90'}`}
                                         >
                                             <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                                 <Shield size={14} />
                                             </div>
                                             <div className={`${user?.role === 'stake_admin' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black`}>
-                                                <span>主辦行政管理</span>
+                                                <span>主辦</span>
                                                 {user?.role === 'stake_admin' && <Check size={12} />}
                                             </div>
                                         </button>
@@ -434,7 +485,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                         onRoleChange(targetRole as any); 
                                         setIsSidebarOpen(false); 
                                     }}
-                                    className="w-full h-7 flex items-stretch overflow-hidden rounded-[4px] transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full h-7 flex items-stretch overflow-hidden rounded transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
                                 >
                                     <div className="bg-amber-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                         <Shield size={14} />
@@ -464,12 +515,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             className="flex items-center justify-between w-full px-3 py-1 mb-3 hover:bg-white/10 rounded transition-colors group"
                         >
                             <div className="flex items-center gap-2">
-                                <Layers size={12} className="text-white" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-90">系統功能導航</span>
+                                <Layers size={12} className={isManagement ? 'text-white' : 'text-amber-950'} />
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>系統功能導航</span>
                             </div>
                             <ChevronDown 
                                 size={12} 
-                                className={`text-white transition-transform duration-200 ${(isQueryExpanded || isInstructionsExpanded || isRegistrationExpanded) ? 'rotate-180' : ''}`} 
+                                className={`${isManagement ? 'text-white' : 'text-amber-950'} transition-transform duration-200 ${(isQueryExpanded || isInstructionsExpanded || isRegistrationExpanded) ? 'rotate-180' : ''}`} 
                             />
                         </button>
                     )}
@@ -548,7 +599,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                     return (
                                                                         <button 
                                                                             key={tabId}
-                                                                            onClick={() => { onRoleChange('stake_admin', tabId); setIsSidebarOpen(false); }}
+                                                                            onClick={() => { handleNavAction('stake_admin', tabId); setIsSidebarOpen(false); }}
                                                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                                         >
                                                                             <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
@@ -607,7 +658,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                     return (
                                                         <button 
                                                             key={item.id}
-                                                            onClick={() => { onRoleChange('engineer', item.id); setIsSidebarOpen(false); }}
+                                                            onClick={() => { handleNavAction('engineer', item.id); setIsSidebarOpen(false); }}
                                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                         >
                                                             <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
@@ -647,15 +698,15 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             <div key={item.id} className="space-y-1">
                                                 <button
                                                     onClick={() => setIsExpanded(!isExpanded)}
-                                                    className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-white/10 rounded transition-colors group"
+                                                    className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-black/5 rounded transition-colors group"
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <item.icon size={12} className="text-white" />
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-90">{item.label}</span>
+                                                        <item.icon size={12} className={isManagement ? 'text-white' : 'text-amber-950'} />
+                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>{item.label}</span>
                                                     </div>
                                                     <ChevronDown 
                                                         size={12} 
-                                                        className={`text-white transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
+                                                        className={`${isManagement ? 'text-white' : 'text-amber-950'} transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
                                                     />
                                                 </button>
                                                 
@@ -674,7 +725,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                 return (
                                                                     <button
                                                                         key={sub.id}
-                                                                        onClick={() => { onRoleChange(item.id as any, sub.id); setIsSidebarOpen(false); }}
+                                                                        onClick={() => { handleNavAction(item.id as any, sub.id); setIsSidebarOpen(false); }}
                                                                         className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isSubActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                                     >
                                                                         <div className={`${subColor.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isSubActive ? 'border border-white' : ''}`}>
@@ -696,7 +747,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                     return (
                                         <button
                                             key={item.id}
-                                            onClick={() => { item.action?.(); setIsSidebarOpen(false); }}
+                                            onClick={() => { item.action ? item.action() : handleNavAction(item.id as any); setIsSidebarOpen(false); }}
                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-1 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                         >
                                             <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
@@ -714,12 +765,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     
                     <button
                         onClick={() => navRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
-                        className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mt-4 transition-all group opacity-90 hover:opacity-100 shadow-md brightness-105 border border-indigo-500/10"
+                        className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mt-4 transition-all group opacity-90 hover:opacity-100 shadow-md brightness-105 border border-white/10"
                     >
-                        <div className="bg-indigo-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                        <div className={`${isManagement ? 'bg-indigo-500' : 'bg-amber-600'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20`}>
                             <ArrowUp size={14} />
                         </div>
-                        <div className="bg-white text-indigo-900 flex-1 flex-row flex items-center px-3 text-[10px] font-normal">
+                        <div className={`bg-white ${isManagement ? 'text-indigo-900' : 'text-amber-900'} flex-1 flex-row flex items-center px-3 text-[10px] font-normal`}>
                             <span>回到頂端</span>
                         </div>
                     </button>
@@ -752,7 +803,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 </div>
 
                 {/* Section: User Account (Bottom) */}
-                <div className="pt-4 border-t border-indigo-800">
+                <div className={`pt-4 border-t ${isManagement ? 'border-white/10' : 'border-indigo-800'}`}>
                 </div>
             </nav>
             <ConfirmationModal
@@ -766,33 +817,32 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
             />
         </aside>
 
-        {/* Main Content Stage */}
-        <div className="flex-1 flex flex-col min-w-0 relative bg-[#F0F4F8]">
-            {/* Top Navigation Bar / Breadcrumb Bar */}
+        {/* Main Content Stage - Rule 3.2 Lock width */}
+        <div className="flex-1 flex flex-col min-w-0 relative bg-[#F8F9FA] overflow-x-hidden">
             <motion.header 
                 initial={{ y: 0 }}
                 animate={{ y: showHeader ? 0 : -64 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="h-16 bg-indigo-900 border-b border-white/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 shadow-xl text-white sticky top-0"
+                className={`h-16 ${isManagement ? 'bg-[#A23400]' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-b border-white/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 shadow-xl ${isManagement ? 'text-white' : 'text-amber-950'} sticky top-0`}
             >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <button 
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="p-2 -ml-2 text-white hover:bg-white/10 rounded-lg lg:hidden transition-colors shrink-0"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className={`p-2 -ml-2 ${isManagement ? 'text-white' : 'text-amber-950'} hover:bg-white/10 rounded transition-colors shrink-0`}
                     >
                         <Menu className="w-6 h-6" />
                     </button>
                     
-                    <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block shrink-0"></div>
+                    <div className={`h-8 w-px ${isManagement ? 'bg-white/10' : 'bg-amber-900/10'} mx-2 hidden sm:block shrink-0`}></div>
                     
-                    {/* Dynamic Breadcrumbs - Optimized for Mobile with horizontal scroll and gradient mask */}
-                    <nav className="flex items-center space-x-1 md:space-x-2 text-[10px] md:text-[12px] overflow-x-auto scrollbar-none flex-nowrap min-w-0 flex-1 pr-8 [mask-image:linear-gradient(to_right,rgba(0,0,0,1)_85%,rgba(0,0,0,0)_100%)]">
+                    {/* Dynamic Breadcrumbs - Full Path per Rule 3.1 */}
+                    <nav className="flex items-center space-x-1 md:space-x-1.5 text-[10px] md:text-[12px] overflow-x-auto scrollbar-none flex-nowrap min-w-0 flex-1 pr-8 [mask-image:linear-gradient(to_right,rgba(0,0,0,1)_85%,rgba(0,0,0,0)_100%)]">
                         {breadcrumbs.map((crumb, idx) => (
                             <React.Fragment key={idx}>
-                                {idx > 0 && <ChevronRight size={10} className="text-indigo-300 shrink-0" />}
+                                {idx > 0 && <ChevronRight size={10} className={`${isManagement ? 'text-white/40' : 'text-amber-950/40'} shrink-0`} />}
                                 <button 
                                     onClick={crumb.action}
-                                    className={`flex items-center gap-1 px-1 py-1 rounded-md transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? 'text-white cursor-default font-black' : 'text-indigo-100 hover:text-white hover:bg-white/10 underline decoration-white/30 underline-offset-4'}`}
+                                    className={`flex items-center gap-1 px-1.5 py-1 rounded transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? (isManagement ? 'text-white bg-white/10' : 'text-amber-950 font-black bg-black/5') : (isManagement ? 'text-indigo-100 hover:text-white hover:bg-white/10 underline decoration-white/20 underline-offset-4' : 'text-amber-900 hover:text-amber-950 hover:bg-black/5 underline decoration-amber-900/20 underline-offset-4')}`}
                                 >
                                     {idx === 0 && <crumb.icon size={12} className="shrink-0" />}
                                     <span>{crumb.label}</span>
@@ -808,19 +858,19 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
             </motion.header>
 
             {/* Actual Content Wrapper - Optimized for horizontal scrolling and space maximization */}
-            <main id="public-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth min-h-0 w-full max-w-full">
+            <main ref={mainScrollRef} id="public-scroll-container" className="flex-1 overflow-y-auto overflow-x-visible relative scroll-smooth min-h-0 w-full max-w-full">
                 {(() => {
                     const isFullWidthView = isManagement || ['public_stats', 'instructions', 'feedback', 'login', 'privacy', 'member', 'guest'].includes(viewMode || '');
                     return (
                         <div className="flex flex-col min-h-full">
-                            <div className={`mx-auto w-full flex-1 max-w-full ${isFullWidthView ? 'px-1 py-1 md:px-4 md:py-2' : 'p-2 md:p-4'}`}>
-                                <div className={`min-h-full w-full max-w-full ${isFullWidthView ? '' : 'bg-white border shadow-sm rounded-[8px]'}`}>
+                            <div className={`mx-auto w-full flex-1 max-w-full p-1`}>
+                                <div className={`min-h-full w-full max-w-full ${isFullWidthView ? '' : 'bg-white border shadow-sm rounded'}`}>
                                     {children}
                                 </div>
                             </div>
 
-                            {/* Footer Bar - Scrolling with content */}
-                            <footer className="w-full bg-indigo-900 border-t border-white/10 px-4 py-6 flex items-center justify-center text-white text-[10px] md:text-xs opacity-90 mt-auto">
+                            {/* Footer Bar - Scrolling with content - Rule 3.1 Background Color */}
+                            <footer className={`w-full ${isManagement ? 'bg-[#A23400]' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-t border-white/10 px-4 py-6 flex items-center justify-center ${isManagement ? 'text-white' : 'text-amber-950'} text-[10px] md:text-xs opacity-90 mt-auto`}>
                                 <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
                                     <span>智聯會 istake.org ©</span>
                                     <span className="opacity-40">|</span>
@@ -834,6 +884,17 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 })()}
             </main>
         </div>
+        
+        <ConfirmationModal
+            isOpen={showAbandonConfirm}
+            onClose={() => setShowAbandonConfirm(false)}
+            onConfirm={confirmAbandon}
+            title="確認離開？"
+            message="您輸入的資料尚未儲存，確定要離開嗎？"
+            confirmText="確定離開"
+            cancelText="繼續填寫"
+            type="danger"
+        />
       </div>
     </div>
   );

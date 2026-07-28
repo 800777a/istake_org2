@@ -103,7 +103,7 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
     return (
         <div className="animate-fade-in space-y-6">
             {msg && (
-                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded-xl shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.includes(t('common.failed', '失敗')) ? 'bg-red-100 text-red-800 border-red-200' : 'bg-black bg-opacity-80 text-white border-transparent'}`}>
+                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.includes(t('common.failed', '失敗')) ? 'bg-red-100 text-red-800 border-red-200' : 'bg-black bg-opacity-80 text-white border-transparent'}`}>
                     {msg.includes(t('common.failed', '失敗')) ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-6 h-6 mr-3 text-green-400" />}
                     <span className="font-black text-lg">{msg}</span>
                 </div>
@@ -118,8 +118,8 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
             />
 
             {/* Page Title Row - Independent */}
-            <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex items-center gap-4 mb-6">
-                <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+            <div className="bg-indigo-900 text-white px-6 py-4 rounded shadow-md flex items-center gap-4 mb-6">
+                <div className="p-3 bg-white/10 rounded border border-white/10">
                     <FileText className="text-blue-300" size={24} />
                 </div>
                 <div>
@@ -144,7 +144,7 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
                     <div className="flex flex-wrap justify-end gap-3 w-full">
                         <button 
                             onClick={handleExport} 
-                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded-lg text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 shadow-sm"
+                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 shadow-sm"
                             style={{ 
                                 backgroundColor: rainbowStyles[0].bg,
                                 color: rainbowStyles[0].text,
@@ -154,7 +154,7 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
                             <Download size={16} /> {t('common.exportData', '匯出資料')}
                         </button>
                         <label 
-                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded-lg text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                            className="h-12 md:h-11 lg:h-10 px-6 md:px-5 lg:px-5 rounded text-base md:text-sm lg:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
                             style={{ 
                                 backgroundColor: rainbowStyles[0].bg,
                                 color: rainbowStyles[0].text,
@@ -166,13 +166,13 @@ const AnnouncementTab: React.FC<AnnouncementTabProps> = ({ settings: initialSett
                         </label>
                         <button 
                             onClick={handleSaveRules} 
-                            className="h-12 md:h-11 lg:h-10 px-8 md:px-6 lg:px-6 bg-blue-600 text-white rounded-lg text-base md:text-sm lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
+                            className="h-12 md:h-11 lg:h-10 px-8 md:px-6 lg:px-6 bg-blue-600 text-white rounded text-base md:text-sm lg:text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
                         >
                             <Save size={16} /> {t('common.saveSettings', '儲存設定')}
                         </button>
                     </div>
 
-                    <div className="bg-white/40 backdrop-blur-sm rounded-lg border border-white/20 p-2 shadow-inner min-h-[400px]">
+                    <div className="bg-white/40 backdrop-blur-sm rounded border border-white/20 p-2 shadow-inner min-h-[400px]">
                         <ReactQuill 
                             theme="snow"
                             value={rulesContent}

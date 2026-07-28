@@ -24,9 +24,10 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
      onClearMessage?: () => void;
      activeTab?: 'list' | 'schedule' | 'service' | 'stats';
      onTabChange?: (tab: 'list' | 'schedule' | 'service' | 'stats') => void;
+     onRoleChange?: (role: any, subTab?: string) => void;
  }
  
- const PublicStats: React.FC<PublicStatsProps> = ({ onGoHome, onGoRegister, onGoToInstructions, initialMessage, onClearMessage, activeTab: propsActiveTab, onTabChange }) => {
+ const PublicStats: React.FC<PublicStatsProps> = ({ onGoHome, onGoRegister, onGoToInstructions, initialMessage, onClearMessage, activeTab: propsActiveTab, onTabChange, onRoleChange }) => {
    const { t, tString } = useI18n();
    const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
   const [allEvents, setAllEvents] = useState<EventData[]>([]);
@@ -80,7 +81,7 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
   ];
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F0F4F8] animate-fade-in">
+    <div className="w-full max-w-full bg-[#F8F9FA] animate-fade-in flex flex-col min-w-0">
       {selectedPaymentReg && (
           <PaymentInfoModal 
               key={`${selectedPaymentReg.reg_id}-${Date.now()}`}
@@ -92,39 +93,34 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
           />
       )}
 
-      {/* Header Area - Indigo-900 Structural Element */}
-      <div className="px-4 py-8 md:px-8 bg-indigo-900 text-white shadow-lg w-full max-w-full overflow-hidden">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 max-w-7xl mx-auto">
-              <div className="space-y-2">
-                  <div className="flex items-center gap-4">
-                      <div className="bg-white/10 p-3 rounded-xl backdrop-blur-md border border-white/20">
-                          <BarChart3 className="w-8 h-8 text-white" />
-                      </div>
-                      <div>
-                        <h1 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
-                            {activeTab === 'list' ? '報名' : 
-                             activeTab === 'schedule' ? '行程' : 
-                             activeTab === 'service' ? '服務' : 
-                             activeTab === 'stats' ? '統計' : 
-                             t('stake.stats.page_title')}
-                        </h1>
-                        <p className="text-[10px] text-indigo-300 font-black uppercase tracking-[0.2em] opacity-80">
-                            {t('stake.stats.subtitle', 'Public Inquiry & Analytics')}
-                        </p>
-                      </div>
-                  </div>
-              </div>
-              
-              <div className="flex flex-col items-start md:items-end gap-1">
-              </div>
-          </div>
+      {/* Header Area - Level 1 Gold Gradient - Rule 3.2 Compliance */}
+      <div className="w-full max-w-7xl mx-auto p-1 min-w-0">
+        <div className="px-1 py-1 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950 shadow-md rounded w-full overflow-hidden min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 min-w-0 w-full">
+                <div className="space-y-0 min-w-0">
+                    <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                        <div className="bg-white/10 p-1 md:p-1.5 rounded backdrop-blur-md border border-amber-600/20 shrink-0">
+                            {activeTab === 'list' && <List className="w-5 h-5 md:w-6 md:h-6" />}
+                            {activeTab === 'schedule' && <CalendarCheck className="w-5 h-5 md:w-6 md:h-6" />}
+                            {activeTab === 'service' && <HeartHandshake className="w-5 h-5 md:w-6 md:h-6" />}
+                            {activeTab === 'stats' && <BarChart3 className="w-5 h-5 md:w-6 md:h-6" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h1 className="text-base md:text-lg lg:text-xl font-black tracking-tight truncate">
+                              {tabs.find(t => t.id === activeTab)?.label}
+                          </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-0 md:px-4 lg:px-8 -mt-6 w-full">
-        {/* Content Area */}
-        <div className="mt-2 md:mt-6 pb-6 w-full max-w-full min-w-0">
-            <div className="bg-white border-none shadow-none rounded-none md:border md:rounded-[8px] md:border-slate-200 md:shadow-sm overflow-hidden min-h-[500px] w-full max-w-full min-w-0">
-                <div className="p-0 md:p-4 lg:p-6 w-full max-w-full min-w-0">
+      <div className="w-full max-w-7xl mx-auto p-1 flex-1 flex flex-col min-w-0">
+        {/* Content Area - Rule 3.2 Space Maximization */}
+        <div className="mt-1 pb-1 w-full max-w-full min-w-0 flex-1 flex flex-col">
+            <div className="bg-white border-none shadow-none rounded md:border md:rounded md:border-slate-200 md:shadow-sm min-h-[500px] w-full max-w-full min-w-0 flex-1 flex flex-col overflow-visible">
+                <div className="p-0 w-full max-w-full min-w-0 flex-1 flex flex-col">
                     {activeTab === 'list' && (
                         <PublicRegistrationTab 
                             registrations={registrations} 
@@ -133,6 +129,7 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
                             activeEvent={activeEvent}
                             eventStats={eventStats}
                             busConfigs={activeEvent.busConfigs}
+                            onRoleChange={onRoleChange}
                         />
                     )}
 
@@ -157,15 +154,11 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
 
             {/* Subtle Mobile Register CTA */}
             <div className="mt-12 flex flex-col md:flex-row gap-6 items-center justify-center border-t border-slate-200 pt-12">
-                <div className="text-center md:text-left">
-                    <p className="text-base md:text-lg text-slate-900 font-bold">還沒報名本次聖殿旅行團嗎？</p>
-                    <p className="text-xs md:text-sm text-slate-500 mt-1">立即點擊按鈕，預約您的靈性之旅</p>
-                </div>
                 <button 
                     onClick={onGoRegister}
-                    className="w-full md:w-auto h-10 md:h-11 lg:h-12 px-10 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group hover:shadow-indigo-200 hover:-translate-y-0.5 active:translate-y-0 text-xs md:text-sm lg:text-base"
+                    className="w-full md:w-auto h-10 md:h-11 lg:h-12 px-10 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950 font-black rounded shadow-lg hover:brightness-105 transition-all flex items-center justify-center gap-2 group hover:-translate-y-0.5 active:translate-y-0 text-xs md:text-sm lg:text-base border-b-2 border-amber-700"
                 >
-                    <span>立即前往報名</span>
+                    <span>報名</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>

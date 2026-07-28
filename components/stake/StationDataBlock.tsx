@@ -181,10 +181,10 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
             {/* Header / Title Block */}
             <div 
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center justify-between p-6 bg-white rounded-3xl border-2 border-indigo-100 shadow-sm cursor-pointer hover:bg-gray-50 transition-all"
+                className="flex items-center justify-between p-6 bg-white rounded border-2 border-indigo-100 shadow-sm cursor-pointer hover:bg-gray-50 transition-all"
             >
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-indigo-100 rounded-2xl text-indigo-600">
+                    <div className="p-3 bg-indigo-100 rounded text-indigo-600">
                         <MapPin className="w-6 h-6" />
                     </div>
                     <div>
@@ -202,7 +202,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="bg-white rounded-3xl border-2 border-indigo-100 overflow-hidden shadow-xl"
+                        className="bg-white rounded border-2 border-indigo-100 overflow-hidden shadow-xl"
                     >
                         <div className="p-6 border-b border-indigo-50 flex justify-between items-center bg-gray-50/50">
                             <div>
@@ -234,7 +234,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                             setTimeout(() => setMsg(null), 3000);
                                         }
                                     }}
-                                    className="text-[10px] bg-red-50 text-red-600 px-3 py-2 rounded-xl border border-red-100 hover:bg-red-100 font-bold transition-colors flex items-center gap-1 active:scale-95"
+                                    className="text-[10px] bg-red-50 text-red-600 px-3 py-2 rounded border border-red-100 hover:bg-red-100 font-bold transition-colors flex items-center gap-1 active:scale-95"
                                 >
                                     <RefreshCw className="w-3 h-3" /> {t('station.button.cleanup_duplicates', '清理重複')}
                                 </button>
@@ -243,7 +243,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                         e.stopPropagation();
                                         handleOpenAdd();
                                     }}
-                                    className="bg-indigo-600 text-white p-2 px-6 rounded-xl flex items-center gap-2 hover:bg-indigo-700 transition-all text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
+                                    className="bg-indigo-600 text-white p-2 px-6 rounded flex items-center gap-2 hover:bg-indigo-700 transition-all text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
                                 >
                                     <Plus className="w-4 h-4" /> {t('station.button.add', '新增站點')}
                                 </button>
@@ -327,7 +327,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden border-4 border-indigo-100"
+                            className="bg-white rounded shadow-2xl w-full max-w-lg overflow-hidden border-4 border-indigo-100"
                         >
                             <div className="p-8 pb-4 flex justify-between items-center">
                                 <div>
@@ -336,7 +336,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                     </h3>
                                     <p className="text-sm font-bold text-gray-400 mt-1">{t('station.form.hint', '請填寫詳細站點資訊以便快速引用')}</p>
                                 </div>
-                                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-gray-100 rounded-3xl transition-all">
+                                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-gray-100 rounded transition-all">
                                     <X className="w-6 h-6 text-gray-400" />
                                 </button>
                             </div>
@@ -351,7 +351,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                                 value={formData.area}
                                                 onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                                                 placeholder={tString('station.form.area_placeholder', '地點簡稱')}
-                                                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
+                                                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded outline-none transition-all font-black text-gray-900"
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -361,7 +361,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                                 value={formData.place}
                                                 onChange={(e) => setFormData({ ...formData, place: e.target.value })}
                                                 placeholder={tString('station.form.place_placeholder', '完整地名資料')}
-                                                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
+                                                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded outline-none transition-all font-black text-gray-900"
                                             />
                                         </div>
                                     </div>
@@ -372,7 +372,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                             value={formData.address}
                                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                             placeholder={tString('station.form.address_placeholder', '請輸入完整街道地址')}
-                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900"
+                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded outline-none transition-all font-black text-gray-900"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -382,7 +382,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                             onChange={(e) => setFormData({ ...formData, mapUrl: e.target.value })}
                                             placeholder={tString('station.form.map_url_placeholder', '貼上分享連結 (https://maps.app.goo.gl/...)')}
                                             rows={2}
-                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl outline-none transition-all font-black text-gray-900 resize-none"
+                                            className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded outline-none transition-all font-black text-gray-900 resize-none"
                                         />
                                     </div>
                                 </div>
@@ -390,13 +390,13 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                 <div className="flex gap-4 pt-4">
                                     <button 
                                         onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 py-4 bg-gray-100 text-gray-600 font-black rounded-3xl hover:bg-gray-200 transition-all active:scale-95"
+                                        className="flex-1 py-4 bg-gray-100 text-gray-600 font-black rounded hover:bg-gray-200 transition-all active:scale-95"
                                     >
                                         {t('common.button.cancel', '取消')}
                                     </button>
                                     <button 
                                         onClick={handleSave}
-                                        className="flex-1 py-4 bg-indigo-600 text-white font-black rounded-3xl hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                        className="flex-1 py-4 bg-indigo-600 text-white font-black rounded hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         <Check className="w-5 h-5" /> {t('common.button.save_changes', '儲存變更')}
                                     </button>
@@ -415,7 +415,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-[40px] shadow-2xl w-full max-sm overflow-hidden border-4 border-red-100"
+                            className="bg-white rounded shadow-2xl w-full max-sm overflow-hidden border-4 border-red-100"
                         >
                             <div className="p-8 text-center space-y-4">
                                 <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-500">
@@ -430,13 +430,13 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                 <div className="flex gap-3 pt-4">
                                     <button 
                                         onClick={() => setIsConfirmDeleteOpen(null)}
-                                        className="flex-1 py-4 bg-gray-100 text-gray-600 font-black rounded-3xl hover:bg-gray-200 transition-all"
+                                        className="flex-1 py-4 bg-gray-100 text-gray-600 font-black rounded hover:bg-gray-200 transition-all"
                                     >
                                         {t('common.button.back', '返回')}
                                     </button>
                                     <button 
                                         onClick={() => handleDelete(isConfirmDeleteOpen)}
-                                        className="flex-1 py-4 bg-red-600 text-white font-black rounded-3xl hover:bg-red-700 shadow-xl shadow-red-100 transition-all"
+                                        className="flex-1 py-4 bg-red-600 text-white font-black rounded hover:bg-red-700 shadow-xl shadow-red-100 transition-all"
                                     >
                                         {t('common.button.confirm_delete', '確認刪除')}
                                     </button>

@@ -25,21 +25,21 @@ const VehicleSection: React.FC<VehicleSectionProps> = ({
     const filtered = vehicles.filter(v => v.plate.includes(search) || v.companyName.includes(search));
 
     return (
-        <section className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+        <section className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
             {/* Block Title Row */}
             <div 
                 className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-100 bg-slate-50/30"
                 onClick={onToggle}
             >
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-900 rounded-lg text-white">
+                    <div className="p-2 bg-indigo-900 rounded text-white">
                         <Bus size={18} />
                     </div>
                     <div>
                         <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">{t('bus.vehicle_mgmt')}</h2>
                     </div>
                 </div>
-                <div className={`p-1.5 rounded-md transition-all ${isOpen ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                <div className={`p-1.5 rounded transition-all ${isOpen ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}`}>
                     {isOpen ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
                 </div>
             </div>
@@ -53,18 +53,18 @@ const VehicleSection: React.FC<VehicleSectionProps> = ({
                             <input 
                                 type="text" value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="搜尋車牌號碼、所屬車行..."
-                                className="w-full pl-10 pr-4 h-10 bg-slate-50 border border-slate-200 rounded-lg outline-none text-sm font-medium transition-all text-slate-900 focus:bg-white focus:border-indigo-500"
+                                className="w-full pl-10 pr-4 h-10 bg-slate-50 border border-slate-200 rounded outline-none text-sm font-medium transition-all text-slate-900 focus:bg-white focus:border-indigo-500"
                             />
                         </div>
                         <button 
                             onClick={onAdd}
-                            className="bg-blue-600 text-white h-10 px-6 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-sm active:scale-95 whitespace-nowrap"
+                            className="bg-blue-600 text-white h-10 px-6 rounded text-sm font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-sm active:scale-95 whitespace-nowrap"
                         >
                             <PlusCircle size={18}/> {t('bus.add_vehicle')}
                         </button>
                     </div>
 
-                    <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <div className="overflow-x-auto rounded border border-slate-200 shadow-sm">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-200">
@@ -95,14 +95,14 @@ const VehicleSection: React.FC<VehicleSectionProps> = ({
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold border uppercase tracking-wider ${v.status === 'normal' || v.status === 'excellent' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                            <span className={`px-3 py-1 rounded text-[10px] font-bold border uppercase tracking-wider ${v.status === 'normal' || v.status === 'excellent' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                                                 {t(`common.status.${v.status}`)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => onEdit(v)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all active:scale-90"><Edit2 size={16}/></button>
-                                                <button onClick={() => onDelete(v)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all active:scale-90"><Trash2 size={16}/></button>
+                                                <button onClick={() => onEdit(v)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all active:scale-90"><Edit2 size={16}/></button>
+                                                <button onClick={() => onDelete(v)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all active:scale-90"><Trash2 size={16}/></button>
                                             </div>
                                         </td>
                                     </tr>

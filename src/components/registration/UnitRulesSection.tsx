@@ -13,7 +13,7 @@ const UnitRulesSection: React.FC<UnitRulesSectionProps> = ({ settings, lang }) =
     if (!settings.rules_content) return null;
 
     return (
-        <div className="bg-orange-50 p-6 rounded-xl shadow-sm border border-orange-200 mb-6">
+        <div className="bg-orange-50 p-6 rounded shadow-sm border border-orange-200 mb-6">
             <h3 className="font-bold text-orange-900 mb-4 text-sm flex items-center">
                 <Info className="w-5 h-5 mr-2" /> {t('stake.registration.form.reg_rules_title')}
             </h3>

@@ -17,16 +17,16 @@ interface InsuranceTabProps {
 // Modern Business Style constants (High-Contrast Theme)
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-6 py-4 flex items-center justify-between cursor-pointer select-none',
     sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
     pageTitle: 'text-xl md:text-2xl font-bold tracking-tight text-slate-900',
     bodyText: 'text-sm text-slate-600',
-    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnTemple: 'bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-bold',
-    select: 'w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer font-bold',
+    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnTemple: 'bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    input: 'w-full bg-white border border-slate-200 rounded px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-bold',
+    select: 'w-full bg-white border border-slate-200 rounded px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer font-bold',
     badge: {
         success: 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300 px-2.5 py-0.5 rounded text-[10px]',
         warning: 'bg-amber-100 text-amber-900 font-semibold border border-amber-300 px-2.5 py-0.5 rounded text-[10px]',
@@ -218,10 +218,10 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ currentEvent, registrations
     return (
         <div className="space-y-6 animate-fade-in pb-20">
             {/* Main Header conforming to 60-30-10 & RWD rules */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 {/* Row 1: Title Row Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-inner">
                         <ShieldCheck className="text-blue-300" size={24} />
                     </div>
                     <div>
@@ -236,14 +236,14 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ currentEvent, registrations
                 
                 {/* Row 2: Info & Actions Right Aligned beneath title row */}
                 <div className="flex flex-wrap justify-end items-center gap-3">
-                    <div className={`px-5 py-2 rounded-lg text-[10px] font-black border flex items-center gap-2 uppercase tracking-widest shadow-sm ${insuranceType === InsuranceType.GROUP ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
+                    <div className={`px-5 py-2 rounded text-[10px] font-black border flex items-center gap-2 uppercase tracking-widest shadow-sm ${insuranceType === InsuranceType.GROUP ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-rose-600 border-rose-500 text-white'}`}>
                         <ShieldCheck size={16} />
                         {insuranceType === InsuranceType.GROUP ? t('stake.insurance.type.group', '團體投保') : t('stake.insurance.type.self_paid', '自費投保')}
                         <span className="opacity-60 ml-2 font-bold">({normalRegistrations.length} 人)</span>
                     </div>
                     <button 
                         onClick={handleExport}
-                        className="bg-white text-indigo-900 h-10 px-6 rounded-lg text-xs font-black shadow-lg hover:bg-slate-50 transition-all flex items-center active:scale-95 border border-white/10"
+                        className="bg-white text-indigo-900 h-10 px-6 rounded text-xs font-black shadow-lg hover:bg-slate-50 transition-all flex items-center active:scale-95 border border-white/10"
                     >
                         <Download className="w-4 h-4 mr-2" />
                         {t('common.button.export_xlsx', '導出投保 Excel')}
@@ -266,16 +266,16 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ currentEvent, registrations
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="space-y-1.5">
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">{t('stake.insurance.label.insurance_type', '投保方式')}</label>
-                            <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 shadow-inner">
+                            <div className="flex p-1 bg-slate-100 rounded border border-slate-200 shadow-inner">
                                 <button 
                                     onClick={() => handleInsuranceTypeChange(InsuranceType.GROUP)}
-                                    className={`flex-1 py-2.5 rounded-md font-black text-[10px] uppercase tracking-widest transition-all ${insuranceType === InsuranceType.GROUP ? 'bg-white text-indigo-600 shadow-md border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 py-2.5 rounded font-black text-[10px] uppercase tracking-widest transition-all ${insuranceType === InsuranceType.GROUP ? 'bg-white text-indigo-600 shadow-md border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     {tString('stake.insurance.type.group', '團體')}
                                 </button>
                                 <button 
                                     onClick={() => handleInsuranceTypeChange(InsuranceType.SELF_PAID)}
-                                    className={`flex-1 py-2.5 rounded-md font-black text-[10px] uppercase tracking-widest transition-all ${insuranceType === InsuranceType.SELF_PAID ? 'bg-white text-rose-600 shadow-md border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 py-2.5 rounded font-black text-[10px] uppercase tracking-widest transition-all ${insuranceType === InsuranceType.SELF_PAID ? 'bg-white text-rose-600 shadow-md border border-slate-100' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     {tString('stake.insurance.type.self_paid', '自費')}
                                 </button>
@@ -301,7 +301,7 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ currentEvent, registrations
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">{t('stake.insurance.toggle_date_format', '生日格式顯示')}</label>
                             <button 
                                 onClick={() => setUseROC(!useROC)}
-                                className={`w-full h-11 flex items-center justify-center gap-3 rounded-lg border font-bold text-xs transition-all shadow-sm active:scale-95 ${useROC ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}
+                                className={`w-full h-11 flex items-center justify-center gap-3 rounded border font-bold text-xs transition-all shadow-sm active:scale-95 ${useROC ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600'}`}
                             >
                                 <Clock size={18} />
                                 {useROC ? '目前顯示: 民國生日' : '目前顯示: 西元生日'}
@@ -312,7 +312,7 @@ const InsuranceTab: React.FC<InsuranceTabProps> = ({ currentEvent, registrations
             </div>
 
             {/* Hint Box */}
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-5 flex items-start gap-4 shadow-sm">
+            <div className="bg-blue-50 border border-blue-100 rounded p-5 flex items-start gap-4 shadow-sm">
                 <Clock className="text-blue-600 mt-0.5 shrink-0" size={24} />
                 <div>
                     <h5 className="font-black text-blue-900 text-sm uppercase tracking-wider mb-1.5">{t('stake.insurance.hint.main', '投保作業時程提醒')}</h5>

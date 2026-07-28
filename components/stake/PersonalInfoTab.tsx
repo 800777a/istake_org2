@@ -17,11 +17,11 @@ interface PersonalInfoTabProps {
 // Enterprise Light/High-Contrast Theme definitions
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-[8px] shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
     tableText: 'text-[11px] md:text-xs lg:text-sm text-slate-900',
-    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
+    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    input: 'w-full bg-white border border-slate-200 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
 };
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations, currentEvent }) => {
@@ -241,7 +241,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className={`fixed top-4 right-4 z-[100] p-4 rounded-lg shadow-2xl border font-bold flex items-center ${
+                        className={`fixed top-4 right-4 z-[100] p-4 rounded shadow-2xl border font-bold flex items-center ${
                             message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
                         }`}
                     >
@@ -251,7 +251,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
             </AnimatePresence>
 
             {/* Level 1: Page Title Header (Indigo 900) */}
-            <div className="bg-indigo-900 text-white p-4 rounded-[12px] shadow-lg flex items-center justify-between overflow-hidden">
+            <div className="bg-indigo-900 text-white p-4 rounded shadow-lg flex items-center justify-between overflow-hidden">
                 <div className="flex items-center gap-3">
                     <Contact className="w-6 h-6 text-indigo-300" />
                     <h2 className="text-sm md:text-xl font-black tracking-tight font-title">
@@ -261,12 +261,12 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
             </div>
 
             {/* Level 2: Two-Column Action Row */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1 md:px-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 md:px-0">
                 {/* Left Column: Add Member Button */}
                 <div className="flex-1 md:max-w-xs">
                     <button 
                         onClick={() => { resetForm(); setIsFormOpen(true); }} 
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-[12px] font-black shadow-md transition-all flex items-center justify-center gap-2 h-12 px-6 text-sm md:text-base active:scale-[0.98]"
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded font-black shadow-md transition-all flex items-center justify-center gap-2 h-12 px-6 text-sm md:text-base active:scale-[0.98]"
                     >
                         <UserPlus size={20} />
                         <span>{t('stake.personal_info.add_member_btn', '新增成員')}</span>
@@ -274,17 +274,17 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                 </div>
 
                 {/* Right Column: View Mode Selectors in a single block */}
-                <div className="flex bg-white/80 backdrop-blur-sm p-1.5 rounded-xl border border-indigo-100 shadow-sm self-end md:self-auto">
+                <div className="flex bg-white/80 backdrop-blur-sm p-1.5 rounded border border-indigo-100 shadow-sm self-end md:self-auto">
                     <button 
                         onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-xs font-black ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded transition-all text-xs font-black ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
                     >
                         <List size={16} />
                         <span>{t('common.view_mode.table', '表格')}</span>
                     </button>
                     <button 
                         onClick={() => setViewMode('card')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-xs font-black ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded transition-all text-xs font-black ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-indigo-600'}`}
                     >
                         <LayoutDashboard size={16} />
                         <span>{t('common.view_mode.card', '卡片')}</span>
@@ -293,7 +293,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
             </div>
 
             {/* Level 3: Search Filters (Orange Theme - Rainbow Depth 1) */}
-            <div className="px-1 md:px-0">
+            <div className="px-2 md:px-0">
                 <RainbowCard
                     title={t('stake.personal_info.search_filters', '篩選成員條件')}
                     icon={<Search size={18} />}
@@ -439,14 +439,14 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                                     <div className="flex items-center justify-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                                                         <button 
                                                                             onClick={() => handleEdit(info)} 
-                                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100 bg-white shadow-sm active:scale-90"
+                                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors border border-indigo-100 bg-white shadow-sm active:scale-90"
                                                                             title={tString('common.edit', "編輯")}
                                                                         >
                                                                             <Edit2 size={14} />
                                                                         </button>
                                                                         <button 
                                                                             onClick={() => setDeleteId(info.id)} 
-                                                                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm active:scale-90" 
+                                                                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors border border-rose-100 bg-white shadow-sm active:scale-90" 
                                                                             title={tString('common.delete', "刪除")}
                                                                         >
                                                                             <Trash2 size={14} />
@@ -462,7 +462,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                     ) : (
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1 md:p-4 font-body">
                                             {groupedByUnit[unit].map((info, idx) => (
-                                                <div key={`${info.id}-${unit}-${idx}`} className="bg-white border border-slate-100 rounded-lg p-3 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
+                                                <div key={`${info.id}-${unit}-${idx}`} className="bg-white border border-slate-100 rounded p-3 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
                                                     <div className="flex justify-between items-start">
                                                         <div className="flex flex-col">
                                                             <span className="text-sm font-black text-slate-900">{info.name}</span>
@@ -471,13 +471,13 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                         <div className="flex gap-1">
                                                             <button 
                                                                 onClick={() => handleEdit(info)} 
-                                                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg border border-indigo-100 shadow-sm transition-all"
+                                                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded border border-indigo-100 shadow-sm transition-all"
                                                             >
                                                                 <Edit2 size={14} />
                                                             </button>
                                                             <button 
                                                                 onClick={() => setDeleteId(info.id)} 
-                                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 shadow-sm transition-all"
+                                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded border border-rose-100 shadow-sm transition-all"
                                                             >
                                                                 <Trash2 size={14} />
                                                             </button>
@@ -526,7 +526,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border-2 border-indigo-100"
+                            className="bg-white w-full max-w-2xl rounded shadow-2xl overflow-hidden border-2 border-indigo-100"
                         >
                             <div className="bg-indigo-600 p-6 text-white flex justify-between items-center">
                                 <h3 className="text-xl font-black flex items-center">
@@ -545,7 +545,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                             <select 
                                                 value={formUnit} 
                                                 onChange={e => setFormUnit(e.target.value)} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none" 
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none" 
                                                 required
                                             >
                                                 <option value="" disabled>{tString('stake.personal_info.select_unit_placeholder', '請選擇單位')}</option>
@@ -558,7 +558,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 type="text" 
                                                 value={formName} 
                                                 onChange={e => setFormName(e.target.value)} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none" 
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none" 
                                                 placeholder={t('stake.personal_info.name_placeholder', "請輸入姓名")}
                                                 required 
                                             />
@@ -571,7 +571,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 type="date" 
                                                 value={formBirth} 
                                                 onChange={e => setFormBirth(e.target.value)} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none uppercase" 
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none uppercase" 
                                                 required 
                                             />
                                         </div>
@@ -581,7 +581,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 type="text" 
                                                 value={formIdentity} 
                                                 onChange={e => setFormIdentity(e.target.value.toUpperCase())} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none uppercase font-mono" 
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none uppercase font-mono" 
                                                 placeholder={t('stake.personal_info.identity_placeholder', "請輸入 ID")}
                                                 required 
                                                 maxLength={10} 
@@ -595,7 +595,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 type="text" 
                                                 value={formGuardian} 
                                                 onChange={e => setFormGuardian(e.target.value)} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none" 
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none" 
                                                 placeholder={t('stake.personal_info.guardian_placeholder', "小於18歲時需輸入監護人姓名")}
                                             />
                                         </div>
@@ -604,7 +604,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                             <select 
                                                 value={formService} 
                                                 onChange={e => setFormService(e.target.value)} 
-                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded-2xl p-4 text-sm font-bold transition-all outline-none"
+                                                className="w-full border-2 border-gray-100 bg-gray-50/50 focus:bg-white focus:border-indigo-500 rounded p-4 text-sm font-bold transition-all outline-none"
                                             >
                                                 {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                             </select>
@@ -615,13 +615,13 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                     <button 
                                         type="button" 
                                         onClick={resetForm} 
-                                        className="flex-1 py-4 bg-gray-100 text-gray-500 font-black rounded-2xl hover:bg-gray-200 transition-all"
+                                        className="flex-1 py-4 bg-gray-100 text-gray-500 font-black rounded hover:bg-gray-200 transition-all"
                                     >
                                         {t('common.cancel', '取消')}
                                     </button>
                                     <button 
                                         type="submit" 
-                                        className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                                        className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.01] active:scale-[0.99] transition-all"
                                     >
                                         {t('common.confirm_save', '確認儲存')}
                                     </button>

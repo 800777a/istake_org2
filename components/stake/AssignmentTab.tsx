@@ -174,9 +174,9 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
             <ConfirmDialog isOpen={!!batchConfirmData} title="批量分配確認" message={batchConfirmData ? `確定將 ${batchConfirmData.count} 位 ${batchConfirmData.unit} 成員分配至 ${batchConfirmData.target} 嗎？` : ''} onConfirm={executeBatchAssign} onCancel={() => setBatchConfirmData(null)} />
             <ExportChoiceModal isOpen={!!exportTargetBus} onClose={() => setExportTargetBus(null)} onConfirm={(mask, toEditor) => { if (exportTargetBus) handleExportBusList(exportTargetBus, mask, toEditor); }} />
 
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+                    <div className="p-3 bg-white/10 rounded border border-white/10">
                         <Bus className="text-blue-300" size={24} />
                     </div>
                     <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
@@ -185,14 +185,14 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                 </div>
                 <div className="flex justify-end items-center gap-3">
                     <p className="hidden md:block text-xs text-indigo-200 font-medium uppercase tracking-wider opacity-60 mr-auto">Fleet Distribution & Passenger Logistics</p>
-                    <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="h-10 px-5 bg-white/10 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-white/20 transition-all flex items-center gap-2">
+                    <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="h-10 px-5 bg-white/10 text-white rounded text-xs font-bold shadow-sm hover:bg-white/20 transition-all flex items-center gap-2">
                         {isToolsExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
                         {isToolsExpanded ? '收合工具' : '展開工具'}
                     </button>
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
                 <div className="w-full px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-100" onClick={() => setIsToolsExpanded(!isToolsExpanded)}>
                     <h3 className="font-bold text-slate-900 text-base flex items-center gap-2"><Users2 size={18} className="text-blue-600" />批量指派與重置工具</h3>
                     <div className="text-slate-400">{isToolsExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}</div>
@@ -204,14 +204,14 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">選擇單位</label>
-                                        <select className="w-full bg-white border border-slate-200 text-sm font-medium p-3 rounded-lg outline-none focus:border-blue-500 transition-all shadow-sm" value={batchUnit} onChange={e => setBatchUnit(e.target.value)}>
+                                        <select className="w-full bg-white border border-slate-200 text-sm font-medium p-3 rounded outline-none focus:border-blue-500 transition-all shadow-sm" value={batchUnit} onChange={e => setBatchUnit(e.target.value)}>
                                             <option value="">選擇單位</option>
                                             {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">指派目標</label>
-                                        <select className="w-full bg-white border border-slate-200 text-sm font-medium p-3 rounded-lg outline-none focus:border-blue-500 transition-all shadow-sm" value={batchBus} onChange={e => setBatchBus(e.target.value)}>
+                                        <select className="w-full bg-white border border-slate-200 text-sm font-medium p-3 rounded outline-none focus:border-blue-500 transition-all shadow-sm" value={batchBus} onChange={e => setBatchBus(e.target.value)}>
                                             <option value="">選擇目標車次/站點</option>
                                             {(currentEvent?.busConfigs || []).map(b => (
                                                 <optgroup key={b.name} label={b.name} className="font-bold text-indigo-900 bg-indigo-50">
@@ -223,8 +223,8 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                     </div>
                                 </div>
                                 <div className="flex justify-end items-center gap-3">
-                                    <button onClick={() => setShowResetConfirm(true)} className="h-10 px-5 bg-white border border-rose-200 text-rose-600 rounded-lg text-xs font-bold shadow-sm hover:bg-rose-50 transition-all flex items-center gap-2"><RefreshCw size={16} /> 重置分配</button>
-                                    <button onClick={handleBatchAssign} disabled={!batchUnit || !batchBus} className="h-10 px-6 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"><Check size={16} /> 執行指派</button>
+                                    <button onClick={() => setShowResetConfirm(true)} className="h-10 px-5 bg-white border border-rose-200 text-rose-600 rounded text-xs font-bold shadow-sm hover:bg-rose-50 transition-all flex items-center gap-2"><RefreshCw size={16} /> 重置分配</button>
+                                    <button onClick={handleBatchAssign} disabled={!batchUnit || !batchBus} className="h-10 px-6 bg-blue-600 text-white rounded text-xs font-bold shadow-md hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"><Check size={16} /> 執行指派</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -239,8 +239,8 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                     { label: '剩餘座位', val: stats.totalCapacity - stats.totalAssigned, unit: '席', color: (stats.totalCapacity - stats.totalAssigned < 0 ? 'text-rose-600' : 'text-amber-600'), icon: Activity },
                     { label: '分配完成度', val: Math.round((stats.totalAssigned / Math.max(1, stats.totalCapacity)) * 100), unit: '%', color: 'text-indigo-600', icon: CheckCircle }
                 ].map((s, i) => (
-                    <div key={i} className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${s.color.replace('text-', 'bg-').replace('-600', '-50')}`}><s.icon size={18} className={s.color} /></div>
+                    <div key={i} className="bg-white p-4 rounded shadow-sm border border-slate-200 flex items-center gap-3">
+                        <div className={`p-2 rounded ${s.color.replace('text-', 'bg-').replace('-600', '-50')}`}><s.icon size={18} className={s.color} /></div>
                         <div>
                             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">{s.label}</span>
                             <div className="flex items-baseline gap-1"><span className={`text-lg font-bold ${s.color}`}>{s.val}</span><span className="text-[10px] font-medium text-slate-400">{s.unit}</span></div>
@@ -249,14 +249,14 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                 ))}
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-6 flex flex-col md:flex-row gap-4 items-center">
                     <div className="flex-1 w-full relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input type="text" placeholder="快速搜尋成員姓名、單位..." className="w-full bg-slate-50 border border-slate-200 text-sm font-medium pl-11 pr-4 py-3 rounded-lg outline-none focus:border-indigo-500 transition-all shadow-inner" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                        <input type="text" placeholder="快速搜尋成員姓名、單位..." className="w-full bg-slate-50 border border-slate-200 text-sm font-medium pl-11 pr-4 py-3 rounded outline-none focus:border-indigo-500 transition-all shadow-inner" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                     </div>
                     <div className="flex justify-end gap-3 w-full md:w-auto">
-                        <button onClick={handleSave} disabled={isSaving} className={`h-11 px-6 rounded-lg text-xs font-bold shadow-md transition-all flex items-center gap-2 ${isSaving ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
+                        <button onClick={handleSave} disabled={isSaving} className={`h-11 px-6 rounded text-xs font-bold shadow-md transition-all flex items-center gap-2 ${isSaving ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                             <Save size={16} className={isSaving ? 'animate-spin' : ''} /> {isSaving ? '儲存中...' : '保存設定'}
                         </button>
                     </div>
@@ -264,14 +264,14 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
             </div>
 
             <div className="flex flex-row gap-8 overflow-x-auto pb-12 snap-x custom-scrollbar">
-                <div className="min-w-full md:min-w-[400px] bg-white rounded-lg shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden">
+                <div className="min-w-full md:min-w-[400px] bg-white rounded shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden">
                     <div className="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
                         <h4 className="font-bold text-white text-base flex items-center gap-2"><AlertCircle className="text-amber-400" size={18} /> 未指派名單</h4>
                         <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/10">{(busGroups['unassigned'] || []).length}</span>
                     </div>
                     <div className="p-4 overflow-y-auto flex-1 space-y-3 bg-[#F0F4F8]/20 custom-scrollbar">
                         {(busGroups['unassigned'] || []).map((reg) => (
-                            <div key={reg.reg_id} className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 hover:border-blue-400 transition-all group">
+                            <div key={reg.reg_id} className="bg-white p-4 rounded shadow-sm border border-slate-100 hover:border-blue-400 transition-all group">
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex flex-col"><span className="font-bold text-slate-900 text-sm">{reg.name}</span><span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit mt-1">{reg.unit}</span></div>
                                 </div>

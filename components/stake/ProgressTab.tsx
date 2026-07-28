@@ -13,13 +13,13 @@ interface ProgressTabProps {
 // Modern Business Style constants (High-Contrast Theme)
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-6 py-4 flex items-center justify-between cursor-pointer select-none',
     sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
     pageTitle: 'text-xl md:text-2xl font-bold tracking-tight text-slate-900',
     bodyText: 'text-sm text-slate-600',
-    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
-    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnPrimary: 'bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
+    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded transition-all active:scale-95 flex items-center justify-center gap-2',
     badge: {
         success: 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300 px-2.5 py-0.5 rounded text-[10px]',
         warning: 'bg-amber-100 text-amber-900 font-semibold border border-amber-300 px-2.5 py-0.5 rounded text-[10px]',
@@ -65,10 +65,10 @@ const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }
     return (
         <div className="space-y-6 animate-fade-in pb-20">
             {/* Main Header conforming to 60-30-10 & RWD font rules */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 {/* Row 1: Title Row Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-inner">
                         <ClipboardList className="text-blue-300" size={24} />
                     </div>
                     <div>
@@ -83,7 +83,7 @@ const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }
                 
                 {/* Row 2: Info Aligned Right beneath title row */}
                 <div className="flex justify-end items-center gap-3">
-                    <div className="bg-white/10 px-6 py-2 rounded-lg text-sm font-bold text-white border border-white/10 shadow-inner backdrop-blur-sm flex items-center gap-4">
+                    <div className="bg-white/10 px-6 py-2 rounded text-sm font-bold text-white border border-white/10 shadow-inner backdrop-blur-sm flex items-center gap-4">
                         <span className="text-[10px] uppercase tracking-widest text-indigo-300 font-black">完成總進度</span>
                         <div className="flex items-center gap-2">
                             <span className="text-blue-400 text-2xl font-bold">{(currentEvent.sop_progress || []).filter(Boolean).length}</span> 
@@ -105,7 +105,7 @@ const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }
                                 
                                 <div 
                                     onClick={() => handleSopToggle(index)}
-                                    className={`flex flex-col md:flex-row md:items-center justify-between p-6 rounded-lg border transition-all cursor-pointer select-none shadow-sm ${isDone ? 'bg-emerald-50/20 border-emerald-200' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-lg hover:-translate-y-0.5'} active:scale-[0.98]`}
+                                    className={`flex flex-col md:flex-row md:items-center justify-between p-6 rounded border transition-all cursor-pointer select-none shadow-sm ${isDone ? 'bg-emerald-50/20 border-emerald-200' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-lg hover:-translate-y-0.5'} active:scale-[0.98]`}
                                 >
                                     <div className="flex-1">
                                         <div className={`text-[10px] font-bold mb-3 flex items-center tracking-widest uppercase ${isDone ? 'text-emerald-700' : 'text-slate-400'}`}>
@@ -123,7 +123,7 @@ const ProgressTab: React.FC<ProgressTabProps> = ({ currentEvent, onUpdateEvent }
 
                                     {/* Action Button Right Aligned */}
                                     <div className="mt-6 md:mt-0 md:ml-8 flex justify-end">
-                                        <div className={`flex items-center h-10 px-5 rounded-lg border transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-sm ${isDone ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-white text-slate-400 border-slate-200'}`}>
+                                        <div className={`flex items-center h-10 px-5 rounded border transition-all font-black text-[10px] uppercase tracking-[0.15em] shadow-sm ${isDone ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-white text-slate-400 border-slate-200'}`}>
                                             {isDone ? <Check className="w-3.5 h-3.5 mr-2 stroke-[3px]" /> : null}
                                             {isDone ? t('stake.progress.status.completed', '任務已達成') : t('stake.progress.status.pending', '待執行')}
                                         </div>

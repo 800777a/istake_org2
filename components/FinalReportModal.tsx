@@ -17,7 +17,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[210mm] max-w-full h-[90vh] rounded-xl shadow-2xl relative overflow-hidden flex flex-col">
+      <div className="bg-white w-[210mm] max-w-full h-[90vh] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header (No print) */}
         <div className="bg-gray-800 text-white p-4 flex justify-between items-center shrink-0 print:hidden">
@@ -46,7 +46,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
             </div>
 
             {/* Executive Summary */}
-            <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-100">
+            <div className="mb-8 bg-blue-50 p-6 rounded border border-blue-100">
                 <h3 className="font-bold text-blue-900 mb-3 text-lg border-b border-blue-200 pb-2">{t('report.executive_summary', '執行摘要 (Executive Summary)')}</h3>
                 <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
                     {report.aiSummary || t('report.no_ai_summary', '無 AI 摘要內容。')}
@@ -56,7 +56,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
             {/* Metrics Grid */}
             <div className="grid grid-cols-2 gap-6 mb-8">
                 {/* Attendance */}
-                <div className="border rounded-lg p-5 shadow-sm">
+                <div className="border rounded p-5 shadow-sm">
                     <h4 className="font-bold text-gray-700 mb-4 flex items-center">
                         <TrendingUp className="w-5 h-5 mr-2 text-blue-600" /> {t('report.attendance_metrics', '出席成效')}
                     </h4>
@@ -73,7 +73,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
                 </div>
 
                 {/* Satisfaction */}
-                <div className="border rounded-lg p-5 shadow-sm">
+                <div className="border rounded p-5 shadow-sm">
                     <h4 className="font-bold text-gray-700 mb-4 flex items-center">
                         <Award className="w-5 h-5 mr-2 text-yellow-500" /> {t('report.satisfaction_metrics', '滿意度指標')}
                     </h4>
@@ -91,7 +91,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
             </div>
 
             {/* Financial Summary */}
-            <div className="border rounded-lg p-6 shadow-sm mb-8">
+            <div className="border rounded p-6 shadow-sm mb-8">
                 <h4 className="font-bold text-gray-700 mb-4 flex items-center">
                     <DollarSign className="w-5 h-5 mr-2 text-green-600" /> {t('report.financial_summary', '財務結算')}
                 </h4>

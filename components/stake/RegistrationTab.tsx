@@ -27,19 +27,19 @@ interface RegistrationTabProps {
 
 // Enterprise Light/High-Contrast Theme definitions
 const THEME = {
-    canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-[8px] shadow-sm border border-slate-200 overflow-hidden',
-    header: 'bg-indigo-900 text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
+    canvas: 'bg-[#F8F9FA]',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
+    header: 'bg-[#A23400] text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
     sectionTitle: 'text-sm md:text-base lg:text-lg font-semibold tracking-tight',
     pageTitle: 'text-base md:text-lg lg:text-xl font-bold tracking-tight',
     bodyText: 'text-sm text-slate-600',
     tableText: 'text-[11px] md:text-xs lg:text-sm text-slate-900',
-    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
-    btnSecondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10',
+    btnPrimary: 'bg-[#A23400] hover:bg-[#8B2D00] text-white font-bold rounded transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    btnSecondary: 'bg-white hover:bg-orange-50 text-slate-700 border border-slate-200 font-bold rounded transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    input: 'w-full bg-white border border-slate-200 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10',
     badge: {
         paid: 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 px-2 py-0.5 rounded text-[10px]',
-        pending: 'bg-amber-100 text-amber-900 font-bold border border-amber-200 px-2 py-0.5 rounded text-[10px]',
+        pending: 'bg-orange-100 text-orange-900 font-bold border border-orange-200 px-2 py-0.5 rounded text-[10px]',
         failed: 'bg-rose-100 text-rose-900 font-bold border border-rose-200 px-2 py-0.5 rounded text-[10px]',
         muted: 'bg-slate-100 text-slate-700 font-bold border border-slate-200 px-2 py-0.5 rounded text-[10px]'
     }
@@ -554,71 +554,71 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     };
 
     return (
-        <div key={remountKey} className={`space-y-6 ${THEME.canvas} min-h-screen pb-24 animate-fade-in`}>
+        <div key={remountKey} className={`${THEME.canvas} min-h-screen pb-24 animate-fade-in`}>
             <Toast 
                 message={msg} 
                 type={msgType} 
                 onClose={() => setMsg(null)} 
             />
             {/* Level 1: Page Title Header */}
-            <div className="bg-indigo-900 text-white px-4 py-5 md:px-6 md:py-6 shadow-lg flex items-center justify-between mx-1 md:mx-6 rounded-b-xl">
+            <div className="bg-[#A23400] text-white px-4 py-5 md:px-6 md:py-6 shadow-lg flex items-center justify-between mx-1 md:mx-4 lg:mx-8 rounded mt-4 border-b-2 border-orange-800/30 font-title">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/10 rounded-lg border border-white/10">
-                        <Users className="text-blue-300" size={20} />
+                    <div className="p-2 bg-white/10 rounded border border-white/10">
+                        <Users className="text-orange-200" size={20} />
                     </div>
-                    <h2 className="text-base md:text-lg lg:text-xl font-bold tracking-tight">
-                        {t('stake.registration.title', '成員名單管理系統')}
+                    <h2 className="text-base md:text-lg lg:text-xl font-black tracking-tight">
+                        報名名單 (Registration List)
                     </h2>
                 </div>
             </div>
 
             {/* Level 2: Action Row & View Switcher */}
-            <div className="bg-indigo-200 text-indigo-900 px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 mx-1 md:mx-6 rounded-xl border border-indigo-300/30">
+            <div className="bg-[#FFEDD5] text-orange-900 px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 mx-1 md:mx-4 lg:mx-8 rounded border-2 border-orange-200 mt-2 font-title">
                 <div className="flex flex-wrap items-center gap-2">
                     <button 
                         onClick={handleAddMember}
-                        className={THEME.btnPrimary}
+                        className={`${THEME.btnPrimary} border-2 border-orange-800/20 shadow-sm`}
                     >
                         <PlusCircle size={16} /> {t('common.add_member', '新增成員')}
                     </button>
                     <button 
                         onClick={() => setIsExportModalOpen(true)}
-                        className={THEME.btnSecondary}
+                        className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm`}
                     >
                         <ListOrdered size={16} /> {t('stake.registration.export_txt', '匯出純文字')}
                     </button>
                     <button 
                         onClick={handleExportRegistrations}
-                        className={THEME.btnSecondary}
+                        className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm`}
                     >
                         <Download size={16} /> CSV 報表
                     </button>
-                    <label className={`${THEME.btnSecondary} cursor-pointer`}>
+                    <label className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm cursor-pointer`}>
                         <Upload size={16} /> JSON 匯入
                         <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange}/>
                     </label>
                 </div>
 
-                <div className="flex items-center bg-white/50 rounded-lg p-1 border border-indigo-300/20">
+                <div className="flex items-center bg-white/50 rounded p-1 border-2 border-orange-300/30">
                     <button 
                         onClick={() => setViewMode('table')}
-                        className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:bg-indigo-100'}`}
-                        title="表格模式"
+                        className={`px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${viewMode === 'table' ? 'bg-[#A23400] text-white shadow-md' : 'text-orange-400 hover:bg-orange-100'}`}
                     >
-                        <List size={18} />
+                        <List size={16} />
+                        <span className="text-xs font-black">表格</span>
                     </button>
                     <button 
                         onClick={() => setViewMode('card')}
-                        className={`p-2 rounded-md transition-all ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:bg-indigo-100'}`}
-                        title="卡片模式"
+                        className={`px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${viewMode === 'card' ? 'bg-[#A23400] text-white shadow-md' : 'text-orange-400 hover:bg-orange-100'}`}
                     >
-                        <LayoutDashboard size={18} />
+                        <LayoutDashboard size={16} />
+                        <span className="text-xs font-black">卡片</span>
                     </button>
                 </div>
             </div>
 
             {/* Step 1: Statistics Overview (Rainbow: Red) */}
-            <div className="px-1 md:px-6">
+            <div className="px-2 md:px-4 lg:px-8 mt-2">
                 <RainbowCard
                     title={t('stake.registration.stats_title', '數據概覽 (Statistics Overview)')}
                     icon={<Activity size={20} />}
@@ -628,7 +628,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 >
                     <div className="space-y-6">
                         {/* Move Info/Badges here (below title, right aligned) */}
-                        <div className="w-full flex justify-end gap-2 px-1">
+                        <div className="w-full flex justify-end gap-2 px-2">
                              <span className="text-[10px] font-black text-rose-700 bg-white/60 px-3 py-1 rounded-full border border-rose-300 uppercase tracking-widest">
                                 Live Metrics
                              </span>
@@ -641,8 +641,8 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                 { label: '待繳費人數', val: statsOverview.unpaid, unit: '人', color: 'text-amber-600', icon: Clock },
                                 { label: '應收總金額', val: statsOverview.amount.toLocaleString(), unit: '元', color: 'text-blue-600', icon: DollarSign }
                             ].map((s, i) => (
-                                <div key={i} className="bg-white/40 p-4 rounded-lg shadow-sm border border-white/20 flex items-center gap-3 backdrop-blur-sm">
-                                    <div className={`p-2 rounded-lg ${s.color.replace('text-', 'bg-').replace('-600', '-50')}`}>
+                                <div key={i} className="bg-white/40 p-4 rounded shadow-sm border border-white/20 flex items-center gap-3 backdrop-blur-sm">
+                                    <div className={`p-2 rounded ${s.color.replace('text-', 'bg-').replace('-600', '-50')}`}>
                                         <s.icon size={18} className={s.color} />
                                     </div>
                                     <div>
@@ -706,7 +706,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
 
             {/* Announcement Block */}
             {activeEvent && !activeEvent.is_registration_open && (
-                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg shadow-sm flex items-center gap-4 mx-4 md:mx-6">
+                <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded shadow-sm flex items-center gap-4 mx-4 md:mx-6">
                     <div className="bg-amber-100 p-2 rounded-full text-amber-600">
                         <ShieldAlert size={20} />
                     </div>
@@ -718,7 +718,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             )}
 
             {/* Main Management Block (Rainbow: Orange) */}
-            <div className="px-1 md:px-6">
+            <div className="px-2 md:px-4 lg:px-8 mt-2">
                 <RainbowCard
                     title={t('stake.registration.list_mgmt', '篩選與工具 (Filters & Tools)')}
                     icon={<Search size={20} />}
@@ -737,7 +737,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                 <div className="flex flex-wrap gap-2">
                                     <button 
                                         onClick={() => handleUnitSelect('')}
-                                        className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border shadow-sm ${
+                                        className={`h-9 px-4 rounded text-xs font-bold transition-all border shadow-sm ${
                                             searchUnit === '' 
                                                 ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
                                                 : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
@@ -749,7 +749,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                         <button 
                                             key={u}
                                             onClick={() => handleUnitSelect(u)}
-                                            className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border shadow-sm ${
+                                            className={`h-9 px-4 rounded text-xs font-bold transition-all border shadow-sm ${
                                                 searchUnit === u 
                                                     ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
                                                     : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
@@ -784,19 +784,19 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                             <span className="text-[10px] font-bold text-slate-500 mr-2 uppercase tracking-widest">批量處理工具:</span>
                             <button 
                                 onClick={handleAssignSerials} 
-                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                                className={`h-9 px-4 text-xs rounded transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
                             >
                                 分配流水編號
                             </button>
                             <button 
                                 onClick={handleAssignOrdinanceSerials} 
-                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                                className={`h-9 px-4 text-xs rounded transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
                             >
                                 分配教儀編號
                             </button>
                             <button 
                                 onClick={handleImportUnpaidToBlacklist} 
-                                className={`h-9 px-4 text-xs rounded-lg transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
+                                className={`h-9 px-4 text-xs rounded transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
                             >
                                 欠費傳入黑名單
                             </button>
@@ -806,7 +806,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             </div>
 
             {/* Blacklist Management Card (Rainbow: Yellow) */}
-            <div className="px-1 md:px-6">
+            <div className="px-2 md:px-4 lg:px-8 mt-2">
                 <RainbowCard
                     title={t('stake.registration.blacklist_mgmt', '限制/欠費成員黑名單')}
                     icon={<ShieldAlert size={20} />}
@@ -816,14 +816,14 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 >
                     <div className="space-y-6">
                         {/* Summary Info - Below Title, Right Aligned */}
-                        <div className="w-full flex justify-end px-1">
+                        <div className="w-full flex justify-end px-2">
                             <span className="text-[10px] font-black text-amber-700 bg-white/60 px-3 py-1 rounded-full border border-amber-300 uppercase tracking-widest">
                                 {blacklist.length} Records Found
                             </span>
                         </div>
 
                         {/* Add Blacklist Form */}
-                        <div className="bg-white/40 p-5 rounded-lg border border-white/20 shadow-sm space-y-4 backdrop-blur-sm">
+                        <div className="bg-white/40 p-5 rounded border border-white/20 shadow-sm space-y-4 backdrop-blur-sm">
                             <div className="flex items-center gap-2 mb-2">
                                 <Plus size={14} className="text-blue-600" />
                                 <span className="text-xs font-bold text-slate-700">新增黑名單成員</span>
@@ -855,7 +855,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                 <div className="flex justify-end">
                                     <button 
                                         onClick={handleAddBlacklistItem} 
-                                        className={`h-10 px-6 rounded-lg text-sm font-bold transition-all flex items-center gap-2 border ${rainbowStyles[2].bg} ${rainbowStyles[2].text} ${rainbowStyles[2].border}`}
+                                        className={`h-10 px-6 rounded text-sm font-bold transition-all flex items-center gap-2 border ${rainbowStyles[2].bg} ${rainbowStyles[2].text} ${rainbowStyles[2].border}`}
                                     >
                                         <Plus size={16} /> {t('common.add', '新增')}
                                     </button>
@@ -864,7 +864,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                         </div>
 
                         {/* Blacklist Items */}
-                        <div className="overflow-x-auto rounded-lg border border-slate-200">
+                        <div className="overflow-x-auto rounded border border-slate-200">
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
                                     <tr>
@@ -887,7 +887,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                             <td className="px-4 py-3 text-center">
                                                 <button 
                                                     onClick={() => setBlacklistDeleteId(item.id!)}
-                                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm"
+                                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors border border-rose-100 bg-white shadow-sm"
                                                     title={t('common.delete', "刪除")}
                                                 >
                                                     <Trash2 size={14} />
@@ -910,9 +910,9 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             </div>
 
             {/* Registration Units (Rainbow: Blue onwards) */}
-            <div className="px-2 md:px-6 space-y-6">
+            <div className="px-2 md:px-4 lg:px-8 space-y-2 mt-2">
                 {Object.keys(groupedRegs).length === 0 ? (
-                    <div className="bg-white p-20 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center gap-4 text-slate-400 animate-pulse">
+                    <div className="bg-white p-20 rounded border-2 border-dashed border-slate-200 flex flex-col items-center gap-4 text-slate-400 animate-pulse">
                         <Users size={64} className="opacity-20" />
                         <p className="font-bold italic">{t('stake.registration.no_data', '查無成員資料')}</p>
                     </div>
@@ -931,104 +931,84 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                 colorIndex={colorIdx}
                                 isExpanded={!isCollapsed}
                                 onToggle={() => setCollapsedUnits(prev => ({ ...prev, [unit]: !prev[unit] }))}
+                                noPadding={viewMode === 'table'}
                             >
                                 <div className="space-y-4">
                                     {viewMode === 'table' ? (
-                                        <div className="space-y-0">
-                                            {/* Mobile Scroll Controls - More discoverable */}
-                                            <div className="flex items-center justify-between px-2 py-1.5 bg-white/50 border-b border-slate-200/50 md:hidden">
-                                                <div className="flex items-center gap-1 text-[10px] font-black text-slate-400">
-                                                    <ArrowUpDown size={10} />
-                                                    <span>{t('common.scroll_hint', '左右滑動或點擊按鈕')}</span>
+                                        <div className="space-y-0 min-w-0">
+                                            {/* 行動端捲動輔助 (Mobile Scroll Assist) - Rule 4.1 Compliance */}
+                                            <div className="md:hidden flex items-center justify-between mb-2 text-[10px] text-orange-700 bg-orange-100/50 px-2 py-2 rounded border-2 border-orange-200 font-title shadow-sm backdrop-blur-sm">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="animate-bounce-h text-sm">←</div>
+                                                    <span className="font-black">左右滑動檢視完整表格 (Slide to view)</span>
+                                                    <div className="animate-bounce-h text-sm">→</div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            scrollTable(unit, 'left');
-                                                        }}
-                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
-                                                    >
-                                                        <ChevronLeft size={16} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            scrollTable(unit, 'right');
-                                                        }}
-                                                        className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-90"
-                                                    >
-                                                        <ChevronRight size={16} />
-                                                    </button>
+                                                    <button onClick={() => scrollTable(unit, 'left')} className="bg-white px-3 py-1.5 rounded border-2 border-orange-300 shadow-sm active:scale-90 font-black text-orange-800">左移</button>
+                                                    <button onClick={() => scrollTable(unit, 'right')} className="bg-white px-3 py-1.5 rounded border-2 border-orange-300 shadow-sm active:scale-90 font-black text-orange-800">右移</button>
                                                 </div>
                                             </div>
 
+                                            {/* 表格水平捲動容器（Shell-Zero 相容關鍵） - Rule 4.1 Compliance */}
                                             <div 
                                                 ref={el => wrapperRefs.current[unit] = el}
-                                                className="overflow-x-auto overscroll-x-contain -mx-1 px-1 md:mx-0 md:px-0 custom-scrollbar dense-table-wrapper"
+                                                className="overflow-x-auto overscroll-x-contain -mx-2 px-2 md:-mx-4 md:px-4 lg:mx-0 lg:px-0 custom-scrollbar min-w-0 relative dense-table-wrapper"
                                             >
-                                                <table className="min-w-[1000px] w-full [width:max-content] table-auto border-collapse">
+                                                <table className="min-w-[1200px] w-full [width:max-content] table-auto border-collapse font-body dense-table">
                                                     <thead>
-                                                        <tr className={`${theme.header} text-xs font-bold uppercase tracking-wider`}>
-                                                            <th className="px-3 py-3 text-center w-12">#</th>
-                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('unit')}>{t('stake.registration.csv.unit', '單位')}</th>
-                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('representative')}>{t('stake.registration.csv.representative', '代表人')}</th>
-                                                            <th className="px-3 py-3 text-left w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('name')}>{t('stake.registration.csv.name', '姓名')}</th>
-                                                            <th className="px-3 py-3 text-left w-24 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('identity_type')}>{t('stake.registration.csv.identity', '身分')}</th>
-                                                            <th className="px-3 py-3 text-left w-20">{t('stake.registration.csv.trip', '行程')}</th>
-                                                            <th className="px-3 py-3 text-left w-32">{t('stake.registration.csv.ordinance', '教儀')}</th>
-                                                            <th className="px-3 py-3 text-left w-24">{t('stake.registration.csv.bus', '車次/座號')}</th>
-                                                            <th className="px-3 py-3 text-right w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('amount_due')}>{t('stake.registration.csv.amount', '金額')}</th>
-                                                            <th className="px-3 py-3 text-center w-20 cursor-pointer hover:bg-black/5" onClick={() => toggleSort('is_paid')}>{t('stake.registration.csv.status', '狀態')}</th>
-                                                            <th className="px-3 py-3 text-center w-16">{t('stake.registration.col_actions', '操作')}</th>
+                                                        <tr className={`${theme.header} text-[11px] md:text-sm font-black uppercase tracking-wider text-slate-700`}>
+                                                            <th className={`px-2 py-4 md:px-4 md:py-5 text-center w-12 sticky left-0 z-20 ${theme.header} shadow-[2px_0_5px_rgba(0,0,0,0.1)] border-b-2 border-slate-300`}>#</th>
+                                                            <th className={`px-2 py-4 md:px-4 md:py-5 text-left cursor-pointer hover:bg-black/5 sticky left-12 z-20 ${theme.header} shadow-[2px_0_5px_rgba(0,0,0,0.1)] border-b-2 border-slate-300`} onClick={() => toggleSort('representative')}>{t('stake.registration.csv.representative', '代表人')}</th>
+                                                            <th className={`px-2 py-4 md:px-4 md:py-5 text-left cursor-pointer hover:bg-black/5 sticky left-[80px] md:left-[100px] z-20 ${theme.header} shadow-[2px_0_5px_rgba(0,0,0,0.1)] border-b-2 border-slate-300`} onClick={() => toggleSort('name')}>{t('stake.registration.csv.name', '姓名')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-left cursor-pointer hover:bg-black/5 border-b-2 border-slate-300" onClick={() => toggleSort('identity_type')}>{t('stake.registration.csv.identity', '身分')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-left border-b-2 border-slate-300">{t('stake.registration.csv.trip', '行程')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-left border-b-2 border-slate-300">{t('stake.registration.csv.ordinance', '教儀')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-left border-b-2 border-slate-300">{t('stake.registration.csv.bus', '車次/座號')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-right cursor-pointer hover:bg-black/5 border-b-2 border-slate-300" onClick={() => toggleSort('amount_due')}>{t('stake.registration.csv.amount', '金額')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-center cursor-pointer hover:bg-black/5 border-b-2 border-slate-300" onClick={() => toggleSort('is_paid')}>{t('stake.registration.csv.status', '狀態')}</th>
+                                                            <th className="px-2 py-4 md:px-4 md:py-5 text-center border-b-2 border-slate-300">{t('stake.registration.col_actions', '操作')}</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-slate-100 bg-white">
+                                                    <tbody className="divide-y divide-slate-200 bg-white">
                                                         {regs.map((r, idx) => {
                                                             const { bookingStatus, bookingColor } = getBookingStatus(r);
                                                             return (
-                                                                <tr key={r.reg_id} className="hover:bg-slate-50/80 transition-colors group/row">
-                                                                    <td className="px-3 py-3 text-center text-[10px] font-mono text-slate-400">{r.serial_number || idx + 1}</td>
-                                                                    <td className={`${THEME.tableText} px-3 py-3`}>{r.unit}</td>
-                                                                    <td className={`${THEME.tableText} px-3 py-3 font-bold text-indigo-700`}>{r.primary_contact_name || primaryContactMap.get(r.family_group_id) || '--'}</td>
-                                                                    <td className={`${THEME.tableText} px-3 py-3 font-bold`}>{r.name}</td>
-                                                                    <td className={`${THEME.tableText} px-3 py-3`}>{r.identity_type}</td>
-                                                                    <td className="px-3 py-3">
-                                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">{r.trip_type}</span>
-                                                                    </td>
-                                                                    <td className="px-3 py-3">
-                                                                        <div className="flex flex-col gap-0.5">
-                                                                            <span className="text-[10px] font-bold text-indigo-900">{r.ordinance_item || '--'}</span>
-                                                                            <span className="text-[9px] text-slate-400">{r.ceremony_session || '--'}</span>
+                                                                <tr key={r.reg_id} className="hover:bg-orange-50/50 transition-colors group">
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-center text-[10px] md:text-xs font-mono text-slate-400 sticky left-0 z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] border-r border-slate-100">{r.serial_number || idx + 1}</td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm font-bold text-orange-800 sticky left-12 z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap border-r border-slate-100">{r.primary_contact_name || primaryContactMap.get(r.family_group_id) || '--'}</td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm font-black text-slate-900 sticky left-[80px] md:left-[100px] z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap border-r border-slate-100">{r.name}</td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm text-slate-600 font-medium">{r.identity_type}</td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className={`px-2 py-0.5 rounded border text-[9px] md:text-[10px] font-black uppercase tracking-tighter ${bookingColor}`}>
+                                                                                {bookingStatus}
+                                                                            </span>
+                                                                            <span className="text-[11px] md:text-sm text-slate-700 font-bold">{r.trip_type}</span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="px-3 py-3">
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4">
+                                                                        <div className="text-[11px] md:text-sm text-slate-800 font-bold">{r.ordinance_item}</div>
+                                                                        <div className="text-[9px] md:text-[10px] text-slate-500 font-medium">{r.ceremony_session || ''}</div>
+                                                                    </td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4">
                                                                         <div className="flex flex-col gap-0.5">
-                                                                            <span className={`px-2 py-0.5 rounded border ${bookingColor}`}>{bookingStatus}</span>
-                                                                            {r.bus_assigned && <span className="text-[10px] font-bold text-blue-600">Bus {r.bus_assigned} - {r.seat_no || '--'}</span>}
+                                                                            <span className="text-[11px] md:text-sm font-black text-slate-900 bg-slate-100 px-2 py-1 rounded border border-slate-200 inline-block w-fit">{r.bus_assigned || '---'}</span>
+                                                                            {r.seat_no && <span className="text-[9px] md:text-[10px] text-slate-400 font-bold">座號: {r.seat_no}</span>}
                                                                         </div>
                                                                     </td>
-                                                                    <td className={`${THEME.tableText} px-3 py-3 text-right font-mono font-bold text-blue-600`}>${r.amount_due}</td>
-                                                                    <td className="px-3 py-3 text-center">
-                                                                        <div className="flex flex-col items-center gap-1">
-                                                                            {getStatusBadge(r)}
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-right">
+                                                                        <div className="flex flex-col items-end gap-1.5">
+                                                                            <span className="text-sm md:text-base font-black text-slate-900 tracking-tight">${r.amount_due}</span>
                                                                             {getMethodBadge(r)}
                                                                         </div>
                                                                     </td>
-                                                                    <td className="px-3 py-3 text-center">
-                                                                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
-                                                                            <button 
-                                                                                onClick={() => setEditTarget(r)}
-                                                                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                                                                            >
-                                                                                <Edit2 size={14} />
-                                                                            </button>
-                                                                            <button 
-                                                                                onClick={() => setDeleteTarget(r.reg_id)}
-                                                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                                                                            >
-                                                                                <Trash2 size={14} />
-                                                                            </button>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-center">
+                                                                        {getStatusBadge(r)}
+                                                                    </td>
+                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-center">
+                                                                        <div className="flex justify-center gap-1.5 md:gap-3">
+                                                                            <button onClick={() => setEditTarget(r)} className="p-2.5 text-orange-700 hover:bg-orange-100 rounded transition-all border-2 border-orange-200 shadow-sm active:scale-90"><Edit2 size={16} /></button>
+                                                                            <button onClick={() => setDeleteTarget(r.reg_id)} className="p-2.5 text-rose-700 hover:bg-rose-100 rounded transition-all border-2 border-rose-200 shadow-sm active:scale-90"><Trash2 size={16} /></button>
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -1047,7 +1027,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                                     <motion.div 
                                                         key={r.reg_id}
                                                         layout
-                                                        className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+                                                        className="bg-white rounded border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
                                                     >
                                                         <div className={`absolute top-0 left-0 w-1 h-full ${theme.level1}`}></div>
                                                         <div className="flex justify-between items-start mb-3">
@@ -1074,7 +1054,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                                             <div className="flex items-center justify-between text-[11px]">
                                                                 <span className="text-slate-500 font-medium">狀態:</span>
                                                                 <div className="flex gap-1 items-center">
-                                                                    <span className={`px-1.5 py-0.5 rounded-[4px] border ${bookingColor}`}>{bookingStatus}</span>
+                                                                    <span className={`px-1.5 py-0.5 rounded border ${bookingColor}`}>{bookingStatus}</span>
                                                                     {getStatusBadge(r)}
                                                                 </div>
                                                             </div>
@@ -1097,7 +1077,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
 
             {Object.keys(groupedRegs).length === 0 && (
                 <div className="px-4 md:px-6">
-                    <div className="bg-white/40 backdrop-blur-sm rounded-lg border border-white/20 py-20 text-center shadow-sm">
+                    <div className="bg-white/40 backdrop-blur-sm rounded border border-white/20 py-20 text-center shadow-sm">
                         <div className="bg-white/40 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Users className="w-8 h-8 text-slate-300" />
                         </div>

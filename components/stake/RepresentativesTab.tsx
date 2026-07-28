@@ -13,11 +13,11 @@ interface RepresentativesTabProps {
 // Enterprise Light/High-Contrast Theme definitions
 const THEME = {
     canvas: 'bg-[#F0F4F8]',
-    card: 'bg-white rounded-[8px] shadow-sm border border-slate-200 overflow-hidden',
+    card: 'bg-white rounded shadow-sm border border-slate-200 overflow-hidden',
     header: 'bg-indigo-900 text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none',
     tableText: 'text-[11px] md:text-xs lg:text-sm text-slate-900',
-    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
-    input: 'w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
+    btnPrimary: 'bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded transition-all active:scale-95 flex items-center justify-center gap-2 h-10 px-4 text-sm md:h-11 md:px-5 lg:h-10 lg:px-5',
+    input: 'w-full bg-white border border-slate-200 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
 };
 
 // Rainbow sequence themes (Red, Orange, Yellow, Green, Blue, Indigo, Purple)
@@ -185,7 +185,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                 />
 
                 {/* Title Section - Level 1 Rainbow Depth (Title Only) */}
-                <div className="bg-indigo-900 text-white p-3 md:p-4 rounded-[8px] shadow-sm flex items-center gap-3 overflow-hidden">
+                <div className="bg-indigo-900 text-white p-3 md:p-4 rounded shadow-sm flex items-center gap-3 overflow-hidden">
                     <Users className="w-5 h-5 md:w-6 md:h-6 text-indigo-300 shrink-0" />
                     <h2 className="text-sm md:text-xl font-black tracking-tight truncate font-title flex-1">
                         {t('stake.reps.tab_title', '代表名單')}
@@ -193,29 +193,29 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                 </div>
 
                 {/* Action Block - Level 2 Optimization (Buttons moved here) */}
-                <div className="bg-indigo-100/50 p-2 rounded-[8px] border border-indigo-200 flex items-center justify-between gap-2">
+                <div className="bg-indigo-100/50 p-2 rounded border border-indigo-200 flex items-center justify-between gap-2">
                     <button 
                         onClick={() => {
                             setEditingRep({ unit: settings?.units[0] || '' });
                             setIsEditing(true);
                         }}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-[8px] font-bold shadow-sm transition-all flex items-center justify-center gap-2 h-9 px-4 text-xs md:h-10 md:px-5 md:text-sm active:scale-95"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold shadow-sm transition-all flex items-center justify-center gap-2 h-9 px-4 text-xs md:h-10 md:px-5 md:text-sm active:scale-95"
                     >
                         <Plus size={16} />
                         <span>{t('stake.reps.add_title', '新增代表')}</span>
                     </button>
 
-                    <div className="flex bg-white p-1 rounded-lg border border-indigo-200 shadow-inner">
+                    <div className="flex bg-white p-1 rounded border border-indigo-200 shadow-inner">
                         <button 
                             onClick={() => setViewMode('table')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-[11px] font-bold ${viewMode === 'table' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
                         >
                             <List size={14} />
                             <span>表格</span>
                         </button>
                         <button 
                             onClick={() => setViewMode('card')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-[11px] font-bold ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-[11px] font-bold ${viewMode === 'card' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
                         >
                             <LayoutDashboard size={14} />
                             <span>卡片</span>
@@ -231,11 +231,11 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-white rounded-[8px] w-full max-w-lg overflow-hidden shadow-xl flex flex-col border border-slate-200"
+                            className="bg-white rounded w-full max-w-lg overflow-hidden shadow-xl flex flex-col border border-slate-200"
                         >
                             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                    <div className="p-2 bg-indigo-50 rounded text-indigo-600">
                                         <Plus size={20} />
                                     </div>
                                     <h3 className="text-sm md:text-base font-bold text-slate-900">
@@ -244,7 +244,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                 </div>
                                 <button 
                                     onClick={() => { setIsEditing(false); setEditingRep({}); }} 
-                                    className="p-2 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors"
+                                    className="p-2 hover:bg-slate-100 text-slate-400 rounded transition-colors"
                                 >
                                     <X className="w-5 h-5"/>
                                 </button>
@@ -295,8 +295,8 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                     </div>
                                 </div>
                                 <div className="flex gap-3 pt-4 border-t border-slate-100">
-                                    <button onClick={() => { setIsEditing(false); setEditingRep({}); }} className="flex-1 text-slate-500 hover:bg-slate-100 border border-slate-200 rounded-[8px] font-bold text-xs tracking-wider h-10">{t('common.cancel', '取消')}</button>
-                                    <button onClick={handleSave} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[8px] font-bold text-xs tracking-wider h-10">{t('common.confirm_save', '確認儲存')}</button>
+                                    <button onClick={() => { setIsEditing(false); setEditingRep({}); }} className="flex-1 text-slate-500 hover:bg-slate-100 border border-slate-200 rounded font-bold text-xs tracking-wider h-10">{t('common.cancel', '取消')}</button>
+                                    <button onClick={handleSave} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold text-xs tracking-wider h-10">{t('common.confirm_save', '確認儲存')}</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -305,7 +305,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
             </AnimatePresence>
 
             {msg && (
-                <div className={`mx-2 p-3 rounded-[8px] border flex items-center shadow-sm animate-fade-in ${msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
+                <div className={`mx-2 p-3 rounded border flex items-center shadow-sm animate-fade-in ${msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
                     <div className="mr-3">
                         {msg.type === 'success' ? <CheckCircle size={18} className="text-emerald-600" /> : <ShieldAlert size={18} className="text-rose-600" />}
                     </div>
@@ -370,7 +370,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
             {/* Data Grid Section with dynamic Rainbow sequence coloring */}
             <div className="space-y-4">
                 {units.length === 0 ? (
-                    <div className="bg-white rounded-[8px] shadow-sm border border-slate-200 p-12 text-center">
+                    <div className="bg-white rounded shadow-sm border border-slate-200 p-12 text-center">
                         <div className="bg-slate-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
                             <Search className="w-6 h-6 text-slate-300" />
                         </div>
@@ -382,14 +382,14 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                         const isCollapsed = collapsedUnits[unit] ?? false;
 
                         return (
-                            <div key={unit} className={`rounded-[12px] border ${theme.level3} overflow-hidden shadow-md transition-all hover:shadow-lg mb-6`}>
+                            <div key={unit} className={`rounded border ${theme.level3} overflow-hidden shadow-md transition-all hover:shadow-lg mb-6`}>
                                 {/* Collapsible Title Row - Level 1 Rainbow Depth */}
                                 <div 
                                     onClick={() => toggleUnitCollapse(unit)}
                                     className={`w-full px-4 py-3 cursor-pointer select-none border-b ${theme.level3} ${theme.level1} flex items-center justify-between transition-all`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-lg ${theme.btn} flex items-center justify-center text-white shadow-sm`}>
+                                        <div className={`w-8 h-8 rounded ${theme.btn} flex items-center justify-center text-white shadow-sm`}>
                                             <MapPin size={18} />
                                         </div>
                                         <div>
@@ -485,14 +485,14 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                                                             <div className="flex items-center justify-center gap-2">
                                                                                 <button 
                                                                                     onClick={(e) => { e.stopPropagation(); setEditingRep(r); setIsEditing(true); }}
-                                                                                    className={`p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100 bg-white shadow-sm`}
+                                                                                    className={`p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors border border-indigo-100 bg-white shadow-sm`}
                                                                                     title={t('common.edit', '編輯')}
                                                                                 >
                                                                                     <Edit2 size={14} />
                                                                                 </button>
                                                                                 <button 
                                                                                     onClick={(e) => { e.stopPropagation(); setConfirmAction({ type: 'delete', repId: r.id }); }}
-                                                                                    className={`p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm`}
+                                                                                    className={`p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors border border-rose-100 bg-white shadow-sm`}
                                                                                     title={t('common.delete', '刪除')}
                                                                                 >
                                                                                     <Trash2 size={14} />
@@ -508,7 +508,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                                     /* Micro Card View for Mobile Optimization */
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 font-body">
                                                         {groupedByUnit[unit].map((r, idx) => (
-                                                            <div key={`${r.id}-${unit}-${idx}`} className="bg-white border border-slate-100 rounded-lg p-3 shadow-sm flex flex-col gap-2">
+                                                            <div key={`${r.id}-${unit}-${idx}`} className="bg-white border border-slate-100 rounded p-3 shadow-sm flex flex-col gap-2">
                                                                 <div className="flex justify-between items-start">
                                                                     <div className="flex flex-col">
                                                                         <span className="text-sm font-black text-slate-900">{r.name}</span>
@@ -517,13 +517,13 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                                                     <div className="flex gap-1">
                                                                         <button 
                                                                             onClick={(e) => { e.stopPropagation(); setEditingRep(r); setIsEditing(true); }}
-                                                                            className={`p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100 bg-white shadow-sm`}
+                                                                            className={`p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors border border-indigo-100 bg-white shadow-sm`}
                                                                         >
                                                                             <Edit2 size={14} />
                                                                         </button>
                                                                         <button 
                                                                             onClick={(e) => { e.stopPropagation(); setConfirmAction({ type: 'delete', repId: r.id }); }}
-                                                                            className={`p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-rose-100 bg-white shadow-sm`}
+                                                                            className={`p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors border border-rose-100 bg-white shadow-sm`}
                                                                         >
                                                                             <Trash2 size={14} />
                                                                         </button>

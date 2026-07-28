@@ -107,10 +107,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
             {/* Inner Service Personnel Modal */}
             {showServicePersonnel ? (
-                <div className="bg-white w-[600px] max-w-full rounded-[2rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative z-[110] border-2 border-slate-100 animate-in zoom-in-95 duration-300">
+                <div className="bg-white w-[600px] max-w-full rounded shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative z-[110] border-2 border-slate-100 animate-in zoom-in-95 duration-300">
                     <div className="bg-indigo-900 text-white p-6 flex justify-between items-center shrink-0 border-b border-indigo-950">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/10 rounded-xl border border-white/10">
+                            <div className="p-3 bg-white/10 rounded border border-white/10">
                                 <ShieldCheck className="w-6 h-6 text-indigo-300" />
                             </div>
                             <div>
@@ -118,7 +118,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                                 <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest opacity-60">Service Personnel Registry</p>
                             </div>
                         </div>
-                        <button onClick={() => setShowServicePersonnel(false)} className="hover:bg-white/10 rounded-xl p-3 transition-all active:scale-90"><X className="w-6 h-6"/></button>
+                        <button onClick={() => setShowServicePersonnel(false)} className="hover:bg-white/10 rounded p-3 transition-all active:scale-90"><X className="w-6 h-6"/></button>
                     </div>
                     <div className="p-0 overflow-y-auto bg-slate-50 flex-1 min-h-[300px] custom-scrollbar">
                         {sortedServicePersonnel.length > 0 ? (
@@ -150,24 +150,24 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                     <div className="p-6 border-t border-slate-100 bg-slate-50 shrink-0">
                         <button 
                             onClick={() => setShowServicePersonnel(false)}
-                            className="w-full bg-white text-slate-900 h-14 rounded-2xl font-black text-sm hover:bg-slate-900 hover:text-white transition-all shadow-md active:scale-95 border-2 border-slate-100"
+                            className="w-full bg-white text-slate-900 h-14 rounded font-black text-sm hover:bg-slate-900 hover:text-white transition-all shadow-md active:scale-95 border-2 border-slate-100"
                         >
                             返回登入入口
                         </button>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl overflow-hidden border-2 border-slate-100 relative z-[105] animate-in zoom-in-95 duration-300">
+                <div className="bg-white w-full max-w-sm rounded shadow-2xl overflow-hidden border-2 border-slate-100 relative z-[105] animate-in zoom-in-95 duration-300">
                     <div className="h-2 w-full bg-indigo-600"></div>
                     <button 
                         onClick={onClose}
-                        className="absolute right-6 top-8 text-slate-400 hover:text-slate-900 transition-all p-2 hover:bg-slate-50 rounded-xl active:scale-90"
+                        className="absolute right-6 top-8 text-slate-400 hover:text-slate-900 transition-all p-2 hover:bg-slate-50 rounded active:scale-90"
                     >
                         <X className="w-6 h-6" />
                     </button>
                     <div className="p-10">
                         <div className="flex flex-col items-center mb-10">
-                            <div className="w-16 h-16 bg-indigo-50 rounded-[1.25rem] flex items-center justify-center text-indigo-600 mb-6 shadow-inner border border-indigo-100">
+                            <div className="w-16 h-16 bg-indigo-50 rounded flex items-center justify-center text-indigo-600 mb-6 shadow-inner border border-indigo-100">
                                 <Lock size={32} />
                             </div>
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">同工系統登入</h2>
@@ -187,7 +187,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                                             required
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
-                                            className="pl-14 pr-12 block w-full border-slate-100 rounded-[1.25rem] shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
+                                            className="pl-14 pr-12 block w-full border-slate-100 rounded shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
                                             placeholder="Account ID"
                                             disabled={loginLockCountdown > 0}
                                         />
@@ -213,7 +213,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                                             required
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="pl-14 pr-12 block w-full border-slate-100 rounded-[1.25rem] shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
+                                            className="pl-14 pr-12 block w-full border-slate-100 rounded shadow-sm h-14 border-2 focus:border-indigo-600 transition-all text-sm bg-slate-50 focus:bg-white text-slate-900 font-black outline-none"
                                             placeholder="Security Password"
                                             disabled={loginLockCountdown > 0}
                                         />
@@ -230,7 +230,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                             </div>
 
                             {error && (
-                                <div className="flex items-center text-[11px] font-black bg-rose-50 text-rose-600 p-4 rounded-2xl border-2 border-rose-100 animate-in shake duration-300">
+                                <div className="flex items-center text-[11px] font-black bg-rose-50 text-rose-600 p-4 rounded border-2 border-rose-100 animate-in shake duration-300">
                                     <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
                                     {error}
                                 </div>
@@ -240,7 +240,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                                 <button
                                     type="submit"
                                     disabled={loading || loginLockCountdown > 0}
-                                    className={`w-full flex justify-center items-center h-14 px-6 rounded-[1.25rem] shadow-xl text-base font-black transition-all hover:-translate-y-1 active:scale-95
+                                    className={`w-full flex justify-center items-center h-14 px-6 rounded shadow-xl text-base font-black transition-all hover:-translate-y-1 active:scale-95
                                         ${loginLockCountdown > 0 
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
                                             : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'}

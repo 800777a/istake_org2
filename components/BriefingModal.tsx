@@ -48,7 +48,7 @@ const BriefingModal: React.FC<BriefingModalProps> = ({ registration, event, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[500px] max-w-full rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-[500px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
         <div className="bg-blue-800 text-white p-6 relative shrink-0">
@@ -65,7 +65,7 @@ const BriefingModal: React.FC<BriefingModalProps> = ({ registration, event, onCl
         <div className="overflow-y-auto p-6 space-y-6">
             
             {/* 1. Personal Info Card */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+            <div className="bg-gray-50 rounded p-4 border border-gray-100 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <div className="text-lg font-bold text-gray-800">{registration.name}</div>
@@ -129,7 +129,7 @@ const BriefingModal: React.FC<BriefingModalProps> = ({ registration, event, onCl
             </div>
 
             {/* 3. Checklist */}
-            <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-100">
+            <div className="bg-yellow-50 rounded p-4 border border-yellow-100">
                 <h3 className="font-bold text-yellow-800 mb-3 flex items-center text-sm">
                     <CheckCircle className="w-4 h-4 mr-2" />
                     攜帶物品檢核
@@ -150,7 +150,7 @@ const BriefingModal: React.FC<BriefingModalProps> = ({ registration, event, onCl
         <div className="p-4 border-t bg-gray-50 flex justify-end shrink-0">
             <button 
                 onClick={() => window.print()}
-                className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 flex items-center"
+                className="bg-gray-800 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-700 flex items-center"
             >
                 <Printer className="w-4 h-4 mr-2" /> 列印 / 截圖
             </button>

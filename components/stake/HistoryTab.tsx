@@ -211,7 +211,7 @@ const rainbowThemes = [
         const stats = calculateStats(yearEvents);
         
         return (
-            <div className={`overflow-x-auto rounded-lg border shadow-sm mb-6 ${theme.bg}`}>
+            <div className={`overflow-x-auto rounded border shadow-sm mb-6 ${theme.bg}`}>
                 <table className="w-full text-left border-collapse min-w-[1200px]">
                     <thead>
                         <tr className={`${theme.bg} border-b ${theme.border}`}>
@@ -251,13 +251,13 @@ const rainbowThemes = [
                                     <div className="flex items-center justify-center gap-2">
                                         <button 
                                             onClick={() => { setEditingEvent(event); setIsModalOpen(true); }}
-                                            className={`p-2 ${theme.text} ${theme.btnHover} rounded-lg border ${theme.border} bg-white shadow-sm transition-all active:scale-95`}
+                                            className={`p-2 ${theme.text} ${theme.btnHover} rounded border ${theme.border} bg-white shadow-sm transition-all active:scale-95`}
                                         >
                                             <Edit2 size={14} />
                                         </button>
                                         <button 
                                             onClick={() => handleDelete(event.event_id)}
-                                            className={`p-2 ${theme.text} ${theme.btnHover} rounded-lg border ${theme.border} bg-white shadow-sm transition-all active:scale-95`}
+                                            className={`p-2 ${theme.text} ${theme.btnHover} rounded border ${theme.border} bg-white shadow-sm transition-all active:scale-95`}
                                         >
                                             <Trash2 size={14} />
                                         </button>
@@ -292,10 +292,10 @@ const rainbowThemes = [
     return (
         <div className="space-y-6 animate-fade-in pb-20">
             {/* Header & Control Center - Standardized for Bright Modern Style */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-4">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-4">
                 {/* Row 1: Title Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+                    <div className="p-3 bg-white/10 rounded border border-white/10">
                         <History className="text-blue-300" size={24} />
                     </div>
                     <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
@@ -311,14 +311,14 @@ const rainbowThemes = [
                     <div className="flex justify-end items-center gap-3">
                         <button 
                             onClick={() => { setEditingEvent({}); setIsModalOpen(true); }}
-                            className="bg-blue-600 text-white rounded-lg font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center justify-center gap-2 h-12 px-6 text-base md:h-11 md:px-5 md:text-sm lg:h-10 lg:px-5 lg:text-sm active:scale-95"
+                            className="bg-blue-600 text-white rounded font-bold shadow-sm hover:bg-blue-700 transition-all flex items-center justify-center gap-2 h-12 px-6 text-base md:h-11 md:px-5 md:text-sm lg:h-10 lg:px-5 lg:text-sm active:scale-95"
                         >
                             <Plus size={18} />
                             {t('history.btn.add_manual', '補登歷史活動')}
                         </button>
                         <button 
                             onClick={onRefresh}
-                            className="bg-white/10 text-white p-2 rounded-lg border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center h-12 w-12 md:h-11 md:w-11 lg:h-10 lg:w-10 active:scale-95"
+                            className="bg-white/10 text-white p-2 rounded border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center h-12 w-12 md:h-11 md:w-11 lg:h-10 lg:w-10 active:scale-95"
                         >
                             <RefreshCw size={18} />
                         </button>
@@ -335,7 +335,7 @@ const rainbowThemes = [
                     const isCollapsed = collapsedYears[yearGroup.year] ?? false;
                     
                     return (
-                        <div key={yearGroup.year} className="animate-fade-in border rounded-lg bg-white shadow-sm overflow-hidden">
+                        <div key={yearGroup.year} className="animate-fade-in border rounded bg-white shadow-sm overflow-hidden">
                             {/* Collapsible Card Header Standard */}
                             <div 
                                 onClick={() => toggleYearCollapse(yearGroup.year)}
@@ -343,7 +343,7 @@ const rainbowThemes = [
                             >
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${theme.bg} ${theme.text} border ${theme.border}`}>
+                                        <div className={`p-2 rounded ${theme.bg} ${theme.text} border ${theme.border}`}>
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <h3 className={`font-bold ${theme.text} text-sm md:text-base lg:text-lg`}>
@@ -374,7 +374,7 @@ const rainbowThemes = [
                                         {/* Year Stats Grid - Bright Modern Cards */}
                                         {stats && (
                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                                                <div className="bg-white p-5 rounded-lg border border-slate-100 shadow-sm group hover:border-indigo-400 transition-all">
+                                                <div className="bg-white p-5 rounded border border-slate-100 shadow-sm group hover:border-indigo-400 transition-all">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">年度總人數</p>
                                                     <div className="flex items-end justify-between">
                                                         <h4 className="text-2xl font-bold text-slate-900 tabular-nums">
@@ -383,7 +383,7 @@ const rainbowThemes = [
                                                         <Users className="w-6 h-6 text-slate-200" />
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-5 rounded-lg border border-slate-100 shadow-sm group hover:border-emerald-400 transition-all">
+                                                <div className="bg-white p-5 rounded border border-slate-100 shadow-sm group hover:border-emerald-400 transition-all">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">車資總收入</p>
                                                     <div className="flex items-end justify-between">
                                                         <h4 className="text-2xl font-bold text-emerald-600 tabular-nums">
@@ -392,7 +392,7 @@ const rainbowThemes = [
                                                         <Wallet className="w-6 h-6 text-emerald-100" />
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-5 rounded-lg border border-slate-100 shadow-sm group hover:border-rose-400 transition-all">
+                                                <div className="bg-white p-5 rounded border border-slate-100 shadow-sm group hover:border-rose-400 transition-all">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">年度總支出</p>
                                                     <div className="flex items-end justify-between">
                                                         <h4 className="text-2xl font-bold text-rose-600 tabular-nums">
@@ -401,7 +401,7 @@ const rainbowThemes = [
                                                         <DollarSign className="w-6 h-6 text-rose-100" />
                                                     </div>
                                                 </div>
-                                                <div className="bg-white p-5 rounded-lg border border-slate-100 shadow-sm group hover:border-amber-400 transition-all">
+                                                <div className="bg-white p-5 rounded border border-slate-100 shadow-sm group hover:border-amber-400 transition-all">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">平均每場人數</p>
                                                     <div className="flex items-end justify-between">
                                                         <h4 className="text-2xl font-bold text-amber-600 tabular-nums">
@@ -430,11 +430,11 @@ const rainbowThemes = [
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-[3rem] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+                            className="bg-white rounded w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
                         >
                             <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <div className="flex items-center gap-6">
-                                    <div className="p-4 bg-blue-50 rounded-2xl">
+                                    <div className="p-4 bg-blue-50 rounded">
                                         <Save className="text-blue-600" size={32} />
                                     </div>
                                     <div>
@@ -444,7 +444,7 @@ const rainbowThemes = [
                                         <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Manual Data Archiving System</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsModalOpen(false)} className="p-4 hover:bg-slate-100 text-slate-400 rounded-2xl transition-all active:scale-90"><X className="w-6 h-6"/></button>
+                                <button onClick={() => setIsModalOpen(false)} className="p-4 hover:bg-slate-100 text-slate-400 rounded transition-all active:scale-90"><X className="w-6 h-6"/></button>
                             </div>
                             
                             <div className="p-10 overflow-y-auto flex-1 custom-scrollbar space-y-10">
@@ -461,7 +461,7 @@ const rainbowThemes = [
                                                         type="date"
                                                         value={editingEvent.event_date || ''}
                                                         onChange={e => setEditingEvent({ ...editingEvent, event_date: e.target.value })}
-                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
+                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
                                                     />
                                                 </div>
                                             </div>
@@ -474,7 +474,7 @@ const rainbowThemes = [
                                                         value={editingEvent.event_title || ''}
                                                         onChange={e => setEditingEvent({ ...editingEvent, event_title: e.target.value })}
                                                         placeholder={tString('history.placeholder.title', '例如：2023年6月聖殿旅行團')}
-                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
+                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
                                                     />
                                                 </div>
                                             </div>
@@ -486,7 +486,7 @@ const rainbowThemes = [
                                                         type="text"
                                                         value={editingEvent.organizer || ''}
                                                         onChange={e => setEditingEvent({ ...editingEvent, organizer: e.target.value })}
-                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-[1.25rem] font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
+                                                        className="w-full pl-16 pr-6 py-5 bg-slate-50 border-2 border-slate-100 rounded font-black focus:border-blue-500 focus:bg-white transition-all outline-none"
                                                     />
                                                 </div>
                                             </div>
@@ -496,7 +496,7 @@ const rainbowThemes = [
                                     {/* Attendance Stats */}
                                     <div className="space-y-8">
                                         <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">{t('history.group.attendance', '參與人數統計')}</h4>
-                                        <div className="grid grid-cols-2 gap-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                                        <div className="grid grid-cols-2 gap-6 bg-slate-50 p-8 rounded border border-slate-100">
                                             {[
                                                 { key: 'attendance_total', label: t('history.col.attendance_total', '總人數'), icon: Users, color: 'text-slate-900' },
                                                 { key: 'attendance_bus', label: t('history.col.attendance_bus', '搭車人數'), icon: Bus, color: 'text-indigo-600' },
@@ -511,7 +511,7 @@ const rainbowThemes = [
                                                             type="number"
                                                             value={(editingEvent as any)[stat.key] || 0}
                                                             onChange={e => setEditingEvent({ ...editingEvent, [stat.key]: parseInt(e.target.value) || 0 })}
-                                                            className="w-full pl-10 pr-4 py-4 bg-white border-2 border-slate-100 rounded-xl font-black focus:border-blue-500 outline-none transition-all"
+                                                            className="w-full pl-10 pr-4 py-4 bg-white border-2 border-slate-100 rounded font-black focus:border-blue-500 outline-none transition-all"
                                                         />
                                                     </div>
                                                 </div>
@@ -522,7 +522,7 @@ const rainbowThemes = [
                                     {/* Financial Stats */}
                                     <div className="md:col-span-2 space-y-8">
                                         <h4 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em]">{t('history.group.finance', '財務收支明細')}</h4>
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-slate-50 p-8 rounded border border-slate-100">
                                             {[
                                                 { key: 'revenue_fare', label: t('history.col.revenue_fare', '車資收入'), icon: DollarSign, accent: 'text-emerald-600' },
                                                 { key: 'expense_total', label: t('history.col.expense_total', '費用支出'), icon: Wallet, accent: 'text-rose-600' },
@@ -540,7 +540,7 @@ const rainbowThemes = [
                                                             type="number"
                                                             value={(editingEvent as any)[stat.key] || 0}
                                                             onChange={e => setEditingEvent({ ...editingEvent, [stat.key]: parseInt(e.target.value) || 0 })}
-                                                            className={`w-full ${stat.noMoney ? 'pl-10' : 'pl-12'} pr-4 py-4 bg-white border-2 border-slate-100 rounded-xl font-black focus:border-blue-500 outline-none transition-all ${stat.accent}`}
+                                                            className={`w-full ${stat.noMoney ? 'pl-10' : 'pl-12'} pr-4 py-4 bg-white border-2 border-slate-100 rounded font-black focus:border-blue-500 outline-none transition-all ${stat.accent}`}
                                                         />
                                                     </div>
                                                 </div>
@@ -558,7 +558,7 @@ const rainbowThemes = [
                                                 onChange={e => setEditingEvent({ ...editingEvent, event_notes: e.target.value })}
                                                 rows={4}
                                                 placeholder={tString('history.placeholder.notes', '輸入活動備註或補充說明...')}
-                                                className="w-full pl-16 pr-6 py-6 bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] font-black focus:border-blue-500 focus:bg-white transition-all outline-none resize-none"
+                                                className="w-full pl-16 pr-6 py-6 bg-slate-50 border-2 border-slate-100 rounded font-black focus:border-blue-500 focus:bg-white transition-all outline-none resize-none"
                                             />
                                         </div>
                                     </div>
@@ -568,13 +568,13 @@ const rainbowThemes = [
                             <div className="p-10 bg-slate-50 border-t border-slate-100 flex justify-end gap-6">
                                 <button 
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-10 py-5 bg-white text-slate-400 rounded-2xl font-black text-sm hover:bg-slate-100 transition-all border-2 border-slate-100 active:scale-95"
+                                    className="px-10 py-5 bg-white text-slate-400 rounded font-black text-sm hover:bg-slate-100 transition-all border-2 border-slate-100 active:scale-95"
                                 >
                                     {t('common.cancel', '取消')}
                                 </button>
                                 <button 
                                     onClick={handleSave}
-                                    className="px-14 py-5 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-xl hover:shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center"
+                                    className="px-14 py-5 bg-blue-600 text-white rounded font-black text-sm shadow-xl hover:shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center"
                                 >
                                     <Save className="w-5 h-5 mr-3" /> {t('common.save_record', '儲存歷史記錄 (SAVE)')}
                                 </button>

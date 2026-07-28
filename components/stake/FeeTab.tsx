@@ -379,7 +379,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
     return (
         <div className="space-y-12 animate-fade-in pb-20">
             {toastMsg && (
-                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded-2xl shadow-2xl z-[200] font-black flex items-center animate-fade-in border-2 ${toastMsg.includes('成功') ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900 text-amber-400 border-slate-700'}`}>
+                <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded shadow-2xl z-[200] font-black flex items-center animate-fade-in border-2 ${toastMsg.includes('成功') ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-900 text-amber-400 border-slate-700'}`}>
                     {toastMsg.includes('成功') ? <CheckCircle className="w-6 h-6 mr-3" /> : <XCircle className="w-6 h-6 mr-3" />}
                     {toastMsg}
                 </div>
@@ -409,7 +409,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
             />
 
             {/* Header & Global Financial Stats */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
                 <div 
                     className="bg-indigo-900 p-4 flex justify-between items-center cursor-pointer"
                     onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
@@ -428,15 +428,15 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                     <div className="p-6 bg-[#F0F4F8]/30">
                         <div className="flex flex-col items-end gap-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
-                                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm min-w-[160px]">
+                                <div className="bg-white p-4 rounded border border-slate-200 shadow-sm min-w-[160px]">
                                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">轉帳實收</div>
                                     <div className="text-xl font-bold text-slate-900">${stats.actualTransfer.toLocaleString()}</div>
                                 </div>
-                                <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm min-w-[160px]">
+                                <div className="bg-white p-4 rounded border border-slate-200 shadow-sm min-w-[160px]">
                                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">現金實收</div>
                                     <div className="text-xl font-bold text-slate-900">${stats.actualCash.toLocaleString()}</div>
                                 </div>
-                                <div className="bg-blue-600 p-4 rounded-lg shadow-md min-w-[160px]">
+                                <div className="bg-blue-600 p-4 rounded shadow-md min-w-[160px]">
                                     <div className="text-[10px] font-bold text-blue-100 uppercase tracking-wider mb-1">應收總額</div>
                                     <div className="text-xl font-bold text-white">${(stats.expectedTransfer + stats.expectedCash).toLocaleString()}</div>
                                 </div>
@@ -447,7 +447,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
             </div>
 
             {/* Reconciliation Control Panel */}
-            <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
                 <div 
                     className="bg-slate-50 p-4 flex justify-between items-center cursor-pointer border-b border-slate-200"
                     onClick={() => setIsReconCollapsed(!isReconCollapsed)}
@@ -484,7 +484,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                                 <input 
                                                     type="number" 
                                                     placeholder="金額" 
-                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none transition-all" 
+                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded text-sm focus:border-blue-500 outline-none transition-all" 
                                                     value={matchAmount} 
                                                     onChange={e => setMatchAmount(e.target.value)} 
                                                 />
@@ -494,7 +494,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                                 <input 
                                                     type="text" 
                                                     placeholder="帳號末五碼" 
-                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 outline-none uppercase" 
+                                                    className="w-full pl-9 pr-3 h-10 bg-white border border-slate-200 rounded text-sm focus:border-blue-500 outline-none uppercase" 
                                                     value={matchLast5} 
                                                     onChange={e => setMatchLast5(e.target.value)} 
                                                 />
@@ -502,7 +502,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                             <button 
                                                 onClick={handleMatch}
                                                 disabled={!matchLast5 || !matchAmount}
-                                                className="h-10 px-6 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 disabled:opacity-30 transition-all flex items-center gap-2"
+                                                className="h-10 px-6 bg-blue-600 text-white rounded text-sm font-bold shadow-sm hover:bg-blue-700 disabled:opacity-30 transition-all flex items-center gap-2"
                                             >
                                                 <RefreshCw size={14} />
                                                 執行查收
@@ -514,14 +514,14 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                     <div className="flex gap-2">
                                         <button 
                                             onClick={() => setIsExportModalOpen(true)}
-                                            className="h-10 px-4 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2"
+                                            className="h-10 px-4 bg-white border border-slate-200 rounded text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2"
                                         >
                                             <FileText size={16} className="text-rose-500" />
                                             導出名單
                                         </button>
                                         <button 
                                             onClick={() => setIsPaymentLocked(!isPaymentLocked)} 
-                                            className={`h-10 px-4 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${isPaymentLocked ? 'bg-amber-600 text-white shadow-amber-200' : 'bg-emerald-600 text-white shadow-emerald-200'}`}
+                                            className={`h-10 px-4 rounded text-sm font-bold transition-all flex items-center gap-2 ${isPaymentLocked ? 'bg-amber-600 text-white shadow-amber-200' : 'bg-emerald-600 text-white shadow-emerald-200'}`}
                                         >
                                             {isPaymentLocked ? <Lock size={16} /> : <Unlock size={16} />}
                                             {isPaymentLocked ? '系統已鎖定' : '編輯模式中'}
@@ -535,7 +535,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                         <div className="flex flex-wrap justify-end gap-2 w-full">
                                             <button 
                                                 onClick={() => setFilterUnit('')}
-                                                className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border ${filterUnit === '' ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
+                                                className={`h-9 px-4 rounded text-xs font-bold transition-all border ${filterUnit === '' ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
                                             >
                                                 {t('common.all_units', '所有單位')}
                                             </button>
@@ -543,7 +543,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                                 <button 
                                                     key={u}
                                                     onClick={() => setFilterUnit(u)}
-                                                    className={`h-9 px-4 rounded-lg text-xs font-bold transition-all border ${filterUnit === u ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
+                                                    className={`h-9 px-4 rounded text-xs font-bold transition-all border ${filterUnit === u ? 'bg-indigo-900 text-white border-indigo-900' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300'}`}
                                                 >
                                                     {u}
                                                 </button>
@@ -552,7 +552,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
 
                                         <div className="flex flex-wrap justify-end gap-3 w-full">
                                             <select 
-                                                className="h-10 bg-white border border-slate-200 rounded-lg px-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
+                                                className="h-10 bg-white border border-slate-200 rounded px-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
                                                 value={filterPaid} 
                                                 onChange={e => setFilterPaid(e.target.value as any)}
                                             >
@@ -565,7 +565,7 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                                                 <input 
                                                     type="text" 
                                                     placeholder="搜尋姓名..." 
-                                                    className="w-full h-10 bg-white border border-slate-200 rounded-lg pl-9 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
+                                                    className="w-full h-10 bg-white border border-slate-200 rounded pl-9 pr-4 text-xs font-bold text-slate-900 outline-none focus:border-blue-500" 
                                                     value={filterName} 
                                                     onChange={e => setFilterName(e.target.value)} 
                                                 />
@@ -598,8 +598,8 @@ const FeeTab: React.FC<FeeTabProps> = ({ registrations, settings, onRefresh, onP
                     );
                 })}
                 {Object.keys(groupedRegs).length === 0 && (
-                    <div className="bg-white rounded-[3rem] border-4 border-dashed border-slate-100 p-24 text-center group hover:border-indigo-200 transition-all">
-                        <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform">
+                    <div className="bg-white rounded border-4 border-dashed border-slate-100 p-24 text-center group hover:border-indigo-200 transition-all">
+                        <div className="w-24 h-24 bg-slate-50 rounded flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform">
                             <DollarSign className="text-slate-200" size={48} />
                         </div>
                         <h4 className="text-2xl font-black text-slate-300 uppercase tracking-widest mb-2">{t('common.no_data_match', '查無符合條件之帳目')}</h4>

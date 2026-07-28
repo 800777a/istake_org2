@@ -118,7 +118,7 @@ const MobileCheckIn: React.FC<MobileCheckInProps> = ({ data, onToggleCheckIn, al
                     key={reg.reg_id}
                     onClick={() => onToggleCheckIn(reg)}
                     className={`
-                        relative p-4 rounded-lg shadow-sm border-l-4 transition-all duration-200 cursor-pointer active:scale-95 select-none
+                        relative p-4 rounded shadow-sm border-l-4 transition-all duration-200 cursor-pointer active:scale-95 select-none
                         ${reg.is_checked_in ? 'bg-white border-green-500' : 'bg-white border-gray-300'}
                     `}
                   >

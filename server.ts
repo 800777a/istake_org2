@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { google } from "googleapis";
 
 async function startServer() {
@@ -8,6 +7,11 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  // API Health Check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
 
   // OAuth2 Client Configuration
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
@@ -236,6 +240,7 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -244,7 +249,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
@@ -254,4 +259,7 @@ async function startServer() {
   });
 }
 
-startServer();
+startServer().catch(err => {
+  console.error("Critical error during server startup:", err);
+  process.exit(1);
+});

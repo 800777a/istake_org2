@@ -85,14 +85,14 @@ const SpecializedRegistrationList: React.FC<SpecializedRegistrationListProps> = 
             )}
 
             {/* Main Section Container */}
-            <div className={`rounded-lg shadow-sm border overflow-hidden bg-white ${theme.border}`}>
+            <div className={`rounded shadow-sm border overflow-hidden bg-white ${theme.border}`}>
                 {/* Header Row: Title Only - Conforming to independent row rule */}
                 <div 
                     className="bg-indigo-900 text-white px-6 py-4 flex justify-between items-center cursor-pointer select-none"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className={`p-2 bg-white/10 rounded-lg border border-white/10`}>
+                        <div className={`p-2 bg-white/10 rounded border border-white/10`}>
                             <Users className="text-blue-300" size={20} />
                         </div>
                         <h2 className="text-base md:text-lg lg:text-xl font-bold tracking-tight">
@@ -124,13 +124,13 @@ const SpecializedRegistrationList: React.FC<SpecializedRegistrationListProps> = 
                                         placeholder={tString('common.search_name_placeholder', '搜尋姓名...')} 
                                         value={searchName}
                                         onChange={e => setSearchName(e.target.value)}
-                                        className="w-full bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 pl-10 pr-4 h-10 rounded-lg text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                        className="w-full bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 pl-10 pr-4 h-10 rounded text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                 </div>
                             </div>
 
                             <div className="p-6">
-                                <div className="overflow-x-auto rounded-lg border border-slate-100 shadow-sm">
+                                <div className="overflow-x-auto rounded border border-slate-100 shadow-sm">
                                     <table className="w-full text-sm text-left whitespace-nowrap">
                                         <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
                                             <tr>
@@ -148,7 +148,7 @@ const SpecializedRegistrationList: React.FC<SpecializedRegistrationListProps> = 
                                                     <td className="px-6 py-4 font-bold text-slate-500 text-xs">{r.unit}</td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`w-8 h-8 rounded-lg ${theme.badge} flex items-center justify-center font-bold text-xs border`}>
+                                                            <div className={`w-8 h-8 rounded ${theme.badge} flex items-center justify-center font-bold text-xs border`}>
                                                                 {r.name.charAt(0)}
                                                             </div>
                                                             <span className="font-bold text-slate-900">{r.name}</span>
@@ -160,7 +160,7 @@ const SpecializedRegistrationList: React.FC<SpecializedRegistrationListProps> = 
                                                     <td className="px-6 py-4 text-center">
                                                         <button 
                                                             onClick={() => setEditTarget(r)}
-                                                            className="p-2 hover:bg-white hover:shadow-md border border-transparent hover:border-slate-200 rounded-lg transition-all text-blue-600 active:scale-90"
+                                                            className="p-2 hover:bg-white hover:shadow-md border border-transparent hover:border-slate-200 rounded transition-all text-blue-600 active:scale-90"
                                                             title={tString('common.button.edit_member', '編輯成員資料')}
                                                         >
                                                             <Edit2 className="w-4 h-4" />

@@ -298,9 +298,9 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
             />
 
             {/* Main Header conforming to Bright Modern Business style */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-sm">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-sm">
                         <Map className="w-6 h-6 text-blue-300" />
                     </div>
                     <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
@@ -315,7 +315,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                     <div className="flex justify-end">
                         <button 
                             onClick={handleSave} disabled={isSaving}
-                            className={`h-12 md:h-11 lg:h-10 px-6 rounded-lg text-base md:text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${isSaving ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                            className={`h-12 md:h-11 lg:h-10 px-6 rounded text-base md:text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${isSaving ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                         >
                             <Save size={18} className={isSaving ? 'animate-spin' : ''} /> 
                             {isSaving ? t('common.saving', '同步雲端中...') : t('common.save', '保存路線設定')}
@@ -365,14 +365,14 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                         />
 
                         {/* 行車指示/路標 - Collapsible Card Standard */}
-                        <div className={`rounded-lg border shadow-sm overflow-hidden ${theme.bg} ${theme.border}`}>
+                        <div className={`rounded border shadow-sm overflow-hidden ${theme.bg} ${theme.border}`}>
                             <div 
                                 className={`w-full px-6 py-4 cursor-pointer select-none transition-colors border-b bg-white/60 backdrop-blur-sm group hover:bg-white/80 ${theme.border}`}
                                 onClick={() => toggleSignCollapse(busName)}
                             >
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-2 rounded-lg border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
+                                        <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
                                             <Map size={20} />
                                         </div>
                                         <h3 className={`font-bold text-sm md:text-base lg:text-lg ${theme.text}`}>
@@ -399,7 +399,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                                                 }
                                             });
                                         }} 
-                                        className={`h-9 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
+                                        className={`h-9 px-4 rounded text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
                                     >
                                         <ArrowRightLeft size={14} /> 回程反向 (路標)
                                     </button>
@@ -450,7 +450,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
             })}
 
             {(currentEvent.busConfigs || []).length === 0 && (
-                <div className="text-center py-24 bg-white rounded-lg border-2 border-dashed border-slate-200 shadow-inner group transition-all hover:border-indigo-300">
+                <div className="text-center py-24 bg-white rounded border-2 border-dashed border-slate-200 shadow-inner group transition-all hover:border-indigo-300">
                     <div className="p-6 bg-slate-50 w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100">
                         <Bus className="w-8 h-8 text-slate-300 group-hover:text-indigo-400" />
                     </div>

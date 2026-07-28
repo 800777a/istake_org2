@@ -21,10 +21,10 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
     busName, type, items, theme, isPublished, onTogglePublish, onUpdate, onAdd, onDelete, onMove, onExport, onImport
 }) => {
     return (
-        <div className={`rounded-lg border shadow-sm overflow-hidden animate-fade-in h-full flex flex-col bg-white/60 backdrop-blur-sm ${theme.border}`}>
+        <div className={`rounded border shadow-sm overflow-hidden animate-fade-in h-full flex flex-col bg-white/60 backdrop-blur-sm ${theme.border}`}>
             <div className={`p-4 border-b flex justify-between items-center flex-wrap gap-4 bg-white/40 ${theme.border}`}>
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
+                    <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
                         <Map size={18} />
                     </div>
                     <h4 className={`font-bold text-sm uppercase tracking-tight ${theme.text}`}>
@@ -33,13 +33,13 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="flex gap-2">
-                        <button onClick={onExport} className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}><Download size={14} className="mr-1.5"/>匯出</button>
-                        <label className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm cursor-pointer ${theme.text} ${theme.border} ${theme.hover}`}>
+                        <button onClick={onExport} className={`h-8 px-3 rounded text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}><Download size={14} className="mr-1.5"/>匯出</button>
+                        <label className={`h-8 px-3 rounded text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm cursor-pointer ${theme.text} ${theme.border} ${theme.hover}`}>
                             <Upload size={14} className="mr-1.5"/>匯入
                             <input type="file" className="hidden" accept=".json" onChange={onImport}/>
                         </label>
                     </div>
-                    <div className={`flex items-center gap-3 bg-white/60 px-3 py-1 rounded-lg border shadow-sm ${theme.border}`}>
+                    <div className={`flex items-center gap-3 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
                         <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
                         <button 
                             onClick={onTogglePublish}
@@ -77,7 +77,7 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
                                         type="checkbox" 
                                         checked={isChecked} 
                                         onChange={(e) => onUpdate(sIdx, 'checked', e.target.checked)}
-                                        className={`w-5 h-5 rounded-lg cursor-pointer transition-all hover:scale-110 accent-indigo-600`}
+                                        className={`w-5 h-5 rounded cursor-pointer transition-all hover:scale-110 accent-indigo-600`}
                                     />
                                 </td>
                                 <td className={`p-4 border-r text-center font-bold ${theme.border} ${isChecked ? 'line-through opacity-40' : theme.text}`}>
@@ -85,14 +85,14 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
                                 </td>
                                 <td className="p-3">
                                     <textarea 
-                                        className={`w-full bg-white/40 border rounded-lg p-3 text-sm font-bold outline-none focus:bg-white transition-all shadow-sm min-h-[60px] resize-y ${theme.text} ${theme.border} ${isChecked ? 'line-through italic opacity-40' : ''}`}
+                                        className={`w-full bg-white/40 border rounded p-3 text-sm font-bold outline-none focus:bg-white transition-all shadow-sm min-h-[60px] resize-y ${theme.text} ${theme.border} ${isChecked ? 'line-through italic opacity-40' : ''}`}
                                         value={sign.instruction} 
                                         onChange={(e) => onUpdate(sIdx, 'instruction', e.target.value)}
                                         placeholder="請輸入給司機的行車指示..."
                                     />
                                 </td>
                                 <td className="p-4 text-right">
-                                    <button onClick={() => onDelete(sIdx)} className={`p-2 rounded-lg transition-all hover:bg-rose-50 text-slate-300 hover:text-rose-600 border border-transparent hover:border-rose-100`}>
+                                    <button onClick={() => onDelete(sIdx)} className={`p-2 rounded transition-all hover:bg-rose-50 text-slate-300 hover:text-rose-600 border border-transparent hover:border-rose-100`}>
                                         <Trash2 size={16} />
                                     </button>
                                 </td>

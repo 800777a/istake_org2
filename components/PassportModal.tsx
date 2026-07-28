@@ -93,7 +93,7 @@ const PassportModal: React.FC<PassportModalProps> = ({ registration, event, onCl
             
             <div className="grid grid-cols-2 gap-4">
                 {history.map((h, idx) => (
-                    <div key={idx} className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center relative p-2 group hover:border-blue-200 transition-colors">
+                    <div key={idx} className="aspect-square border-2 border-dashed border-gray-200 rounded flex items-center justify-center relative p-2 group hover:border-blue-200 transition-colors">
                         {h.status === '正常' ? (
                             <div className="text-center transform rotate-[-5deg] group-hover:rotate-0 transition-transform">
                                 <div className="border-2 border-blue-800 text-blue-800 rounded-full w-24 h-24 flex flex-col items-center justify-center opacity-70">
@@ -114,7 +114,7 @@ const PassportModal: React.FC<PassportModalProps> = ({ registration, event, onCl
                 
                 {/* Empty Slots Filler */}
                 {Array.from({ length: Math.max(0, 6 - history.length) }).map((_, i) => (
-                    <div key={`empty-${i}`} className="aspect-square border-2 border-dashed border-gray-100 rounded-lg flex items-center justify-center">
+                    <div key={`empty-${i}`} className="aspect-square border-2 border-dashed border-gray-100 rounded flex items-center justify-center">
                         <span className="text-gray-100 text-xs">EMPTY</span>
                     </div>
                 ))}

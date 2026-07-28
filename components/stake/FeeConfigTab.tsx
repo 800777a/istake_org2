@@ -317,8 +317,8 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
   return (
     <div className="animate-fade-in space-y-6">
       {/* Tab Title Row - Static, no toggle */}
-      <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex items-center gap-4 mb-6">
-        <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+      <div className="bg-indigo-900 text-white px-6 py-4 rounded shadow-md flex items-center gap-4 mb-6">
+        <div className="p-3 bg-white/10 rounded border border-white/10">
           <Settings className="text-blue-300" size={24} />
         </div>
         <div>
@@ -334,7 +334,7 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
       <div className="flex justify-end gap-3 mb-6">
         <button 
           onClick={() => setSandboxVisible(true)}
-          className="h-11 px-6 bg-amber-500 text-white rounded-lg text-sm font-bold shadow-md hover:bg-amber-600 transition-all flex items-center gap-2"
+          className="h-11 px-6 bg-amber-500 text-white rounded text-sm font-bold shadow-md hover:bg-amber-600 transition-all flex items-center gap-2"
         >
           <Calculator size={18} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Sandbox')}
         </button>
@@ -351,7 +351,7 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
             !isVerifying ? (
               <button 
                 onClick={sendOTP}
-                className="h-10 px-5 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                className="h-10 px-5 rounded text-xs font-bold transition-all flex items-center gap-2"
                 style={{ 
                   backgroundColor: rainbowStyles[0].bg,
                   color: rainbowStyles[0].text,
@@ -364,13 +364,13 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
               <div className="flex items-center gap-3">
                 <input 
                   placeholder={tString('common.verification_code', '驗證碼')} 
-                  className="w-24 h-10 bg-white border border-slate-200 rounded-lg px-3 text-sm"
+                  className="w-24 h-10 bg-white border border-slate-200 rounded px-3 text-sm"
                   value={inputCode}
                   onChange={e => setInputCode(e.target.value)}
                 />
                 <button 
                   onClick={verifyOTP}
-                  className="h-10 px-5 bg-blue-600 text-white rounded-lg text-xs font-bold"
+                  className="h-10 px-5 bg-blue-600 text-white rounded text-xs font-bold"
                 >
                   {t('common.verify_and_save', '驗證並儲存')}
                 </button>
@@ -427,9 +427,9 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
         </RainbowCard>
 
         {/* Billing Rules Header Row - Independent row as per rules */}
-        <div className="bg-indigo-900 text-white px-6 py-4 rounded-lg shadow-md flex justify-between items-center mt-12 mb-6">
+        <div className="bg-indigo-900 text-white px-6 py-4 rounded shadow-md flex justify-between items-center mt-12 mb-6">
           <div className="flex items-center gap-4">
-            <div className="p-2 bg-white/10 rounded-lg border border-white/10">
+            <div className="p-2 bg-white/10 rounded border border-white/10">
               <Coins className="text-blue-300" size={20} />
             </div>
             <h3 className="font-bold text-base md:text-lg tracking-tight">
@@ -439,13 +439,13 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
           <div className="flex gap-2">
             <button 
               onClick={handleExportLogic}
-              className="h-10 px-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-bold hover:bg-rose-100 transition-all flex items-center gap-2"
+              className="h-10 px-4 bg-rose-50 border border-rose-200 text-rose-700 rounded text-xs font-bold hover:bg-rose-100 transition-all flex items-center gap-2"
             >
               <Save size={16} /> {t('stake.fee_config.save_logic_file', '儲存收費邏輯檔')}
             </button>
             <button 
               onClick={() => document.getElementById('logic-file-input')?.click()}
-              className="h-10 px-4 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-all flex items-center gap-2"
+              className="h-10 px-4 bg-amber-50 border border-amber-200 text-amber-700 rounded text-xs font-bold hover:bg-amber-100 transition-all flex items-center gap-2"
             >
               <Upload size={16} /> {t('stake.fee_config.read_logic_file', '讀取收費邏輯檔')}
             </button>

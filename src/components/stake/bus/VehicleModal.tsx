@@ -42,7 +42,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
             <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
+                className="relative bg-white rounded shadow-2xl w-full max-w-lg overflow-hidden border-4 border-gray-100"
             >
                 <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
                     <h3 className="font-black text-xl text-gray-900 uppercase tracking-tighter">
@@ -55,7 +55,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.plate')}</label>
                             <input 
-                                className={`w-full p-3 border-2 rounded-xl focus:border-green-500 outline-none font-black ${editingVehicle ? 'bg-gray-50 text-gray-400' : ''}`}
+                                className={`w-full p-3 border-2 rounded focus:border-green-500 outline-none font-black ${editingVehicle ? 'bg-gray-50 text-gray-400' : ''}`}
                                 value={data.plate} onChange={e => setData({...data, plate: e.target.value})}
                                 disabled={!!editingVehicle}
                             />
@@ -63,7 +63,7 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.company')}</label>
                             <select 
-                                className="w-full p-3 border-2 rounded-xl focus:border-green-500 outline-none bg-white"
+                                className="w-full p-3 border-2 rounded focus:border-green-500 outline-none bg-white"
                                 value={`${data.companyId}|${data.companyName}`}
                                 onChange={e => {
                                     const [id, name] = e.target.value.split('|');
@@ -80,20 +80,20 @@ const VehicleModal: React.FC<VehicleModalProps> = ({ isOpen, onClose, onSave, ed
                     <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.seats')}</label>
-                            <input type="number" className="w-full p-3 border-2 rounded-xl focus:border-green-500 outline-none font-bold" value={data.seats} onChange={e => setData({...data, seats: parseInt(e.target.value)})} />
+                            <input type="number" className="w-full p-3 border-2 rounded focus:border-green-500 outline-none font-bold" value={data.seats} onChange={e => setData({...data, seats: parseInt(e.target.value)})} />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.year')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-green-500 outline-none font-mono" value={data.year} onChange={e => setData({...data, year: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-green-500 outline-none font-mono" value={data.year} onChange={e => setData({...data, year: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-400 ml-1">{t('bus.field.color')}</label>
-                            <input className="w-full p-3 border-2 rounded-xl focus:border-green-500 outline-none" value={data.color} onChange={e => setData({...data, color: e.target.value})} />
+                            <input className="w-full p-3 border-2 rounded focus:border-green-500 outline-none" value={data.color} onChange={e => setData({...data, color: e.target.value})} />
                         </div>
                     </div>
                     <button 
                         onClick={() => setShowSaveConfirm(true)}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 transition-all"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded font-black shadow-lg flex items-center justify-center gap-2 transition-all"
                     >
                         <Save size={20}/> {editingVehicle ? t('bus.button.updateVehicle') : t('bus.button.saveVehicle')}
                     </button>

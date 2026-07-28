@@ -1,9 +1,9 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Registration, GlobalSettings, PaymentMethod, RegStatus, BusConfig, EventData, TripType, User as UserType } from '../../types';
 import { isPaymentOverdue } from '../../src/utils/registrationUtils';
-import { Search, User, Globe, ChevronUp, ChevronDown, ArrowUpDown, Lock, Unlock, RotateCcw, Smartphone, CheckCircle2, XCircle, ChevronRight, Layout, Table2, CreditCard, Users, DollarSign, CheckSquare, Home, Bus, LayoutGrid, List } from 'lucide-react';
+import { Search, User, Globe, ChevronUp, ChevronDown, ArrowUpDown, Lock, Unlock, RotateCcw, Smartphone, CheckCircle2, XCircle, ChevronLeft, ChevronRight, Layout, Table2, CreditCard, Users, DollarSign, CheckSquare, Home, Bus, LayoutGrid, List } from 'lucide-react';
 import { maskName } from '../../utils/validation';
 import PaymentInfoModal from '../PaymentInfoModal';
 import TimeNodesDisplay from '../../src/components/registration/TimeNodesDisplay';
@@ -18,15 +18,28 @@ interface PublicRegistrationTabProps {
     activeEvent?: EventData;
     eventStats?: { capacity: number; occupied: number; waiting: number };
     busConfigs?: BusConfig[];
+    onRoleChange?: (role: any, subTab?: string) => void;
 }
 
-const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrations, settings, eventStatus, activeEvent, eventStats, busConfigs }) => {
+const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrations, settings, eventStatus, activeEvent, eventStats, busConfigs, onRoleChange }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUnit, setSelectedUnit] = useState<string>('all');
     const [selectedPaymentReg, setSelectedPaymentReg] = useState<Registration | null>(null);
     const [lang, setLang] = useState<'zh' | 'en'>('zh');
 
     const { vehicleRanks, endowmentRanks, baptismRanks } = useRanks(registrations);
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
+    // Orientation Reset補丁 (Hard Reset)
+    const [remountKey, setRemountKey] = useState(0);
+    useEffect(() => {
+        const handleResize = () => setRemountKey(k => k + 1);
+        window.addEventListener('orientationchange', handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('orientationchange', handleResize);
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const [currentUser, setCurrentUser] = useState<UserType | null>(null);
     useEffect(() => {
@@ -41,17 +54,55 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     const [protectNames, setProtectNames] = useState(true);
     const [displayMode, setDisplayMode] = useState<'normal' | 'fee' | 'checkin'>('normal');
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
-    // 行動裝置自動設定預設檢視模式
-    useEffect(() => {
-        const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-        if (isMobile) {
-            setViewMode('card');
-        } else {
-            setViewMode('table');
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
         }
-    }, []);
+        setSortConfig({ key, direction });
+    };
 
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 ml-1 opacity-30" />;
+        return sortConfig.direction === 'asc' 
+            ? <ChevronUp className="w-3 h-3 ml-1 text-indigo-600" /> 
+            : <ChevronDown className="w-3 h-3 ml-1 text-indigo-600" />;
+    };
+
+    const sortData = (data: Registration[]) => {
+        if (!sortConfig) return data;
+        
+        return [...data].sort((a, b) => {
+            let valA: any = a[sortConfig.key as keyof Registration] || '';
+            let valB: any = b[sortConfig.key as keyof Registration] || '';
+            
+            // Handle specific fields
+            if (sortConfig.key === 'ordinance_item') {
+                valA = translateOrdinance(a.ordinance_item);
+                valB = translateOrdinance(b.ordinance_item);
+            } else if (sortConfig.key === 'trip_type') {
+                valA = translateTripType(a.trip_type);
+                valB = translateTripType(b.trip_type);
+            } else if (sortConfig.key === 'amount_due') {
+                valA = Number(a.amount_due || 0);
+                valB = Number(b.amount_due || 0);
+            } else if (sortConfig.key === 'payment_method') {
+                valA = a.payment_method || '';
+                valB = b.payment_method || '';
+            } else if (sortConfig.key === 'status') {
+                valA = a.is_paid ? '已收' : '未收';
+                valB = b.is_paid ? '已收' : '未收';
+            }
+            
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    // 移除行動裝置自動設定預設檢視模式的 useEffect，確保預設皆為 table (列表)
     const [statusMsg, setStatusMsg] = useState<{ text: string, type: 'success' | 'error' | 'info' | null }>({ text: '', type: null });
     const showStatus = (text: string, type: 'success' | 'error' | 'info') => {
         setStatusMsg({ text, type });
@@ -62,13 +113,13 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     const [collapsedUnits, setCollapsedUnits] = useState<Record<string, boolean>>({});
 
     const UNIT_COLOR_THEMES = [
-        { name: 'red', title: 'bg-red-200', header: 'bg-red-100 text-red-800', border: 'border-red-200', content: 'bg-red-50', divide: 'divide-red-200', rowHover: 'hover:bg-red-100/30', accent: 'text-red-800', sticky: 'bg-red-50/95' },
-        { name: 'orange', title: 'bg-orange-200', header: 'bg-orange-100 text-orange-800', border: 'border-orange-200', content: 'bg-orange-50', divide: 'divide-orange-200', rowHover: 'hover:bg-orange-100/30', accent: 'text-orange-800', sticky: 'bg-orange-50/95' },
-        { name: 'amber', title: 'bg-amber-200', header: 'bg-amber-100 text-amber-900', border: 'border-amber-200', content: 'bg-amber-50', divide: 'divide-amber-200', rowHover: 'hover:bg-amber-100/30', accent: 'text-amber-900', sticky: 'bg-amber-50/95' },
-        { name: 'emerald', title: 'bg-emerald-200', header: 'bg-emerald-100 text-emerald-800', border: 'border-emerald-200', content: 'bg-emerald-50', divide: 'divide-emerald-200', rowHover: 'hover:bg-emerald-100/30', accent: 'text-emerald-800', sticky: 'bg-emerald-50/95' },
-        { name: 'blue', title: 'bg-blue-200', header: 'bg-blue-100 text-blue-800', border: 'border-blue-200', content: 'bg-blue-50', divide: 'divide-blue-200', rowHover: 'hover:bg-blue-100/30', accent: 'text-blue-800', sticky: 'bg-blue-50/95' },
-        { name: 'indigo', title: 'bg-indigo-200', header: 'bg-indigo-100 text-indigo-800', border: 'border-indigo-200', content: 'bg-indigo-50', divide: 'divide-indigo-200', rowHover: 'hover:bg-indigo-100/30', accent: 'text-indigo-800', sticky: 'bg-indigo-50/95' },
-        { name: 'purple', title: 'bg-purple-200', header: 'bg-purple-100 text-purple-800', border: 'border-purple-200', content: 'bg-purple-50', divide: 'divide-purple-200', rowHover: 'hover:bg-purple-100/30', accent: 'text-purple-800', sticky: 'bg-purple-50/95' }
+        { name: 'red', title: 'bg-red-200', header: 'bg-red-100', border: 'border-red-200', content: 'bg-red-50', divide: 'divide-red-200', accent: 'text-red-900', rowHover: 'hover:bg-red-100/30' },
+        { name: 'orange', title: 'bg-orange-200', header: 'bg-orange-100', border: 'border-orange-200', content: 'bg-orange-50', divide: 'divide-orange-200', accent: 'text-orange-900', rowHover: 'hover:bg-orange-100/30' },
+        { name: 'yellow', title: 'bg-yellow-200', header: 'bg-yellow-100', border: 'border-yellow-200', content: 'bg-yellow-50', divide: 'divide-yellow-200', accent: 'text-yellow-900', rowHover: 'hover:bg-yellow-100/30' },
+        { name: 'green', title: 'bg-green-200', header: 'bg-green-100', border: 'border-green-200', content: 'bg-green-50', divide: 'divide-green-200', accent: 'text-green-900', rowHover: 'hover:bg-green-100/30' },
+        { name: 'blue', title: 'bg-blue-200', header: 'bg-blue-100', border: 'border-blue-200', content: 'bg-blue-50', divide: 'divide-blue-200', accent: 'text-blue-900', rowHover: 'hover:bg-blue-100/30' },
+        { name: 'indigo', title: 'bg-indigo-200', header: 'bg-indigo-100', border: 'border-indigo-200', content: 'bg-indigo-50', divide: 'divide-indigo-200', accent: 'text-indigo-900', rowHover: 'hover:bg-indigo-100/30' },
+        { name: 'purple', title: 'bg-purple-200', header: 'bg-purple-100', border: 'border-purple-200', content: 'bg-purple-50', divide: 'divide-purple-200', accent: 'text-purple-900', rowHover: 'hover:bg-purple-100/30' }
     ];
 
     const toggleUnitCollapse = (unit: string) => {
@@ -109,19 +160,6 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         }
     };
 
-    const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
-    };
-
-    const getSortIcon = (key: string) => {
-        if (!sortConfig || sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 ml-1 opacity-50" />;
-        return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />;
-    };
-
     const t = (zh: string, en: string) => lang === 'zh' ? zh : en;
 
     const translateTripType = (val: string) => {
@@ -142,13 +180,27 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         return dict[val] || val;
     };
 
-    const distinctUnits = Array.from(new Set(registrations.map(r => r.unit))) as string[];
-    const sortedUnits = distinctUnits.sort((a, b) => {
-        const idxA = (settings.units || []).indexOf(a);
-        const idxB = (settings.units || []).indexOf(b);
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        return a.localeCompare(b);
-    });
+    const sortedUnits = useMemo(() => {
+        const distinct = Array.from(new Set(registrations.map(r => r.unit))) as string[];
+        const baseUnits = [...(settings?.units || [])];
+        
+        // 確保「民雄」一定存在於基礎清單中
+        if (!baseUnits.includes('民雄')) {
+            baseUnits.push('民雄');
+        }
+        
+        // 合併已報名單位與基礎單位，並進行去重與排序
+        const allUnits = Array.from(new Set([...distinct, ...baseUnits])).filter(Boolean);
+        
+        return allUnits.sort((a, b) => {
+            const idxA = baseUnits.indexOf(a);
+            const idxB = baseUnits.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            return a.localeCompare(b);
+        });
+    }, [registrations, settings?.units]);
 
     const isWaiting = (reg: Registration) => {
         if (reg.trip_type === TripType.RETAINED || reg.trip_type === TripType.SELF_MANAGED) return false;
@@ -186,62 +238,156 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         return <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${colors}`}>{reg.is_paid ? '已收' : '未收'}</span>;
     };
 
-    const { vehicleStats } = useStats(activeEvent, registrations);
+    const { vehicleStats, ordinanceStats } = useStats(activeEvent, registrations);
+
+    const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+    const scroll = (unit: string, direction: 'left' | 'right') => {
+        const el = scrollRefs.current[unit];
+        if (el) {
+            const amount = direction === 'left' ? -200 : 200;
+            el.scrollBy({ left: amount, behavior: 'smooth' });
+        }
+    };
 
     const shouldShowPayment = activeEvent?.paymentDisplayMode !== 'none';
 
     return (
-        <div className="flex flex-col w-full h-full bg-[#F0F4F8] min-h-screen relative">
-            {/* Mobile Header - Drastically lowered Z-Index and compressed padding */}
-            <header className="lg:hidden bg-indigo-900 text-white px-3 py-2 flex items-center justify-between sticky top-0 z-[5] shadow-md shrink-0">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-white/10 rounded-md">
-                        <Users className="w-4 h-4" />
+        <div key={remountKey} className="flex flex-col w-full min-w-0 bg-[#F8F9FA] relative">
+            {/* Dashboard Statistics - Perfectly Matched to Admin Style (Unwrapped) - Rule 3.2 Compliance */}
+            <div className="w-full max-w-full px-1 pt-1 shrink-0 space-y-1">
+                {/* 1. 車輛座位預約 (Bus Seats) - 複製自後台結構 */}
+                <div className="flex flex-col min-w-0">
+                    <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Bus className="w-4 h-4 text-amber-950" />
+                            <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">車輛座位預約</h2>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-[11px] md:text-xs font-black tracking-tight">{t('報名名單查詢', 'Registration Query')}</h1>
-                        <p className="text-[8px] md:text-[9px] text-indigo-300 font-bold">{activeEvent?.event_title}</p>
+                    <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
+                        <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1 truncate">總座位數</div>
+                            <div className="text-xl font-black text-slate-900">{vehicleStats.capacity} <span className="text-[10px] text-slate-400">人</span></div>
+                        </div>
+                        <div className="bg-emerald-50 p-2 rounded border border-emerald-100">
+                            <div className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 truncate">預約位數</div>
+                            <div className="text-xl font-black text-emerald-900">{(vehicleStats.occupied + vehicleStats.waiting)} <span className="text-[10px] text-slate-400">人</span></div>
+                        </div>
+                        <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                            <div className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 truncate">剩餘位數</div>
+                            <div className="text-xl font-black text-amber-900">{vehicleStats.remaining} <span className="text-[10px] text-slate-400">人</span></div>
+                        </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <button 
-                        onClick={() => setViewMode(viewMode === 'table' ? 'card' : 'table')}
-                        className="p-1.5 bg-white/10 rounded-md hover:bg-white/20 transition-all border border-white/10"
-                    >
-                        {viewMode === 'table' ? <LayoutGrid className="w-3 h-3" /> : <List className="w-3 h-3" />}
-                    </button>
-                    <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')} className="p-1.5 bg-indigo-700 rounded-md border border-indigo-600">
-                        <Globe className="w-3 h-3" />
-                    </button>
+
+                {/* 2. 教儀座位預約 (Ordinance Seats) - 複製自後台結構 */}
+                <div className="flex flex-col min-w-0">
+                    <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <LayoutGrid className="w-4 h-4 text-amber-950" />
+                            <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">教儀座位預約</h2>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
+                        <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                            <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1 truncate">洗禮</div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-black text-blue-900">{ordinanceStats.baptism.occupied + ordinanceStats.baptism.waiting}</span>
+                                <span className="text-[10px] text-slate-400">/ {ordinanceStats.baptism.capacity}</span>
+                            </div>
+                            <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.baptism.occupied + ordinanceStats.baptism.waiting) / (ordinanceStats.baptism.capacity || 1)) * 100)}%` }}></div>
+                            </div>
+                        </div>
+                        <div className="bg-indigo-50 p-2 rounded border border-indigo-100">
+                            <div className="text-[10px] text-indigo-600 font-black uppercase tracking-widest mb-1 truncate">恩道門</div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-black text-indigo-900">{ordinanceStats.endowment.occupied + ordinanceStats.endowment.waiting}</span>
+                                <span className="text-[10px] text-slate-400">/ {ordinanceStats.endowment.capacity}</span>
+                            </div>
+                            <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                <div className="bg-indigo-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.endowment.occupied + ordinanceStats.endowment.waiting) / (ordinanceStats.endowment.capacity || 1)) * 100)}%` }}></div>
+                            </div>
+                        </div>
+                        <div className="bg-rose-50 p-2 rounded border border-rose-100">
+                            <div className="text-[10px] text-rose-600 font-black uppercase tracking-widest mb-1 truncate">印證</div>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-black text-rose-900">{ordinanceStats.sealing.occupied + ordinanceStats.sealing.waiting}</span>
+                                <span className="text-[10px] text-slate-400">/ {ordinanceStats.sealing.capacity}</span>
+                            </div>
+                            <div className="mt-1 w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                                <div className="bg-rose-500 h-full transition-all duration-500" style={{ width: `${Math.min(100, ((ordinanceStats.sealing.occupied + ordinanceStats.sealing.waiting) / (ordinanceStats.sealing.capacity || 1)) * 100)}%` }}></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </header>
+            </div>
 
             {/* Main Action Bar - Drastically lowered Z-Index (z-1) and compressed height */}
-            <div className="bg-white border-b border-slate-200 px-3 md:px-4 py-1.5 md:py-2 sticky top-0 lg:top-0 z-[2] shadow-sm shrink-0">
-                <div className="flex flex-col md:flex-row gap-2 md:items-center justify-between max-w-full">
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500" />
-                        <input
-                            type="text"
-                            placeholder={t('搜尋姓名、單位、車別...', 'Search...')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full h-8 md:h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-md text-[10px] md:text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                        />
+            <div className="bg-white border-b border-slate-200 px-2 md:px-4 py-1.5 md:py-2 sticky top-0 z-[20] shadow-sm shrink-0 min-w-0">
+                <div className="flex flex-col md:flex-row gap-2 md:items-center justify-between max-w-full min-w-0">
+                    <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
+                        {/* Left Column: Unit Selection */}
+                        <div className="relative w-full sm:w-1/3 min-w-0 group">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500" />
+                            <select
+                                value={selectedUnit}
+                                onChange={(e) => setSelectedUnit(e.target.value)}
+                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded text-[10px] md:text-xs font-black focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="all">搜尋 單位</option>
+                                {sortedUnits.map(unit => (
+                                    <option key={unit} value={unit}>{unit}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                            </div>
+                        </div>
+
+                        {/* Right Column: Personal Search */}
+                        <div className="relative w-full sm:w-2/3 min-w-0 group">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500" />
+                            <input
+                                type="text"
+                                placeholder="搜尋 個人"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded text-[10px] md:text-xs font-black focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all truncate"
+                            />
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-2 overflow-x-auto pb-0.5 md:pb-0 no-scrollbar">
-                        <div className="flex bg-slate-100 p-0.5 rounded-md border border-slate-200 shrink-0">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-0.5 md:pb-0 no-scrollbar min-w-0 shrink-0">
+                        <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
                             {[
                                 { id: 'normal', icon: Users, label: '概覽' },
-                                { id: 'fee', icon: DollarSign, label: '費用' },
+                                { id: 'fee', icon: DollarSign, label: '收費' },
                                 { id: 'checkin', icon: CheckSquare, label: '報到' }
                             ].map((mode) => (
                                 <button
                                     key={mode.id}
                                     onClick={() => setDisplayMode(mode.id as any)}
-                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded-md text-[10px] md:text-xs font-black transition-all ${
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded text-[10px] md:text-xs font-black transition-all ${
                                         displayMode === mode.id ? 'bg-white text-indigo-900 shadow-sm border border-slate-200' : 'text-slate-500'
+                                    }`}
+                                >
+                                    <mode.icon className="w-3 h-3 md:w-4 md:h-4" />
+                                    <span className="whitespace-nowrap">{t(mode.label, mode.label)}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
+                            {[
+                                { id: 'table', icon: List, label: '列表' },
+                                { id: 'card', icon: LayoutGrid, label: '卡片' }
+                            ].map((mode) => (
+                                <button
+                                    key={mode.id}
+                                    onClick={() => setViewMode(mode.id as any)}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded text-[10px] md:text-xs font-black transition-all ${
+                                        viewMode === mode.id ? 'bg-white text-indigo-900 shadow-sm border border-slate-200' : 'text-slate-500'
                                     }`}
                                 >
                                     <mode.icon className="w-3 h-3 md:w-4 md:h-4" />
@@ -253,12 +399,18 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                 </div>
             </div>
 
-            {/* Scrollable Content - Forced outer scrollability and width constraint */}
-            <div className="flex-1 w-full max-w-full overflow-x-auto overflow-y-auto p-1.5 md:p-3 bg-[#F0F4F8]">
-                <div className="w-full max-w-full flex flex-col gap-2 md:gap-4">
+            {/* Scrollable Content - Forced outer width constraint - Rule 4.1 Compliance */}
+            <div className="flex-1 w-full max-w-full p-0 bg-[#F8F9FA] min-w-0 overflow-hidden">
+                <div className="w-full max-w-full flex flex-col gap-2 min-w-0">
                     {sortedUnits.map((unit, index) => {
-                        const unitRegs = registrations.filter(r => r.unit === unit && (r.name.includes(searchTerm) || r.unit.includes(searchTerm) || (r.bus_assigned || '').includes(searchTerm)));
-                        if (unitRegs.length === 0) return null;
+                        const unitRegs = sortData(registrations.filter(r => {
+                            const matchUnit = selectedUnit === 'all' || r.unit === selectedUnit;
+                            const matchSearch = r.name.includes(searchTerm) || r.unit.includes(searchTerm) || (r.bus_assigned || '').includes(searchTerm);
+                            return r.unit === unit && matchUnit && matchSearch;
+                        }));
+                        // 如果搜尋狀態下該單位沒有符合條件的人，且不是選中該單位，則隱藏 (避免搜尋時顯示一堆空的)
+                        // 但如果是預設狀態或選中該單位，則必須顯示 (滿足使用者 "民雄就算沒資料也要出現" 的要求)
+                        if (searchTerm && unitRegs.length === 0 && selectedUnit === 'all') return null;
                         
                         const theme = UNIT_COLOR_THEMES[index % UNIT_COLOR_THEMES.length];
                         const cashTotal = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.payment_method === PaymentMethod.CASH).reduce((sum, r) => sum + (r.amount_due || 0), 0);
@@ -267,131 +419,247 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                         const backCheckedCount = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.is_checked_in_back).length;
 
                         return (
-                            <div key={unit} className={`bg-white border ${theme.border} rounded-[8px] shadow-sm p-0 m-1 md:m-0 w-full max-w-full animate-in fade-in slide-in-from-bottom-2 overflow-x-auto`}>
-                                {/* Depth 1: Header */}
-                                <div onClick={() => toggleUnitCollapse(unit)} className={`w-full flex items-center justify-between px-3 py-2 ${theme.title} border-b ${theme.border} rounded-t-[7px] cursor-pointer hover:brightness-95 transition-all`}>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-1 h-5 rounded-full ${theme.accent.replace('text', 'bg')}`}></div>
-                                        <h3 className="font-black text-xs md:text-sm lg:text-base uppercase flex items-center gap-1.5">
+                            <div key={unit} className={`bg-white border-2 ${theme.border} rounded shadow-sm p-0 mx-0 mt-2 w-full max-w-full animate-in fade-in slide-in-from-bottom-2 overflow-hidden min-w-0`}>
+                                {/* Depth 1: Header - Level 1 styling */}
+                                <div onClick={() => toggleUnitCollapse(unit)} className={`w-full flex items-center justify-between px-3 py-2.5 ${theme.title} border-b-2 ${theme.border} rounded-t cursor-pointer hover:brightness-95 transition-all min-w-0`}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <h3 className="font-black text-xs md:text-sm lg:text-base uppercase flex items-center gap-1.5 truncate">
                                             {unit}
-                                            <span className="text-[10px] font-bold opacity-60 bg-black/5 px-1.5 py-0.5 rounded-full">{unitRegs.length} P</span>
                                         </h3>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 shrink-0">
                                         {collapsedUnits[unit] ? <ChevronDown className="w-4 h-4 md:w-5 md:h-5" /> : <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />}
                                     </div>
                                 </div>
 
                                 <AnimatePresence initial={false}>
                                     {!collapsedUnits[unit] && (
-                                        <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className={`${theme.content} overflow-x-auto`}>
-                                            {/* Statistics - Compressed for Mobile */}
-                                            <div className={`px-3 py-2 border-b ${theme.border} flex flex-col md:flex-row gap-2 justify-between items-start md:items-center`}>
-                                                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                                                    <div className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-black/5 shadow-sm text-[10px] md:text-xs font-bold text-slate-600">
-                                                        <Bus className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-400" /> 乘車:{unitRegs.length}
+                                        <motion.div 
+                                            initial={{ height: 0, opacity: 0 }} 
+                                            animate={{ height: 'auto', opacity: 1 }} 
+                                            exit={{ height: 0, opacity: 0 }} 
+                                            className={`${theme.content} overflow-hidden min-w-0 w-full`}
+                                        >
+                                            {/* Statistics - Compressed for Mobile, Level 2 header style */}
+                                            <div className={`px-3 py-2 border-b-2 ${theme.border} flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center min-w-0 w-full bg-white/40`}>
+                                                <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
+                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-slate-600 min-w-0 truncate">
+                                                        <Bus className="w-3.5 h-3.5 text-slate-400 shrink-0" /> <span className="truncate">乘車:{unitRegs.length}人</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-black/5 shadow-sm text-[10px] md:text-xs font-bold text-emerald-700">
-                                                        <CheckSquare className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" /> 去{goCheckedCount}/回{backCheckedCount}
+                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-emerald-700 min-w-0 truncate">
+                                                        <CheckSquare className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> <span className="truncate">去{goCheckedCount}/回{backCheckedCount}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 bg-white/60 px-2 py-1 rounded-md border border-black/5 shadow-sm text-[10px] md:text-xs font-bold text-rose-700">
-                                                        <DollarSign className="w-3.5 h-3.5 md:w-4 md:h-4 text-rose-500" /> 轉${transferTotal.toLocaleString()} / 現${cashTotal.toLocaleString()}
+                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-rose-700 min-w-0 truncate">
+                                                        <DollarSign className="w-3.5 h-3.5 text-rose-500 shrink-0" /> <span className="truncate">轉${transferTotal.toLocaleString()} / 現${cashTotal.toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             
-                                            <div className="p-1 md:p-2 w-full max-w-full">
-                                                {viewMode === 'table' ? (
-                                                    <div className="w-full max-w-full overflow-x-auto custom-scrollbar shadow-inner bg-black/5 p-1 rounded-md">
-                                                        <table className={`w-full min-w-[1200px] table-auto border-collapse ${theme.content} rounded-md border ${theme.border}`}>
-                                                            <thead className={`${theme.header} border-b ${theme.border}`}>
-                                                                <tr className="text-[10px] md:text-xs lg:text-sm font-black text-left whitespace-nowrap">
-                                                                    <th className={`px-1 py-1 sticky left-0 z-20 ${theme.header} border-r ${theme.border} shadow-[1px_0_3px_rgba(0,0,0,0.05)]`}>{t('姓名', 'Name')}</th>
-                                                                    {displayMode === 'normal' && (
-                                                                        <>
-                                                                            <th className={`px-1 py-1 border-r ${theme.border}`}>{t('車別', 'Bus')}</th>
-                                                                            <th className={`px-1 py-1 border-r ${theme.border}`}>{t('站別', 'Stop')}</th>
-                                                                            <th className={`px-1 py-1 border-r ${theme.border}`}>{t('教儀', 'Ordinance')}</th>
-                                                                            <th className={`px-1 py-1 border-r ${theme.border}`}>{t('行程', 'Trip')}</th>
-                                                                        </>
-                                                                    )}
-                                                                    {displayMode === 'fee' && (
-                                                                        <>
-                                                                            <th className={`px-1 py-1 text-center border-r ${theme.border}`}>方式</th>
-                                                                            <th className={`px-1 py-1 text-right border-r ${theme.border}`}>金額</th>
-                                                                            <th className={`px-1 py-1 text-center border-r ${theme.border}`}>狀態</th>
-                                                                        </>
-                                                                    )}
-                                                                    {displayMode === 'checkin' && (
-                                                                        <>
-                                                                            <th className={`px-1 py-1 text-center border-r ${theme.border}`}>去程</th>
-                                                                            <th className={`px-1 py-1 text-center`}>回程</th>
-                                                                        </>
-                                                                    )}
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className={`divide-y ${theme.border} text-[10px] md:text-xs lg:text-sm font-bold whitespace-nowrap`}>
-                                                                {unitRegs.map((reg) => (
-                                                                    <tr key={reg.reg_id} className={`hover:bg-black/5 transition-colors ${reg.status === RegStatus.CANCELLED ? 'opacity-40 grayscale italic' : ''}`}>
-                                                                        <td className={`px-1 py-1 sticky left-0 z-10 ${theme.content} border-r ${theme.border} shadow-[1px_0_3px_rgba(0,0,0,0.05)] font-black text-slate-900 cursor-pointer`} onClick={() => handlePaymentClick(reg)}>
-                                                                            {protectNames ? maskName(reg.name) : reg.name}
-                                                                        </td>
+                                            <div className="p-0 md:p-1 w-full max-w-full min-w-0 overflow-hidden">
+                                                {unitRegs.length === 0 ? (
+                                                    <div className="bg-white/50 border-2 border-dashed border-slate-200 rounded m-2 p-6 text-center">
+                                                        <p className="text-slate-400 text-xs font-black uppercase tracking-widest">目前尚無報名資料</p>
+                                                    </div>
+                                                ) : viewMode === 'table' ? (
+                                                    <div className="w-full max-w-full min-w-0 flex flex-col overflow-hidden">
+                                                        {/* Mobile Scroll Assist */}
+                                                        <div className="md:hidden flex items-center justify-between px-3 py-1.5 bg-white/50 border-b-2 border-slate-200 min-w-0 w-full">
+                                                            <span className="text-[10px] font-black text-slate-400 animate-pulse flex items-center gap-1 truncate">
+                                                                <Smartphone className="w-3.5 h-3.5 shrink-0" /> 左右滑動表格
+                                                            </span>
+                                                            <div className="flex gap-2 shrink-0">
+                                                                <button onClick={() => scroll(unit, 'left')} className="p-1.5 bg-white border-2 border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronLeft className="w-4 h-4 text-slate-600" /></button>
+                                                                <button onClick={() => scroll(unit, 'right')} className="p-1.5 bg-white border-2 border-slate-200 rounded shadow-sm active:bg-slate-100"><ChevronRight className="w-4 h-4 text-slate-600" /></button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 表格水平捲動容器（Shell-Zero 相容關鍵） - Rule 4.1 Compliance */}
+                                                        <div 
+                                                            ref={el => scrollRefs.current[unit] = el}
+                                                            className="overflow-x-auto overscroll-x-contain -mx-1 px-1 custom-scrollbar min-w-0 w-full"
+                                                        >
+                                                            <table className={`min-w-full w-max table-auto border-separate border-spacing-0 ${theme.content} border-2 ${theme.border} rounded shadow-sm`}>
+                                                                <thead className={`${theme.header} border-b-2 ${theme.border}`}>
+                                                                    <tr className="text-[10px] md:text-xs font-black text-left whitespace-nowrap uppercase tracking-wider">
+                                                                        <th className={`px-2 py-4 border-r-2 ${theme.border} text-center w-[40px] ${theme.header}`}>編號</th>
+                                                                        <th 
+                                                                            onClick={() => handleSort('name')}
+                                                                            className={`px-3 py-4 sticky left-0 z-40 ${theme.header} border-r-2 ${theme.border} shadow-[6px_0_12px_rgba(0,0,0,0.15)] w-[100px] md:w-32 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                        >
+                                                                            <div className="flex items-center justify-between">
+                                                                                {t('姓名', 'Name')}
+                                                                                {getSortIcon('name')}
+                                                                            </div>
+                                                                        </th>
                                                                         {displayMode === 'normal' && (
                                                                             <>
-                                                                                <td className={`px-1 py-1 border-r ${theme.border}`}>{reg.bus_assigned ? <span className="bg-slate-800 text-white px-1.5 py-0.5 rounded text-[10px]">{reg.bus_assigned.charAt(0)}車</span> : '-'}</td>
-                                                                                <td className={`px-1 py-1 border-r ${theme.border} text-slate-700`}>{getStopInfo(reg.bus_assigned)?.location || '-'}</td>
-                                                                                <td className={`px-1 py-1 border-r ${theme.border} text-indigo-700`}>{translateOrdinance(reg.ordinance_item)}</td>
-                                                                                <td className={`px-1 py-1 border-r ${theme.border} text-emerald-700`}>{translateTripType(reg.trip_type)}</td>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('bus_assigned')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[150px] md:w-44 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        上車地點和時間
+                                                                                        {getSortIcon('bus_assigned')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('ordinance_item')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[150px] md:w-44 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        教儀場次
+                                                                                        {getSortIcon('ordinance_item')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('trip_type')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[100px] md:w-32 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        {t('行程', 'Trip')}
+                                                                                        {getSortIcon('trip_type')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('payment_method')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[80px] md:w-28 text-center cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        付費
+                                                                                        {getSortIcon('payment_method')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('amount_due')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[80px] md:w-28 text-right cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-end">
+                                                                                        金額
+                                                                                        {getSortIcon('amount_due')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('status')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[80px] md:w-28 text-center cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        收費
+                                                                                        {getSortIcon('status')}
+                                                                                    </div>
+                                                                                </th>
                                                                             </>
                                                                         )}
                                                                         {displayMode === 'fee' && (
                                                                             <>
-                                                                                <td className={`px-1 py-1 text-center border-r ${theme.border}`}>{getMethodBadge(reg)}</td>
-                                                                                <td className={`px-1 py-1 text-right font-mono border-r ${theme.border} text-slate-900`}>${(reg.amount_due || 0).toLocaleString()}</td>
-                                                                                <td className={`px-1 py-1 text-center border-r ${theme.border}`}>{getStatusBadge(reg)}</td>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('payment_method')}
+                                                                                    className={`px-3 py-3 text-center border-r-2 ${theme.border} w-[80px] md:w-28 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        付費
+                                                                                        {getSortIcon('payment_method')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('amount_due')}
+                                                                                    className={`px-3 py-3 text-right border-r-2 ${theme.border} w-[80px] md:w-28 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-end">
+                                                                                        金額
+                                                                                        {getSortIcon('amount_due')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('status')}
+                                                                                    className={`px-3 py-3 text-center border-r-2 ${theme.border} w-[80px] md:w-28 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        收費
+                                                                                        {getSortIcon('status')}
+                                                                                    </div>
+                                                                                </th>
                                                                             </>
                                                                         )}
                                                                         {displayMode === 'checkin' && (
                                                                             <>
-                                                                                <td className={`px-1 py-1 text-center border-r ${theme.border}`}>
-                                                                                    <button onClick={() => handleToggleCheckIn(reg, 'to')} className={`p-1 rounded-full transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
-                                                                                        <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" />
-                                                                                    </button>
-                                                                                </td>
-                                                                                <td className={`px-1 py-1 text-center`}>
-                                                                                    <button onClick={() => handleToggleCheckIn(reg, 'back')} className={`p-1 rounded-full transition-all ${reg.is_checked_in_back ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
-                                                                                        <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" />
-                                                                                    </button>
-                                                                                </td>
+                                                                                <th className={`px-3 py-3 text-center border-r-2 ${theme.border} w-[70px] md:w-24`}>去程</th>
+                                                                                <th className={`px-3 py-3 text-center w-[70px] md:w-24`}>回程</th>
                                                                             </>
                                                                         )}
                                                                     </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
+                                                                </thead>
+                                                                <tbody className={`text-[10px] md:text-xs font-bold whitespace-nowrap`}>
+                                                                    {unitRegs.map((reg, regIndex) => (
+                                                                        <tr key={reg.reg_id} className={`hover:bg-black/5 transition-colors ${reg.status === RegStatus.CANCELLED ? 'opacity-40 grayscale italic' : ''}`}>
+                                                                            <td className={`px-2 py-2 border-r-2 border-b-[1px] ${theme.border} text-center text-slate-400 font-mono w-[40px]`}>{regIndex + 1}</td>
+                                                                            <td 
+                                                                                className={`px-3 py-2 sticky left-0 z-30 ${theme.content} border-r-2 border-b-[1px] ${theme.border} shadow-[6px_0_12px_rgba(0,0,0,0.15)] font-black text-slate-900 cursor-pointer truncate`} 
+                                                                                onClick={() => handlePaymentClick(reg)}
+                                                                            >
+                                                                                {protectNames ? maskName(reg.name) : reg.name}
+                                                                            </td>
+                                                                            {displayMode === 'normal' && (
+                                                                                <>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
+                                                                                        {reg.bus_assigned && <span className="bg-slate-800 text-white px-1.5 py-0.5 rounded text-[10px] font-black mr-1">{reg.bus_assigned.charAt(0)}</span>}
+                                                                                        {getStopInfo(reg.bus_assigned)?.location || '-'}
+                                                                                    </td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{translateOrdinance(reg.ordinance_item)}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-emerald-700 truncate`}>{translateTripType(reg.trip_type)}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-center truncate`}>{getMethodBadge(reg)}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-right font-mono text-slate-900 truncate`}>${(reg.amount_due || 0).toLocaleString()}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-center truncate`}>{getStatusBadge(reg)}</td>
+                                                                                </>
+                                                                            )}
+                                                                            {displayMode === 'fee' && (
+                                                                                <>
+                                                                                    <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border} truncate`}>{getMethodBadge(reg)}</td>
+                                                                                    <td className={`px-3 py-2 text-right font-mono border-r-2 border-b-[1px] ${theme.border} text-slate-900 truncate`}>${(reg.amount_due || 0).toLocaleString()}</td>
+                                                                                    <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border} truncate`}>{getStatusBadge(reg)}</td>
+                                                                                </>
+                                                                            )}
+                                                                            {displayMode === 'checkin' && (
+                                                                                <>
+                                                                                    <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border}`}>
+                                                                                        <button onClick={() => handleToggleCheckIn(reg, 'to')} className={`p-1.5 rounded-full transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
+                                                                                            <CheckCircle2 className="w-4 h-4" />
+                                                                                        </button>
+                                                                                    </td>
+                                                                                    <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border}`}>
+                                                                                        <button onClick={() => handleToggleCheckIn(reg, 'back')} className={`p-1.5 rounded-full transition-all ${reg.is_checked_in_back ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
+                                                                                            <CheckCircle2 className="w-4 h-4" />
+                                                                                        </button>
+                                                                                    </td>
+                                                                                </>
+                                                                            )}
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="grid grid-cols-1 gap-2 p-2 md:hidden">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-2 min-w-0 w-full">
                                                         {unitRegs.map((reg) => (
-                                                            <div key={reg.reg_id} onClick={() => handlePaymentClick(reg)} className={`p-3 rounded-lg border ${theme.border} bg-white shadow-sm flex flex-col gap-2.5 active:scale-[0.98] transition-all`}>
-                                                                <div className="flex justify-between items-start border-b border-slate-100 pb-2">
-                                                                    <div><div className="font-black text-xs text-slate-900">{protectNames ? maskName(reg.name) : reg.name}</div><div className="text-[10px] font-bold text-slate-400 uppercase">{translateIdentityType(reg.identity_type as string)}</div></div>
-                                                                    <div className="flex gap-1.5">
-                                                                        {reg.bus_assigned && <span className="bg-indigo-900 text-white px-2 py-0.5 rounded text-[10px] font-black">{reg.bus_assigned.charAt(0)}車</span>}
-                                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">{translateTripType(reg.trip_type)}</span>
+                                                            <div key={reg.reg_id} onClick={() => handlePaymentClick(reg)} className={`p-3 rounded border-2 ${theme.border} bg-white shadow-sm flex flex-col gap-2.5 active:scale-[0.98] transition-all min-w-0 w-full`}>
+                                                                <div className="flex justify-between items-start border-b-2 border-slate-100 pb-2 min-w-0">
+                                                                    <div className="min-w-0"><div className="font-black text-xs md:text-sm text-slate-900 truncate">{protectNames ? maskName(reg.name) : reg.name}</div><div className="text-[10px] font-black text-slate-400 uppercase">{translateIdentityType(reg.identity_type as string)}</div></div>
+                                                                    <div className="flex gap-1.5 shrink-0 ml-2">
+                                                                        {reg.bus_assigned && <span className="bg-indigo-900 text-white px-2 py-0.5 rounded text-[10px] font-black shrink-0">{reg.bus_assigned.charAt(0)}車</span>}
+                                                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-black shrink-0">{translateTripType(reg.trip_type)}</span>
                                                                     </div>
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-2">
-                                                                    <div className={`${theme.content} p-2 rounded-md border ${theme.border}`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">{getStopInfo(reg.bus_assigned)?.location || '-'}</div></div>
-                                                                    <div className={`${theme.content} p-2 rounded-md border ${theme.border}`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase">教儀</div><div className="text-[11px] font-bold text-slate-700">{translateOrdinance(reg.ordinance_item)}</div></div>
+                                                                <div className="grid grid-cols-2 gap-2 min-w-0">
+                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">{getStopInfo(reg.bus_assigned)?.location || '-'}</div></div>
+                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">教儀</div><div className="text-[11px] font-bold text-slate-700 truncate">{translateOrdinance(reg.ordinance_item)}</div></div>
                                                                 </div>
                                                                 {displayMode === 'fee' && (
-                                                                    <div className="flex items-center justify-between bg-slate-50 p-2 rounded-md border border-slate-200"><div className="flex items-center gap-2">{getMethodBadge(reg)}<span className="text-xs font-black">${(reg.amount_due || 0).toLocaleString()}</span></div>{getStatusBadge(reg)}</div>
+                                                                    <div className="flex items-center justify-between bg-slate-50 p-2 rounded border-2 border-slate-200 min-w-0 w-full gap-2"><div className="flex items-center gap-2 min-w-0 shrink-0">{getMethodBadge(reg)}<span className="text-xs font-black">${(reg.amount_due || 0).toLocaleString()}</span></div><div className="shrink-0">{getStatusBadge(reg)}</div></div>
                                                                 )}
                                                                 {displayMode === 'checkin' && (
-                                                                    <div className="flex gap-2">
-                                                                        <button onClick={(e) => { e.stopPropagation(); handleToggleCheckIn(reg, 'to'); }} className={`flex-1 h-9 rounded-md font-black text-xs transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>去程</button>
-                                                                        <button onClick={(e) => { e.stopPropagation(); handleToggleCheckIn(reg, 'back'); }} className={`flex-1 h-9 rounded-md font-black text-xs transition-all ${reg.is_checked_in_back ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>回程</button>
+                                                                    <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                                                        <button onClick={(e) => { e.stopPropagation(); handleToggleCheckIn(reg, 'to'); }} className={`flex-1 h-9 rounded font-black text-xs transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 border-2 border-slate-200'}`}>去程</button>
+                                                                        <button onClick={(e) => { e.stopPropagation(); handleToggleCheckIn(reg, 'back'); }} className={`flex-1 h-9 rounded font-black text-xs transition-all ${reg.is_checked_in_back ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-100 text-slate-400 border-2 border-slate-200'}`}>回程</button>
                                                                     </div>
                                                                 )}
                                                             </div>

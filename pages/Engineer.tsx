@@ -5,7 +5,7 @@ import i18n from '../i18n';
 import { subscribeToLogs, getSettings, saveSettings, migrateToCloud, subscribeToEvents, db, getDocs, collection, query, where, writeBatch, COLL_TRANSLATIONS, onSnapshot, doc, getDoc } from '../services/sheetService';
 import { AuditLog, GlobalSettings, DictionaryEntry, Role } from '../types';
 import { fetchAllTranslations, TranslationDoc } from '../services/translationService';
-import { Server, Users, Database, FileText, Download, Upload, Save, Activity, Settings, CheckCircle, Edit2, UploadCloud, AlertTriangle, Loader, ShieldAlert, RefreshCw, KeyRound, ChevronUp, ChevronDown, Languages, ArrowUpDown, ChevronRight, FileJson, Trash2, Edit, X, Search, Bell, FileSearch, LayoutDashboard, Menu, Info } from 'lucide-react';
+import { Server, Users, Database, FileText, Download, Upload, Save, Activity, Settings, CheckCircle, Edit2, UploadCloud, AlertTriangle, Loader, ShieldAlert, RefreshCw, KeyRound, ChevronUp, ChevronDown, Languages, ArrowUpDown, ChevronRight, FileJson, Trash2, Edit, X, Search, Bell, FileSearch, LayoutDashboard, Menu, Info, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ConfirmDialog from '../components/ConfirmDialog';
 import UsersTab from '../components/stake/UsersTab';
@@ -828,7 +828,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
     <div className="flex-1 flex flex-col min-h-0 bg-[#F0F4F8]">
       {/* V101: Toast Message - Professional Style */}
       {msg && (
-          <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-2xl z-[100] transition-all animate-in fade-in slide-in-from-top-4 flex items-center border ${msg.includes('失敗') || msg.includes('Error') || msg.includes('錯誤') ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-indigo-950 text-white border-transparent'}`}>
+          <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded shadow-2xl z-[100] transition-all animate-in fade-in slide-in-from-top-4 flex items-center border ${msg.includes('失敗') || msg.includes('Error') || msg.includes('錯誤') ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-indigo-950 text-white border-transparent'}`}>
               {msg.includes('失敗') || msg.includes('Error') || msg.includes('錯誤') ? <AlertTriangle className="w-5 h-5 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-emerald-400" />}
               <span className="font-bold text-sm">{msg}</span>
               <button onClick={() => setMsg(null)} className="ml-4 p-1 hover:bg-white/10 rounded-full transition-colors"><X className="w-4 h-4" /></button>
@@ -843,14 +843,14 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
               <div className="space-y-8 animate-in fade-in duration-500">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Maintenance & Security */}
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-slate-100 bg-white">
                       <h3 className="font-bold text-slate-900 flex items-center">
                         <ShieldAlert className="w-5 h-5 mr-3 text-rose-600" /> 系統狀態與安全性
                       </h3>
                     </div>
                     <div className="p-6 space-y-6">
-                      <div className="flex items-center justify-between p-4 rounded-lg bg-[#F0F4F8] border border-indigo-100/50">
+                      <div className="flex items-center justify-between p-4 rounded bg-[#F0F4F8] border border-indigo-100/50">
                         <div>
                           <p className="font-bold text-slate-900 text-sm">系統維護模式 (Maintenance)</p>
                           <p className="text-[11px] text-slate-600 mt-0.5">開啟後，全站將顯示維護中頁面</p>
@@ -866,18 +866,18 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                       <div className="space-y-3">
                         <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Google API 整合狀態</p>
                         <div className="grid grid-cols-1 gap-3">
-                          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-white shadow-sm">
+                          <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
                             <span className="text-xs text-slate-700 font-medium">Client ID 讀取狀態</span>
                             {import.meta.env.VITE_GOOGLE_CLIENT_ID ? 
                               <span className="flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-tighter">Connected</span> : 
                               <span className="flex items-center text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase tracking-tighter">Missing Key</span>}
                           </div>
-                          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-white shadow-sm">
+                          <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
                             <span className="text-xs text-slate-700 font-medium">Gmail 授權</span>
                             <button 
                               onClick={handleLinkGmail}
                               disabled={isProcessing}
-                              className="flex items-center bg-indigo-950 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-slate-800 transition-all shadow-sm active:scale-95"
+                              className="flex items-center bg-indigo-950 text-white px-3 py-1.5 rounded text-[10px] font-bold hover:bg-slate-800 transition-all shadow-sm active:scale-95"
                             >
                               <KeyRound className="w-3 h-3 mr-2 text-blue-400" /> 立即連結 Gmail
                             </button>
@@ -888,16 +888,16 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                   </div>
 
                   {/* Core Parameters */}
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
                       <h3 className="font-bold text-slate-900 flex items-center">
                         <Settings className="w-5 h-5 mr-3 text-blue-600" /> 系統核心參數
                       </h3>
                       <div className="flex gap-2">
-                        <button onClick={handleExportSettings} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all" title="匯出設定">
+                        <button onClick={handleExportSettings} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all" title="匯出設定">
                           <Download className="w-4 h-4" />
                         </button>
-                        <label className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-all cursor-pointer" title="匯入設定">
+                        <label className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-all cursor-pointer" title="匯入設定">
                           <Upload className="w-4 h-4" />
                           <input type="file" className="hidden" accept=".json" onChange={handleImportSettingsChange}/>
                         </label>
@@ -908,7 +908,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                         <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">單位主標題 (Header Name)</label>
                         <input 
                           type="text" 
-                          className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
+                          className="w-full px-4 py-2.5 rounded border border-slate-200 bg-white text-sm text-slate-900 focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
                           value={stakeName} 
                           onChange={e => setStakeName(e.target.value)} 
                         />
@@ -918,7 +918,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                           <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">版本序號 (Version)</label>
                           <input 
                             type="text" 
-                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
+                            className="w-full px-4 py-2.5 rounded border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
                             value={settings.app_version || ''} 
                             onChange={e => setSettingsData({ ...settings, app_version: e.target.value })} 
                           />
@@ -927,7 +927,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                           <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">最後更新 (Last Publish)</label>
                           <input 
                             type="text" 
-                            className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-500 font-mono outline-none" 
+                            className="w-full px-4 py-2.5 rounded border border-slate-200 bg-slate-50 text-sm text-slate-500 font-mono outline-none" 
                             value={settings.maintenance_date || ''} 
                             disabled
                           />
@@ -938,7 +938,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                 </div>
 
                 {/* Database Maintenance - Full Width */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
                   <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
                     <h3 className="font-bold text-slate-900 flex items-center">
                       <Database className="w-5 h-5 mr-3 text-amber-600" /> 全站資料一鍵同步與修正 (Core DB Sync)
@@ -952,7 +952,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                   </div>
                   <div className="p-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-[#F0F4F8] p-6 rounded-xl border border-indigo-100/50 space-y-4">
+                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
                         <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
                           <UploadCloud className="w-5 h-5 text-blue-600" />
                         </div>
@@ -962,13 +962,13 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                         </div>
                         <button 
                           onClick={() => setConfirmAction({ type: 'migrate' })}
-                          className="w-full bg-indigo-950 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
+                          className="w-full bg-indigo-950 text-white py-2.5 rounded text-xs font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
                         >
                           立即執行同步
                         </button>
                       </div>
 
-                      <div className="bg-[#F0F4F8] p-6 rounded-xl border border-indigo-100/50 space-y-4">
+                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
                         <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
                           <RefreshCw className="w-5 h-5 text-amber-600" />
                         </div>
@@ -978,13 +978,13 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                         </div>
                         <button 
                           onClick={() => setConfirmAction({ type: 'resetPasswords' })}
-                          className="w-full bg-amber-600 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-amber-700 transition-all shadow-md active:scale-95"
+                          className="w-full bg-amber-600 text-white py-2.5 rounded text-xs font-bold hover:bg-amber-700 transition-all shadow-md active:scale-95"
                         >
                           執行密碼重設
                         </button>
                       </div>
 
-                      <div className="bg-[#F0F4F8] p-6 rounded-xl border border-indigo-100/50 space-y-4">
+                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
                         <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
                           <Save className="w-5 h-5 text-emerald-600" />
                         </div>
@@ -994,7 +994,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                         </div>
                         <button 
                           onClick={handleSaveSettings}
-                          className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
+                          className="w-full bg-blue-600 text-white py-2.5 rounded text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
                         >
                           發佈系統設定
                         </button>
@@ -1012,7 +1012,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
 
         {/* Data Tab - Modern Business Style */}
         {activeTab === 'data' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
                 <div className="p-6 border-b border-slate-100 bg-white">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -1027,7 +1027,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                             <button 
                                 onClick={fetchCloudData} 
                                 disabled={isProcessing} 
-                                className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 active:scale-95"
+                                className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50 active:scale-95"
                             >
                                 {isProcessing ? <Loader className="w-4 h-4 animate-spin mr-2 text-blue-600"/> : <RefreshCw className="w-4 h-4 mr-2 text-blue-600"/>} 
                                 {t('engineer.data.sync', '雲端同步')}
@@ -1035,18 +1035,18 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                             <button 
                                 onClick={handleExportCloudData} 
                                 disabled={!cloudDataJson} 
-                                className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
+                                className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
                             >
                                 <Download className="w-4 h-4 mr-2 text-amber-600"/> {t('engineer.data.export', '匯出 JSON')}
                             </button>
-                            <label className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all shadow-sm cursor-pointer">
+                            <label className="inline-flex items-center bg-white border border-slate-200 text-slate-900 px-4 py-2 rounded text-xs font-bold hover:bg-slate-50 transition-all shadow-sm cursor-pointer">
                                 <Upload className="w-4 h-4 mr-2 text-emerald-600"/> {t('engineer.data.import', '匯入 JSON')}
                                 <input type="file" className="hidden" accept=".json" onChange={handleImportCloudDataChange}/>
                             </label>
                             <button 
                                 onClick={handleSaveCloudData} 
                                 disabled={isProcessing || !cloudDataJson} 
-                                className="inline-flex items-center bg-rose-600 text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-200 disabled:bg-slate-300 disabled:shadow-none"
+                                className="inline-flex items-center bg-rose-600 text-white px-5 py-2 rounded text-xs font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-200 disabled:bg-slate-300 disabled:shadow-none"
                             >
                                 <UploadCloud className="w-4 h-4 mr-2"/> {t('engineer.data.rebuild', '重建雲端資料庫')}
                             </button>
@@ -1071,7 +1071,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
 
         {/* Logs Tab - Modern Business Style */}
         {activeTab === 'logs' && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
                 <div className="p-6 border-b border-slate-100 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h3 className="font-bold text-slate-900 flex items-center text-lg">
@@ -1139,7 +1139,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
         {activeTab === 'announcements' && (
             <div className="space-y-8 animate-in fade-in duration-500">
                 {/* 最新消息管理 - 新增區塊 */}
-                <div className="bg-white rounded-xl border-2 border-red-100 shadow-xl overflow-hidden flex flex-col group hover:border-red-300 transition-colors">
+                <div className="bg-white rounded border-2 border-red-100 shadow-xl overflow-hidden flex flex-col group hover:border-red-300 transition-colors">
                     <div className="p-5 border-b border-red-50 bg-red-50/30 flex items-center justify-between">
                         <h3 className="font-bold text-red-900 flex items-center">
                             < Bell className="w-5 h-5 mr-3 text-red-600 animate-pulse" /> 最新消息管理 (Home Page Banner)
@@ -1150,7 +1150,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                     </div>
                     <div className="p-6 flex-1 bg-white">
                         <textarea 
-                            className="w-full h-32 p-4 rounded-lg border border-red-100 bg-white text-sm text-slate-900 outline-none focus:ring-4 focus:ring-red-50 focus:border-red-600 transition-all resize-none font-medium leading-relaxed"
+                            className="w-full h-32 p-4 rounded border border-red-100 bg-white text-sm text-slate-900 outline-none focus:ring-4 focus:ring-red-50 focus:border-red-600 transition-all resize-none font-medium leading-relaxed"
                             placeholder="輸入將在首頁顯示的最新消息內容..."
                             value={latestNews}
                             onChange={e => setLatestNews(e.target.value)}
@@ -1169,7 +1169,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {announcementsCategories.map((cat) => (
-                        <div key={cat} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-blue-300 transition-colors">
+                        <div key={cat} className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-blue-300 transition-colors">
                             <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
                                 <h3 className="font-bold text-slate-900 flex items-center">
                                     <Bell className={`w-4 h-4 mr-2.5 transition-colors ${announcements[cat]?.isActive ? 'text-blue-600' : 'text-slate-400'}`} /> {cat}
@@ -1188,7 +1188,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                             </div>
                             <div className="p-5 flex-1 bg-white">
                                 <textarea 
-                                    className="w-full h-40 p-4 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-600 transition-all resize-none placeholder:text-slate-400"
+                                    className="w-full h-40 p-4 rounded border border-slate-200 bg-white text-sm text-slate-900 outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-600 transition-all resize-none placeholder:text-slate-400"
                                     placeholder={t('engineer.announcements.placeholder', '輸入 {{category}} 的公告內容...', { category: cat })}
                                     value={announcements[cat]?.content || ''}
                                     onChange={e => {
@@ -1212,7 +1212,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                 <div className="flex justify-center pt-6">
                     <button 
                         onClick={handleSaveSettings} 
-                        className="bg-indigo-950 text-white px-12 py-4 rounded-xl font-bold shadow-xl hover:bg-slate-800 transition-all flex items-center active:scale-95 group"
+                        className="bg-indigo-950 text-white px-12 py-4 rounded font-bold shadow-xl hover:bg-slate-800 transition-all flex items-center active:scale-95 group"
                     >
                         <Save className="w-5 h-5 mr-3 text-blue-400 group-hover:scale-110 transition-transform" /> {t('engineer.announcements.saveButton', '儲存公告變動')}
                     </button>
@@ -1224,9 +1224,9 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
         {activeTab === 'translations' && (
             <div className="space-y-6 animate-in fade-in duration-500">
                 {/* Header & Main Control Row */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-white p-6 rounded border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center">
-                        <div className="bg-blue-600 p-3 rounded-xl mr-4 shadow-lg shadow-blue-100">
+                        <div className="bg-blue-600 p-3 rounded mr-4 shadow-lg shadow-blue-100">
                             <Languages className="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -1236,7 +1236,14 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="bg-[#F0F4F8] p-1.5 rounded-lg border border-indigo-100/50 flex gap-1">
+                        <button 
+                            onClick={() => setIsEditMode(!isEditMode)}
+                            className={`px-4 py-2 rounded text-xs font-bold transition-all flex items-center gap-2 shadow-sm ${isEditMode ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                        >
+                            <Globe className="w-4 h-4" />
+                            {isEditMode ? '關閉 i18n 編輯器' : 'i18n Management'}
+                        </button>
+                        <div className="bg-[#F0F4F8] p-1.5 rounded border border-indigo-100/50 flex gap-1">
                             <button 
                                 onClick={() => {
                                     const next = { ...settings, language: 'zh' as const };
@@ -1245,7 +1252,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                                     i18n.changeLanguage('zh');
                                     setMsg('介面已切換：繁體中文');
                                 }}
-                                className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${settings.language === 'zh' || !settings.language ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                                className={`px-4 py-1.5 rounded text-[11px] font-bold transition-all ${settings.language === 'zh' || !settings.language ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
                             >
                                 ZH-TW
                             </button>
@@ -1257,7 +1264,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                                     i18n.changeLanguage('en');
                                     setMsg('UI Switched to English');
                                 }}
-                                className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${settings.language === 'en' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
+                                className={`px-4 py-1.5 rounded text-[11px] font-bold transition-all ${settings.language === 'en' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'}`}
                             >
                                 EN-US
                             </button>
@@ -1266,21 +1273,21 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                 </div>
 
                 {/* Dictionary List */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-white flex flex-col lg:flex-row gap-4 items-center">
                         <div className="relative flex-1 w-full">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input 
                                 type="text"
                                 placeholder="搜尋代碼、翻譯內容..."
-                                className="w-full pl-11 pr-4 py-2 rounded-lg border border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-600 transition-all outline-none text-sm text-slate-900"
+                                className="w-full pl-11 pr-4 py-2 rounded border border-slate-200 focus:ring-4 focus:ring-blue-50 focus:border-blue-600 transition-all outline-none text-sm text-slate-900"
                                 value={dictionarySearch}
                                 onChange={e => setDictionarySearch(e.target.value)}
                             />
                         </div>
                         <div className="flex gap-2 w-full lg:w-auto">
-                            <button onClick={() => setConfirmAction({ type: 'exportDictionaryExcel' })} className="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">匯出 Excel</button>
-                            <button onClick={handlePublishTranslations} className="flex-1 lg:flex-none px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-100">發佈更新</button>
+                            <button onClick={() => setConfirmAction({ type: 'exportDictionaryExcel' })} className="flex-1 lg:flex-none px-4 py-2 bg-white border border-slate-200 text-slate-900 rounded text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">匯出 Excel</button>
+                            <button onClick={handlePublishTranslations} className="flex-1 lg:flex-none px-4 py-2 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition-all shadow-md shadow-rose-100">發佈更新</button>
                         </div>
                     </div>
                         

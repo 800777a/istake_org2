@@ -365,9 +365,9 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
         const totalAssigned = data.reduce((sum, s) => sum + getAssignedCount(s.time), 0);
 
         return (
-            <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm flex-1">
+            <div className="bg-white p-5 rounded border border-slate-200 shadow-sm flex-1">
                 <h4 className="font-bold text-slate-800 text-sm mb-4 text-center">{title}</h4>
-                <div className="overflow-hidden rounded-md border border-slate-200">
+                <div className="overflow-hidden rounded border border-slate-200">
                     <table className="w-full text-[11px] text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200">
@@ -478,7 +478,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     return (
         <div className="space-y-8">
             {msg && <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />}
-            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm">
+            <div className="bg-slate-50 p-6 rounded border border-slate-200 shadow-sm">
                 <RegistrationDashboard 
                     activeEvent={currentEvent}
                     eventStats={vehicleStats}
@@ -487,6 +487,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                     isClosed={currentEvent.status === 'cancelled' || currentEvent.is_registration_open === false}
                     lang={langCode.startsWith('zh') ? 'zh' : 'en'}
                     onAssignOrdinanceSerials={handleAssignSerials}
+                    hideSealing={true}
                 />
             </div>
             
@@ -515,13 +516,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
 
             {/* Endowment Assignment */}
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden mb-8">
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsEndowmentExpanded(!isEndowmentExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <Clock className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.endowmentAssignment', '恩道門 (Endowment) 場次指派')}</h4>
@@ -534,14 +535,14 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                 {isEndowmentExpanded && (
                     <div className="p-6 bg-slate-50/40 space-y-6">
                         <div className="flex flex-wrap justify-end gap-3 w-full">
-                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded border border-slate-200 shadow-sm">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
                                 <div className="w-32">
                                     <TimeSelect value={globalEndowmentTime} onChange={setGlobalEndowmentTime} options={endowmentSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
                                     onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, globalEndowmentTime)}
-                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+                                    className="bg-blue-600 text-white px-5 h-10 rounded text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
                                     {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
@@ -552,7 +553,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                             {(settings.units || []).map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
-                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
                                         <div className="flex justify-between items-center">
                                             <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
                                             <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
@@ -570,7 +571,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                             </div>
                                             <button 
                                                 onClick={() => handleBatchSessionUpdate(OrdinanceItem.ENDOWMENT, unitEndowmentTime[unit], unit)}
-                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                className={`bg-white/80 px-4 h-10 rounded text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
                                                 disabled={!unitEndowmentTime[unit]}
                                             >
                                                 {t('common.button.assign', '指定')}
@@ -585,13 +586,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
             
             {/* Baptism Assignment */}
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden mb-8">
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsBaptismExpanded(!isBaptismExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <Clock className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.baptismAssignment', '洗禮 (Baptism) 場次指派')}</h4>
@@ -604,14 +605,14 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                 {isBaptismExpanded && (
                     <div className="p-6 bg-slate-50/40 space-y-6">
                         <div className="flex flex-wrap justify-end gap-3 w-full">
-                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded border border-slate-200 shadow-sm">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
                                 <div className="w-32">
                                     <TimeSelect value={globalBaptismTime} onChange={setGlobalBaptismTime} options={baptismSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
                                     onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, globalBaptismTime)}
-                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+                                    className="bg-blue-600 text-white px-5 h-10 rounded text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
                                     {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
@@ -622,7 +623,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                             {(settings.units || []).map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
-                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
                                         <div className="flex justify-between items-center">
                                             <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
                                             <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
@@ -640,7 +641,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                             </div>
                                             <button 
                                                 onClick={() => handleBatchSessionUpdate(OrdinanceItem.BAPTISM, unitBaptismTime[unit], unit)}
-                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                className={`bg-white/80 px-4 h-10 rounded text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
                                                 disabled={!unitBaptismTime[unit]}
                                             >
                                                 {t('common.button.assign', '指定')}
@@ -655,13 +656,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
 
             {/* Sealing Assignment */}
-            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-8">
+            <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden mb-8">
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsSealingExpanded(!isSealingExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <Clock className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.title.sealingAssignment', '印證 (Sealing) 場次指派')}</h4>
@@ -674,14 +675,14 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                 {isSealingExpanded && (
                     <div className="p-6 bg-slate-50/40 space-y-6">
                         <div className="flex flex-wrap justify-end gap-3 w-full">
-                            <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-3 bg-white p-3 rounded border border-slate-200 shadow-sm">
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('stake.temple.label.batchAssign', '支聯會集體指派')}:</span>
                                 <div className="w-32">
                                     <TimeSelect value={globalSealingTime} onChange={setGlobalSealingTime} options={sealingSlots} placeholder={tString('stake.temple.placeholder.selectTime', '選擇時間')} />
                                 </div>
                                 <button 
                                     onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, globalSealingTime)}
-                                    className="bg-blue-600 text-white px-5 h-10 rounded-lg text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+                                    className="bg-blue-600 text-white px-5 h-10 rounded text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95"
                                 >
                                     {t('stake.temple.button.applyToAll', '全體適用')}
                                 </button>
@@ -692,7 +693,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                             {(settings.units || []).map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
-                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded-lg border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
+                                    <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
                                         <div className="flex justify-between items-center">
                                             <span className={`text-sm font-bold ${theme.text}`}>{unit}</span>
                                             <span className={`bg-white/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${theme.text} ${theme.border}`}>
@@ -710,7 +711,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                             </div>
                                             <button 
                                                 onClick={() => handleBatchSessionUpdate(OrdinanceItem.SEALING, unitSealingTime[unit], unit)}
-                                                className={`bg-white/80 px-4 h-10 rounded-lg text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
+                                                className={`bg-white/80 px-4 h-10 rounded text-xs font-bold border shadow-sm transition-all active:scale-95 disabled:opacity-30 ${theme.text} ${theme.border} ${theme.hover}`}
                                                 disabled={!unitSealingTime[unit]}
                                             >
                                                 {t('common.button.assign', '指定')}
@@ -735,13 +736,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
             
             {/* Endowment List */}
-            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[0].bg} ${rainbowThemes[0].border}`}>
+            <div className={`rounded border shadow-sm overflow-hidden mb-8 ${rainbowThemes[0].bg} ${rainbowThemes[0].border}`}>
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsEndowmentExpanded(!isEndowmentExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <BookOpen className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.endowmentTitle', '恩道門 (Endowment) 名單')}</h4>
@@ -761,11 +762,11 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                 <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[0].text} ${rainbowThemes[0].border}`}>{t('common.gender.male_label', '弟兄')}: {endCount.male}</span>
                                 <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[0].text} ${rainbowThemes[0].border}`}>{t('common.gender.female_label', '姊妹')}: {endCount.female}</span>
                             </div>
-                            <button onClick={() => handleExportTempleList('Endowment')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[0].text} ${rainbowThemes[0].border} ${rainbowThemes[0].hover}`}>
+                            <button onClick={() => handleExportTempleList('Endowment')} className={`h-10 px-5 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[0].text} ${rainbowThemes[0].border} ${rainbowThemes[0].hover}`}>
                                 <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
                             </button>
                         </div>
-                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[0].border}`}>
+                        <div className={`rounded border shadow-sm overflow-hidden ${rainbowThemes[0].border}`}>
                             {renderTempleListTable(OrdinanceItem.ENDOWMENT, endowmentSlots, endowmentSort, (key) => handleSort('endowment', key), 'endowment')}
                         </div>
                     </div>
@@ -773,13 +774,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
 
             {/* Baptism List */}
-            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[4].bg} ${rainbowThemes[4].border}`}>
+            <div className={`rounded border shadow-sm overflow-hidden mb-8 ${rainbowThemes[4].bg} ${rainbowThemes[4].border}`}>
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsBaptismExpanded(!isBaptismExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <BookOpen className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.baptismTitle', '洗禮 (Baptism) 名單')}</h4>
@@ -799,11 +800,11 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                 <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[4].text} ${rainbowThemes[4].border}`}>{t('common.gender.male_label', '弟兄')}: {bapCount.male}</span>
                                 <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border shadow-sm bg-white/60 ${rainbowThemes[4].text} ${rainbowThemes[4].border}`}>{t('common.gender.female_label', '姊妹')}: {bapCount.female}</span>
                             </div>
-                            <button onClick={() => handleExportTempleList('Baptism')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[4].text} ${rainbowThemes[4].border} ${rainbowThemes[4].hover}`}>
+                            <button onClick={() => handleExportTempleList('Baptism')} className={`h-10 px-5 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[4].text} ${rainbowThemes[4].border} ${rainbowThemes[4].hover}`}>
                                 <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
                             </button>
                         </div>
-                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[4].border}`}>
+                        <div className={`rounded border shadow-sm overflow-hidden ${rainbowThemes[4].border}`}>
                             {renderTempleListTable(OrdinanceItem.BAPTISM, baptismSlots, baptismSort, (key) => handleSort('baptism', key), 'baptism')}
                         </div>
                     </div>
@@ -811,13 +812,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             </div>
 
             {/* Sealing List */}
-            <div className={`rounded-lg border shadow-sm overflow-hidden mb-8 ${rainbowThemes[6].bg} ${rainbowThemes[6].border}`}>
+            <div className={`rounded border shadow-sm overflow-hidden mb-8 ${rainbowThemes[6].bg} ${rainbowThemes[6].border}`}>
                 <div 
                     className="w-full px-6 py-4 bg-indigo-900 flex justify-between items-center cursor-pointer hover:bg-indigo-950 transition-all border-b border-indigo-800"
                     onClick={() => setIsSealingExpanded(!isSealingExpanded)}
                 >
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white/10 rounded-lg border border-white/20 shadow-inner">
+                        <div className="p-2 bg-white/10 rounded border border-white/20 shadow-inner">
                             <BookOpen className="text-blue-300" size={20} />
                         </div>
                         <h4 className="font-bold text-base md:text-lg text-white tracking-tight">{t('stake.temple.list.sealingTitle', '印證 (Sealing) 名單')}</h4>
@@ -838,11 +839,11 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                     })()} {t('common.label.people', '人')}
                                 </span>
                             </div>
-                            <button onClick={() => handleExportTempleList('Sealing')} className={`h-10 px-5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[6].text} ${rainbowThemes[6].border} ${rainbowThemes[6].hover}`}>
+                            <button onClick={() => handleExportTempleList('Sealing')} className={`h-10 px-5 rounded text-sm font-bold transition-all flex items-center justify-center gap-2 border bg-white/60 shadow-sm ${rainbowThemes[6].text} ${rainbowThemes[6].border} ${rainbowThemes[6].hover}`}>
                                 <Download className="w-4 h-4" /> {t('common.button.export', '匯出名冊')}
                             </button>
                         </div>
-                        <div className={`rounded-lg border shadow-sm overflow-hidden ${rainbowThemes[6].border}`}>
+                        <div className={`rounded border shadow-sm overflow-hidden ${rainbowThemes[6].border}`}>
                             {renderTempleListTable(OrdinanceItem.SEALING, sealingSlots, sealingSort, (key) => handleSort('sealing', key), 'sealing')}
                         </div>
                     </div>
@@ -857,7 +858,7 @@ const TimeSelect = ({ value, onChange, options, placeholder }: { value: string, 
     const { tString } = useI18n();
     return (
         <select 
-            className="border border-slate-200 rounded-md p-1.5 text-xs w-full bg-slate-50 text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
+            className="border border-slate-200 rounded p-1.5 text-xs w-full bg-slate-50 text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
             value={value}
             onChange={e => onChange(e.target.value)}
         >

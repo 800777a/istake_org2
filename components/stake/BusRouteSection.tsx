@@ -37,7 +37,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
     const lastReturnDeparture = route.returnTrip?.length > 0 ? route.returnTrip[route.returnTrip.length-1].departureTime : '';
 
     return (
-        <div className={`rounded-lg shadow-sm border overflow-hidden ${theme.bg} ${theme.border}`}>
+        <div className={`rounded shadow-sm border overflow-hidden ${theme.bg} ${theme.border}`}>
             {/* Section Header: Collapsible Card Standard */}
             <div 
                 className={`w-full px-6 py-4 cursor-pointer select-none transition-colors border-b bg-white/60 backdrop-blur-sm group hover:bg-white/80 ${theme.border}`}
@@ -45,7 +45,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
             >
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-4">
-                        <div className={`p-2 rounded-lg border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
+                        <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
                             <Bus size={20} />
                         </div>
                         <h3 className={`font-bold text-sm md:text-base lg:text-lg ${theme.text}`}>
@@ -92,7 +92,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                             a.download = fileName;
                             a.click();
                         }}
-                        className={`h-9 px-4 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
+                        className={`h-9 px-4 rounded text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
                     >
                         <Download size={14} /> 匯出文字
                     </button>
@@ -116,7 +116,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                                         <Upload size={16}/>
                                         <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('outbound', e)}/>
                                     </label>
-                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded-lg border shadow-sm ${theme.border}`}>
+                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
                                         <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
                                         <button onClick={() => onTogglePublish('outbound')} className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${route.isOutboundPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
                                             <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isOutboundPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
@@ -125,15 +125,15 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                                 </div>
                             </div>
 
-                            <div className={`bg-white/60 p-4 rounded-lg border shadow-sm space-y-4 ${theme.border}`}>
+                            <div className={`bg-white/60 p-4 rounded border shadow-sm space-y-4 ${theme.border}`}>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>發車時間</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded-lg px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundStartTime || ''} onChange={e => onTimeChange('outbound', 'Start', e.target.value)} />
+                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundStartTime || ''} onChange={e => onTimeChange('outbound', 'Start', e.target.value)} />
                                     </div>
                                     <div className="space-y-1">
                                         <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>預計抵達</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded-lg px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundEndTime || ''} onChange={e => onTimeChange('outbound', 'End', e.target.value)} />
+                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundEndTime || ''} onChange={e => onTimeChange('outbound', 'End', e.target.value)} />
                                     </div>
                                 </div>
                                 <BusRouteTable 
@@ -164,7 +164,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                                         <Upload size={16}/>
                                         <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('return', e)}/>
                                     </label>
-                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded-lg border shadow-sm ${theme.border}`}>
+                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
                                         <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
                                         <button onClick={() => onTogglePublish('return')} className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${route.isReturnPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
                                             <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isReturnPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
@@ -173,15 +173,15 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                                 </div>
                             </div>
 
-                            <div className={`bg-white/60 p-4 rounded-lg border shadow-sm space-y-4 ${theme.border}`}>
+                            <div className={`bg-white/60 p-4 rounded border shadow-sm space-y-4 ${theme.border}`}>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>發車時間</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded-lg px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnStartTime || ''} onChange={e => onTimeChange('return', 'Start', e.target.value)} />
+                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnStartTime || ''} onChange={e => onTimeChange('return', 'Start', e.target.value)} />
                                     </div>
                                     <div className="space-y-1">
                                         <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>預計抵達</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded-lg px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnEndTime || ''} onChange={e => onTimeChange('return', 'End', e.target.value)} />
+                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnEndTime || ''} onChange={e => onTimeChange('return', 'End', e.target.value)} />
                                     </div>
                                 </div>
                                 <BusRouteTable 

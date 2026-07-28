@@ -108,9 +108,9 @@ const SubsidyTab: React.FC<SubsidyTabProps> = ({ registrations, settings, curren
       {msg && <Toast message={msg} type="success" onClose={() => setMsg(null)} />}
       
       {/* Main Header */}
-      <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+      <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/10 rounded-lg border border-white/10">
+          <div className="p-3 bg-white/10 rounded border border-white/10">
             <DollarSign className="text-blue-300" size={24} />
           </div>
           <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
@@ -121,7 +121,7 @@ const SubsidyTab: React.FC<SubsidyTabProps> = ({ registrations, settings, curren
           <p className="hidden md:block text-xs text-indigo-200 font-medium uppercase tracking-wider opacity-60 mr-auto">Automated Subsidy Analytics & Billing</p>
           <button 
             onClick={() => setIsExportModalOpen(true)}
-            className="h-10 px-6 bg-blue-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
+            className="h-10 px-6 bg-blue-600 text-white rounded text-xs font-bold shadow-md hover:bg-blue-700 transition-all flex items-center gap-2"
           >
             <FileText size={16} /> 導出補助名單
           </button>
@@ -130,22 +130,22 @@ const SubsidyTab: React.FC<SubsidyTabProps> = ({ registrations, settings, curren
 
       {/* Stats Summary Area */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-lg"><Users size={24} /></div>
+          <div className="bg-white p-6 rounded shadow-sm border border-slate-200 flex items-center gap-4">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded"><Users size={24} /></div>
               <div>
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">總補助人數</div>
                   <div className="text-2xl font-bold text-slate-900">{totals.count} <span className="text-sm font-medium text-slate-400">人</span></div>
               </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center gap-4">
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><Activity size={24} /></div>
+          <div className="bg-white p-6 rounded shadow-sm border border-slate-200 flex items-center gap-4">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded"><Activity size={24} /></div>
               <div>
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">補助項目類別</div>
                   <div className="text-2xl font-bold text-slate-900">{identityStats.length} <span className="text-sm font-medium text-slate-400">類</span></div>
               </div>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex items-center gap-4">
-              <div className="p-3 bg-rose-50 text-rose-600 rounded-lg"><DollarSign size={24} /></div>
+          <div className="bg-white p-6 rounded shadow-sm border border-slate-200 flex items-center gap-4">
+              <div className="p-3 bg-rose-50 text-rose-600 rounded"><DollarSign size={24} /></div>
               <div>
                   <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">補助總金額</div>
                   <div className="text-2xl font-bold text-rose-600">${totals.totalAmount.toLocaleString()}</div>
@@ -154,13 +154,13 @@ const SubsidyTab: React.FC<SubsidyTabProps> = ({ registrations, settings, curren
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden">
         <div 
           className="w-full px-6 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-100"
           onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
         >
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><CheckCircle size={18} /></div>
+             <div className="p-2 bg-indigo-50 text-indigo-600 rounded"><CheckCircle size={18} /></div>
              <h3 className="font-bold text-slate-900 text-base">補助計算明細 (SUBSIDY AUDIT)</h3>
           </div>
           <div className="text-slate-400">{isHeaderExpanded ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}</div>

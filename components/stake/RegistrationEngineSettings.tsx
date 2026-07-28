@@ -103,14 +103,14 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
     };
 
     return (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm mb-8 overflow-hidden animate-fade-in relative">
+        <div className="bg-white rounded border border-slate-200 shadow-sm mb-8 overflow-hidden animate-fade-in relative">
             {/* Title Row */}
             <div 
                 className="px-6 py-4 bg-slate-50 border-b border-slate-200 cursor-pointer group flex flex-col md:flex-row md:items-center justify-between gap-4"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-sky-100 rounded-lg">
+                    <div className="p-2 bg-sky-100 rounded">
                         <TrendingUp className="w-5 h-5 text-sky-600" />
                     </div>
                     <div>
@@ -135,14 +135,14 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => updateConfig({ enabled: !config.enabled })}
-                                className={`px-4 py-2 rounded-md text-xs font-bold flex items-center gap-2 transition-all shadow-sm ${config.enabled ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-sky-600 text-white hover:bg-sky-700'}`}
+                                className={`px-4 py-2 rounded text-xs font-bold flex items-center gap-2 transition-all shadow-sm ${config.enabled ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-sky-600 text-white hover:bg-sky-700'}`}
                             >
                                 <Power className="w-4 h-4" />
                                 {config.enabled ? t('common.button.disable', '停用引擎') : t('common.button.enable', '啟用引擎')}
                             </button>
                             <button 
                                 onClick={() => setSandboxMode(!sandboxMode)}
-                                className={`px-4 py-2 rounded-md text-xs font-bold flex items-center gap-2 transition-all shadow-sm ${sandboxMode ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'}`}
+                                className={`px-4 py-2 rounded text-xs font-bold flex items-center gap-2 transition-all shadow-sm ${sandboxMode ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'}`}
                             >
                                 <RefreshCw className={`w-4 h-4 ${sandboxMode ? 'animate-spin' : ''}`} />
                                 {sandboxMode ? '正在測試沙盒' : '啟動沙盒測試'}
@@ -154,7 +154,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                     {!sandboxMode ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* 1. Progressive Group Gate */}
-                            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm space-y-6">
+                            <div className="bg-slate-50 p-6 rounded border border-slate-200 shadow-sm space-y-6">
                                 <h4 className="font-bold text-slate-900 flex items-center text-md gap-2 border-b border-slate-200 pb-3">
                                     <Layers className="w-5 h-5 text-sky-600" /> 1. 數量與漸進式開團指標
                                 </h4>
@@ -165,7 +165,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                         <select 
                                             value={config.groupGate.decisionCondition}
                                             onChange={(e) => handleGroupGateChange('decisionCondition', e.target.value)}
-                                            className="w-full p-2 bg-white border border-slate-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
+                                            className="w-full p-2 bg-white border border-slate-200 rounded text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
                                         >
                                             <option value="minCapacity">達到最低人數</option>
                                             <option value="minAmount">達到最低金額</option>
@@ -181,7 +181,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                 type="number" 
                                                 value={config.groupGate.maxGroups}
                                                 onChange={(e) => handleGroupGateChange('maxGroups', parseInt(e.target.value) || 1)}
-                                                className="w-full p-2 bg-white border border-slate-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
+                                                className="w-full p-2 bg-white border border-slate-200 rounded text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
@@ -190,7 +190,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                 type="number" 
                                                 value={config.groupGate.minCapacity}
                                                 onChange={(e) => handleGroupGateChange('minCapacity', parseInt(e.target.value) || 0)}
-                                                className="w-full p-2 bg-white border border-slate-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
+                                                className="w-full p-2 bg-white border border-slate-200 rounded text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
@@ -199,7 +199,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                 type="number" 
                                                 value={config.groupGate.maxCapacity}
                                                 onChange={(e) => handleGroupGateChange('maxCapacity', parseInt(e.target.value) || 0)}
-                                                className="w-full p-2 bg-white border border-slate-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
+                                                className="w-full p-2 bg-white border border-slate-200 rounded text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
@@ -208,7 +208,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                 type="number" 
                                                 value={config.groupGate.minAmount || 0}
                                                 onChange={(e) => handleGroupGateChange('minAmount', parseInt(e.target.value) || 0)}
-                                                className="w-full p-2 bg-white border border-slate-200 rounded-md text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
+                                                className="w-full p-2 bg-white border border-slate-200 rounded text-sm font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -237,7 +237,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                             </div>
 
                             {/* 2. 4D Priority Weights */}
-                            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm space-y-6">
+                            <div className="bg-slate-50 p-6 rounded border border-slate-200 shadow-sm space-y-6">
                                 <h4 className="font-bold text-slate-900 flex items-center text-md gap-2 border-b border-slate-200 pb-3">
                                     <Database className="w-5 h-5 text-sky-600" /> 2. 四維交叉審核權重
                                 </h4>
@@ -255,21 +255,21 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                     type="range" min="0" max="100" 
                                                     value={w.weight}
                                                     onChange={(e) => handleWeightChange(w.key as any, e.target.value)}
-                                                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
+                                                    className="w-full h-1.5 bg-slate-200 rounded appearance-none cursor-pointer accent-sky-600"
                                                 />
                                                 <span className="w-10 text-right font-bold text-sky-600 text-sm">{w.weight}%</span>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
-                                <div className="mt-4 p-3 bg-sky-50 rounded-md text-[11px] font-medium text-sky-700 border border-sky-100 flex gap-2">
+                                <div className="mt-4 p-3 bg-sky-50 rounded text-[11px] font-medium text-sky-700 border border-sky-100 flex gap-2">
                                     <Info className="w-4 h-4 shrink-0" />
                                     <span>總分為 100 滿分。系統依加權得分對報名者進行排序，正備取轉換將完全依據此得分。</span>
                                 </div>
                             </div>
 
                             {/* 3. Seven Time Nodes */}
-                            <div className="lg:col-span-2 bg-slate-50 p-6 rounded-lg border border-slate-200 shadow-sm space-y-6">
+                            <div className="lg:col-span-2 bg-slate-50 p-6 rounded border border-slate-200 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                                     <h4 className="font-bold text-slate-900 flex items-center text-md gap-2">
                                         <Clock className="w-5 h-5 text-sky-600" /> 3. 時間節點
@@ -420,7 +420,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                     ) : (
                         /* Sandbox Mode Content */
                         <div className="space-y-6 animate-slide-up">
-                            <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 flex items-start gap-3">
+                            <div className="bg-amber-50 p-4 rounded border border-amber-200 flex items-start gap-3">
                                 <div className="p-1 bg-amber-100 rounded">
                                     <Info className="w-5 h-5 text-amber-600" />
                                 </div>
@@ -434,13 +434,13 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* Controller */}
-                                <div className="lg:col-span-1 bg-white p-6 rounded-lg border border-slate-200 shadow-sm space-y-6">
+                                <div className="lg:col-span-1 bg-white p-6 rounded border border-slate-200 shadow-sm space-y-6">
                                     <h5 className="font-bold text-slate-800 flex items-center gap-2 border-b pb-3">
                                         <RefreshCw className="w-4 h-4 text-sky-600" /> Sandbox Controller
                                     </h5>
                                     
                                     <div className="space-y-4">
-                                        <button className="w-full py-2.5 px-4 bg-slate-800 text-white rounded-md font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-900 transition-all shadow-sm">
+                                        <button className="w-full py-2.5 px-4 bg-slate-800 text-white rounded font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-900 transition-all shadow-sm">
                                             <FastForward className="w-4 h-4" /> 一鍵複製環境與權重
                                         </button>
                                         
@@ -451,14 +451,14 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                                 <button className="flex-1 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold hover:bg-slate-100 transition-colors">300</button>
                                                 <button className="flex-1 py-2 bg-slate-50 border border-slate-200 rounded text-xs font-bold hover:bg-slate-100 transition-colors">500</button>
                                             </div>
-                                            <button className="w-full py-2.5 bg-emerald-600 text-white rounded-md font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm">
+                                            <button className="w-full py-2.5 bg-emerald-600 text-white rounded font-bold text-xs flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm">
                                                 <UserPlus className="w-4 h-4" /> 灌入虛擬數據 (Mass Enroll)
                                             </button>
                                         </div>
 
                                         <div className="pt-4 border-t border-slate-100 space-y-3">
                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Time Traveler (加速時間軸)</label>
-                                            <input type="range" className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-600" />
+                                            <input type="range" className="w-full h-1.5 bg-slate-200 rounded appearance-none cursor-pointer accent-sky-600" />
                                             <div className="flex justify-between text-[9px] font-bold text-slate-400 uppercase">
                                                 <span>Start</span>
                                                 <span>Deadline</span>
@@ -470,7 +470,7 @@ const RegistrationEngineSettings: React.FC<RegistrationEngineSettingsProps> = ({
                                 </div>
 
                                 {/* Monitor / Results */}
-                                <div className="lg:col-span-2 bg-slate-900 text-slate-300 p-6 rounded-lg shadow-inner font-mono text-[11px] space-y-4 overflow-hidden relative">
+                                <div className="lg:col-span-2 bg-slate-900 text-slate-300 p-6 rounded shadow-inner font-mono text-[11px] space-y-4 overflow-hidden relative">
                                     <div className="absolute top-0 right-0 p-4 opacity-5">
                                         <Zap className="w-24 h-24 text-yellow-400" />
                                     </div>
@@ -511,7 +511,7 @@ const TimeNodeField = ({ label, value, onChange, hint }: { label: string, value:
             type="datetime-local" 
             value={value || ''} 
             onChange={(e) => onChange(e.target.value)}
-            className="w-full p-2 bg-white border border-slate-200 rounded-md text-[11px] font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none text-slate-700 transition-all"
+            className="w-full p-2 bg-white border border-slate-200 rounded text-[11px] font-medium focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none text-slate-700 transition-all"
         />
         {hint && <p className="text-[10px] font-medium text-slate-400 italic mt-1">{hint}</p>}
     </div>
@@ -533,7 +533,7 @@ const PriorityMappingCard = ({ title, icon: Icon, color, items, scores, onUpdate
     };
     
     return (
-        <div className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm space-y-4">
+        <div className="bg-white p-5 rounded border border-slate-200 shadow-sm space-y-4">
             <h5 className={`font-bold flex items-center gap-2 text-xs pb-3 border-b border-slate-100 ${colorClasses[color]?.split(' ')[0]}`}>
                 <Icon className="w-4 h-4" /> {title}
             </h5>

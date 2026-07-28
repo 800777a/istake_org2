@@ -132,10 +132,10 @@ const BackupTab: React.FC = () => {
     return (
         <div className="space-y-6 animate-fade-in">
             {/* Header Section */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div className="bg-white p-6 rounded shadow-sm border border-slate-200">
                 <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
                     <div className="flex items-center">
-                        <div className="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center text-white mr-4">
+                        <div className="w-12 h-12 rounded bg-slate-900 flex items-center justify-center text-white mr-4">
                             <Database className="w-6 h-6" />
                         </div>
                         <div>
@@ -154,7 +154,7 @@ const BackupTab: React.FC = () => {
                     <button 
                         onClick={() => setConfirmAction({ type: 'sync' })}
                         disabled={isProcessing}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded-lg font-bold text-sm hover:bg-sky-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-sky-600 text-white rounded font-bold text-sm hover:bg-sky-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
                         {isProcessing ? <Loader className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         {t('stake.backup.button.cloudSync', '雲端同步')}
@@ -168,14 +168,14 @@ const BackupTab: React.FC = () => {
                             }
                             setConfirmAction({ type: 'export' });
                         }}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                     >
                         <Download className="w-4 h-4" />
                         {t('stake.backup.button.exportJson', '匯出 JSON')}
                     </button>
 
                     <label 
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 text-slate-700 rounded font-bold text-sm hover:bg-slate-50 transition-all shadow-sm active:scale-95 cursor-pointer"
                     >
                         <Upload className="w-4 h-4" />
                         {t('stake.backup.button.importJson', '匯入 JSON')}
@@ -191,7 +191,7 @@ const BackupTab: React.FC = () => {
                             setConfirmAction({ type: 'rebuild' });
                         }}
                         disabled={isProcessing}
-                        className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 text-white rounded-lg font-bold text-sm hover:bg-rose-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-600 text-white rounded font-bold text-sm hover:bg-rose-700 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
                         <UploadCloud className="w-4 h-4" />
                         {t('stake.backup.button.rebuildCloud', '重建雲端')}
@@ -199,7 +199,7 @@ const BackupTab: React.FC = () => {
                 </div>
 
                 {/* Editor Area */}
-                <div className="relative group border border-slate-200 rounded-lg overflow-hidden bg-slate-900">
+                <div className="relative group border border-slate-200 rounded overflow-hidden bg-slate-900">
                     <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700">
                         <div className="flex items-center gap-2">
                             <div className="flex gap-1.5">
@@ -263,7 +263,7 @@ const BackupTab: React.FC = () => {
                             <span>{t('stake.backup.modal.rebuildDangerLabel', '⚠ 極度危險的操作：')}</span>
                         </div>
                         <p className="text-slate-600 text-sm leading-relaxed">{t('stake.backup.modal.rebuildWarningMsg', '系統將把編輯區內的 JSON 資料「完整覆蓋」目前的雲端資料庫。')}</p>
-                        <p className="bg-amber-50 border border-amber-100 p-3 rounded-lg text-amber-800 text-xs font-medium">{t('stake.backup.modal.rebuildAdvice', '建議在執行前先備份目前雲端資料！')}</p>
+                        <p className="bg-amber-50 border border-amber-100 p-3 rounded text-amber-800 text-xs font-medium">{t('stake.backup.modal.rebuildAdvice', '建議在執行前先備份目前雲端資料！')}</p>
                         <p className="text-slate-900 font-bold">{t('stake.backup.modal.rebuildConfirmFinal', '確定要執行重建嗎？')}</p>
                     </div>
                 }
@@ -281,7 +281,7 @@ const BackupTab: React.FC = () => {
                         exit={{ opacity: 0, y: 20 }}
                         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200]"
                     >
-                        <div className={`px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-3 font-bold text-sm ${msg.includes(t('common.failed', '失敗')) ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>
+                        <div className={`px-4 py-2.5 rounded shadow-xl flex items-center gap-3 font-bold text-sm ${msg.includes(t('common.failed', '失敗')) ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>
                             {msg.includes(t('common.failed', '失敗')) ? <AlertTriangle size={16} /> : <CheckCircle size={16} className="text-emerald-400" />}
                             {msg}
                         </div>

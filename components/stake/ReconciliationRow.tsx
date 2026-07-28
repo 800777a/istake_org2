@@ -36,32 +36,32 @@ const ReconciliationRow: React.FC<ReconciliationRowProps> = ({
     // Helper for Payment Method Badge
     const getMethodBadge = () => {
         if (reg.amount_due === 0) {
-            return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-100 text-slate-500 font-black border-2 border-slate-200 whitespace-nowrap">{t('common.status.free', '免付費項目')}</span>;
+            return <span className="px-3 py-1 rounded text-[10px] bg-slate-100 text-slate-500 font-black border-2 border-slate-200 whitespace-nowrap">{t('common.status.free', '免付費項目')}</span>;
         }
         switch (reg.payment_method) {
             case PaymentMethod.CASH:
-                return <span className="px-3 py-1 rounded-lg text-[10px] bg-amber-100 text-amber-900 font-black border-2 border-amber-200 whitespace-nowrap shadow-sm shadow-amber-100/50">{t('common.payment.cash', '現場收現')}</span>;
+                return <span className="px-3 py-1 rounded text-[10px] bg-amber-100 text-amber-900 font-black border-2 border-amber-200 whitespace-nowrap shadow-sm shadow-amber-100/50">{t('common.payment.cash', '現場收現')}</span>;
             case PaymentMethod.TRANSFER:
-                return <span className="px-3 py-1 rounded-lg text-[10px] bg-sky-100 text-sky-900 font-black border-2 border-sky-200 whitespace-nowrap shadow-sm shadow-sky-100/50">{t('common.payment.transfer', '銀行轉帳')}</span>;
+                return <span className="px-3 py-1 rounded text-[10px] bg-sky-100 text-sky-900 font-black border-2 border-sky-200 whitespace-nowrap shadow-sm shadow-sky-100/50">{t('common.payment.transfer', '銀行轉帳')}</span>;
             case PaymentMethod.EXTENDED:
-                return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-100 text-slate-700 font-black border-2 border-slate-300 whitespace-nowrap uppercase tracking-widest">{t('common.payment.extended', '舊案延用')}</span>;
+                return <span className="px-3 py-1 rounded text-[10px] bg-slate-100 text-slate-700 font-black border-2 border-slate-300 whitespace-nowrap uppercase tracking-widest">{t('common.payment.extended', '舊案延用')}</span>;
             case PaymentMethod.EXEMPT:
-                return <span className="px-3 py-1 rounded-lg text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 whitespace-nowrap shadow-sm shadow-rose-100/50">{t('common.payment.exempt', '特別免收')}</span>;
+                return <span className="px-3 py-1 rounded text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 whitespace-nowrap shadow-sm shadow-rose-100/50">{t('common.payment.exempt', '特別免收')}</span>;
             default:
                 if (reg.trip_type === TripType.RETAINED) return null;
-                return <span className="px-3 py-1 rounded-lg text-[10px] bg-slate-50 text-slate-600 border-2 border-slate-200 whitespace-nowrap font-black uppercase">{reg.payment_method}</span>;
+                return <span className="px-3 py-1 rounded text-[10px] bg-slate-50 text-slate-600 border-2 border-slate-200 whitespace-nowrap font-black uppercase">{reg.payment_method}</span>;
         }
     };
 
     // Helper for Status Badge
     const getStatusBadge = () => {
         if (reg.amount_due === 0 || reg.payment_method === PaymentMethod.EXTENDED || reg.payment_method === PaymentMethod.EXEMPT) {
-            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-slate-100 text-slate-400 font-black border-2 border-slate-200 whitespace-nowrap opacity-50 uppercase tracking-widest">{t('common.status.waived', '免收')}</span>;
+            return <span className="px-4 py-1.5 rounded text-[10px] bg-slate-100 text-slate-400 font-black border-2 border-slate-200 whitespace-nowrap opacity-50 uppercase tracking-widest">{t('common.status.waived', '免收')}</span>;
         }
         if (reg.is_paid) {
-            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-emerald-100 text-emerald-900 font-black border-2 border-emerald-300 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-500 transition-all whitespace-nowrap shadow-lg shadow-emerald-900/5 uppercase tracking-widest">{t('common.status.paid', '確認已收')}</span>;
+            return <span className="px-4 py-1.5 rounded text-[10px] bg-emerald-100 text-emerald-900 font-black border-2 border-emerald-300 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-500 transition-all whitespace-nowrap shadow-lg shadow-emerald-900/5 uppercase tracking-widest">{t('common.status.paid', '確認已收')}</span>;
         } else {
-            return <span className="px-4 py-1.5 rounded-xl text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-500 transition-all whitespace-nowrap shadow-lg shadow-rose-900/5 uppercase tracking-widest">{t('common.status.unpaid', '尚未入帳')}</span>;
+            return <span className="px-4 py-1.5 rounded text-[10px] bg-rose-100 text-rose-900 font-black border-2 border-rose-300 group-hover:bg-rose-600 group-hover:text-white group-hover:border-rose-500 transition-all whitespace-nowrap shadow-lg shadow-rose-900/5 uppercase tracking-widest">{t('common.status.unpaid', '尚未入帳')}</span>;
         }
     };
 

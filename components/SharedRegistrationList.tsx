@@ -90,7 +90,7 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
     return (
         <div className="space-y-4">
             {/* Stats Block */}
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white p-4 rounded shadow-sm border border-gray-200">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
                     <div className="bg-blue-50 p-2 rounded border border-blue-100">
                         <div className="text-blue-600 font-bold mb-1">應收轉帳</div>
@@ -116,7 +116,7 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
             </div>
 
             {/* List */}
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden max-h-[600px] overflow-y-auto">
+            <div className="bg-white rounded shadow-sm border overflow-hidden max-h-[600px] overflow-y-auto">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left whitespace-nowrap">
                         <thead className="bg-gray-50 border-b text-gray-700 sticky top-0 z-10 shadow-sm">

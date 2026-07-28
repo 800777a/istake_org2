@@ -83,7 +83,7 @@ const AncestorManagerModal: React.FC<AncestorManagerModalProps> = ({ registratio
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[800px] max-w-full h-[80vh] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
+      <div className="bg-white w-[800px] max-w-full h-[80vh] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0">
@@ -98,7 +98,7 @@ const AncestorManagerModal: React.FC<AncestorManagerModalProps> = ({ registratio
             <div className="flex-1 p-6 overflow-y-auto border-r bg-gray-50">
                 
                 {/* Add Form */}
-                <div className="bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-200">
+                <div className="bg-white p-4 rounded shadow-sm mb-6 border border-gray-200">
                     <h3 className="font-bold text-gray-700 mb-3 flex items-center text-sm uppercase tracking-wider">
                         <Plus className="w-4 h-4 mr-1" /> 新增教儀名單
                     </h3>
@@ -148,7 +148,7 @@ const AncestorManagerModal: React.FC<AncestorManagerModalProps> = ({ registratio
                         <div className="text-center py-8 text-gray-400 text-sm">尚無資料，請從上方新增</div>
                     ) : (
                         ancestors.map(anc => (
-                            <div key={anc.id} className="bg-white p-3 rounded-lg border shadow-sm flex items-center justify-between group hover:border-blue-300 transition-colors">
+                            <div key={anc.id} className="bg-white p-3 rounded border shadow-sm flex items-center justify-between group hover:border-blue-300 transition-colors">
                                 <div className="flex items-center">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 font-bold text-xs ${anc.gender === 'Male' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}`}>
                                         {anc.gender === 'Male' ? 'M' : 'F'}
@@ -193,7 +193,7 @@ const AncestorManagerModal: React.FC<AncestorManagerModalProps> = ({ registratio
             {/* Right: Card Preview */}
             <div className="w-full md:w-[350px] bg-gray-200 p-6 flex flex-col items-center justify-center shrink-0 border-l relative">
                 {viewCard ? (
-                    <div className={`w-[280px] h-[400px] rounded-lg shadow-xl relative overflow-hidden flex flex-col border-4 transition-transform duration-500 transform hover:scale-105 ${viewCard.gender === 'Male' ? 'bg-blue-50 border-blue-200' : 'bg-pink-50 border-pink-200'}`}>
+                    <div className={`w-[280px] h-[400px] rounded shadow-xl relative overflow-hidden flex flex-col border-4 transition-transform duration-500 transform hover:scale-105 ${viewCard.gender === 'Male' ? 'bg-blue-50 border-blue-200' : 'bg-pink-50 border-pink-200'}`}>
                         {/* Card Header */}
                         <div className={`h-4 w-full ${viewCard.gender === 'Male' ? 'bg-blue-400' : 'bg-pink-400'}`}></div>
                         <div className="p-4 flex-1 flex flex-col">

@@ -77,13 +77,13 @@ export const validateIdentityId = (id: string): boolean => {
  * 1. 中文姓名: 不超過 5 個字，不可夾雜英文、數字、符號 (純中文)
  * 2. 英文姓名: 不超過 3 個字串 (以空白分隔)，不可夾雜中文、數字、符號 (除了 "." 號)
  */
-export const validateNameFormat = (name: string): { isValid: boolean; error?: string } => {
+export const validateNameFormat = (name: string): { isValid: boolean; isEnglish: boolean; error?: string } => {
   const cleanName = name.trim();
-  if (!cleanName) return { isValid: false, error: '姓名不能為空' };
+  if (!cleanName) return { isValid: false, isEnglish: false, error: '姓名不能為空' };
 
   // 檢查是否只包含 "." (無論幾個)
   if (/^[\.]+$/.test(cleanName)) {
-      return { isValid: false, error: '姓名不能僅包含 "." 號' };
+      return { isValid: false, isEnglish: false, error: '姓名不能僅包含 "." 號' };
   }
 
   // 判斷是否包含中文字
@@ -93,33 +93,33 @@ export const validateNameFormat = (name: string): { isValid: boolean; error?: st
     // 中文規則: 純中文，長度 2-5 (通常至少2個字)
     // Regex: ^[\u4e00-\u9fa5]{2,5}$
     if (!/^[\u4e00-\u9fa5]+$/.test(cleanName)) {
-      return { isValid: false, error: '中文姓名不可夾雜英文、數字或符號' };
+      return { isValid: false, isEnglish: false, error: '中文姓名不可夾雜英文、數字或符號' };
     }
     if (cleanName.length > 5) {
-      return { isValid: false, error: '中文姓名不可超過 5 個字' };
+      return { isValid: false, isEnglish: false, error: '中文姓名不可超過 5 個字' };
     }
     // V134: 中文姓名不可僅有一個中文字
     if (cleanName.length < 2) {
-        return { isValid: false, error: '中文姓名至少需包含兩個字' };
+        return { isValid: false, isEnglish: false, error: '中文姓名至少需包含兩個字' };
     }
-    return { isValid: true };
+    return { isValid: true, isEnglish: false };
   } else {
     // 英文規則: 允許 a-z, A-Z, 空白, .
     // 檢查非法字元 (數字、其他符號)
     if (/[^a-zA-Z\s.]/.test(cleanName)) {
-      return { isValid: false, error: '英文姓名不可包含數字或特殊符號 (僅允許 ".")' };
+      return { isValid: false, isEnglish: true, error: '英文姓名不可包含數字或特殊符號 (僅允許 ".")' };
     }
     
     // 檢查字串數量 (以空白分隔)
     const parts = cleanName.split(/\s+/).filter(p => p.length > 0);
     if (parts.length > 3) {
-      return { isValid: false, error: '英文姓名不可超過 3 個單字' };
+      return { isValid: false, isEnglish: true, error: '英文姓名不可超過 3 個單字' };
     }
     if (parts.length === 0) {
-        return { isValid: false, error: '請輸入姓名' };
+        return { isValid: false, isEnglish: true, error: '請輸入姓名' };
     }
     
-    return { isValid: true };
+    return { isValid: true, isEnglish: true };
   }
 };
 

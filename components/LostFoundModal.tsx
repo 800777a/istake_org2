@@ -14,7 +14,7 @@ const LostFoundModal: React.FC<LostFoundModalProps> = ({ event, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
-      <div className="bg-white w-[500px] max-w-full rounded-2xl shadow-xl relative overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-[500px] max-w-full rounded shadow-xl relative overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-blue-800 p-4 text-white flex justify-between items-center shrink-0">
             <h2 className="text-xl font-bold flex items-center">
                 <Search className="w-5 h-5 mr-2" /> 失物招領
@@ -33,7 +33,7 @@ const LostFoundModal: React.FC<LostFoundModalProps> = ({ event, onClose }) => {
                 <div className="space-y-4">
                     {/* Unclaimed */}
                     {unclaimed.map(item => (
-                        <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-l-4 border-l-orange-500">
+                        <div key={item.id} className="bg-white p-4 rounded shadow-sm border border-l-4 border-l-orange-500">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="font-bold text-lg text-gray-800">{item.itemName}</h3>
@@ -56,7 +56,7 @@ const LostFoundModal: React.FC<LostFoundModalProps> = ({ event, onClose }) => {
                         <>
                             <div className="text-center text-xs text-gray-400 my-4 border-t pt-2">以下物品已結案</div>
                             {claimed.map(item => (
-                                <div key={item.id} className="bg-gray-100 p-4 rounded-lg border border-gray-200 opacity-70">
+                                <div key={item.id} className="bg-gray-100 p-4 rounded border border-gray-200 opacity-70">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className="font-bold text-gray-600 line-through">{item.itemName}</h3>

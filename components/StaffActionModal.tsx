@@ -64,7 +64,7 @@ const StaffActionModal: React.FC<StaffActionModalProps> = ({ registration, onClo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
-      <div className="bg-white w-[500px] max-w-full h-[600px] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
+      <div className="bg-white w-[500px] max-w-full h-[600px] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}
         <div className="bg-gradient-to-r from-violet-600 to-indigo-700 p-6 text-white shrink-0">
@@ -116,7 +116,7 @@ const StaffActionModal: React.FC<StaffActionModalProps> = ({ registration, onClo
                         <div 
                             key={task.id} 
                             onClick={() => toggleTask(task.id)}
-                            className={`p-4 rounded-xl border-2 flex items-center cursor-pointer transition-all ${task.completed ? 'bg-green-50 border-green-200 opacity-70' : 'bg-white border-gray-200 hover:border-violet-300 shadow-sm'}`}
+                            className={`p-4 rounded border-2 flex items-center cursor-pointer transition-all ${task.completed ? 'bg-green-50 border-green-200 opacity-70' : 'bg-white border-gray-200 hover:border-violet-300 shadow-sm'}`}
                         >
                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 shrink-0 transition-colors ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
                                 {task.completed && <CheckSquare className="w-4 h-4 text-white" />}
@@ -131,7 +131,7 @@ const StaffActionModal: React.FC<StaffActionModalProps> = ({ registration, onClo
             ) : (
                 <div className="space-y-6">
                     {/* Tally Counter */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
+                    <div className="bg-white p-6 rounded shadow-sm border border-gray-200 text-center">
                         <h3 className="text-gray-600 font-bold mb-4 flex items-center justify-center">
                             <Users className="w-5 h-5 mr-2" /> 人數計數器
                         </h3>
@@ -159,7 +159,7 @@ const StaffActionModal: React.FC<StaffActionModalProps> = ({ registration, onClo
                     </div>
 
                     {/* Emergency Contacts */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div className="bg-white p-6 rounded shadow-sm border border-gray-200">
                         <h3 className="text-gray-600 font-bold mb-4 flex items-center">
                             <Phone className="w-5 h-5 mr-2" /> 緊急聯絡簿
                         </h3>
@@ -169,7 +169,7 @@ const StaffActionModal: React.FC<StaffActionModalProps> = ({ registration, onClo
                                 { title: '醫療總召', name: '林醫師', phone: '0987-654-321' },
                                 { title: '遊覽車調度', name: '陳經理', phone: '0911-222-333' },
                             ].map((contact, i) => (
-                                <div key={i} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-200 transition-colors">
+                                <div key={i} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded border border-transparent hover:border-gray-200 transition-colors">
                                     <div>
                                         <div className="text-sm font-bold text-gray-800">{contact.title}</div>
                                         <div className="text-xs text-gray-500">{contact.name}</div>

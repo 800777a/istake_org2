@@ -14,7 +14,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ registration, event, unit, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-      <div className="bg-white w-[800px] max-w-full rounded-lg shadow-xl relative overflow-hidden">
+      <div className="bg-white w-[800px] max-w-full rounded shadow-xl relative overflow-hidden">
         
         {/* Actions */}
         <div className="absolute top-4 right-4 flex space-x-2 print:hidden">

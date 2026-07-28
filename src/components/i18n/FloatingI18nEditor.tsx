@@ -277,14 +277,14 @@ const FloatingI18nEditor: React.FC = () => {
             placeholder="Search keys or content..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
           />
         </div>
         
         {activeKey && (
           <button 
             onClick={() => setActiveKey(null)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 rounded-xl text-sm font-bold hover:bg-gray-200 transition-all"
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 rounded text-sm font-bold hover:bg-gray-200 transition-all"
           >
             <X size={16} /> Clear Selection
           </button>
@@ -293,7 +293,7 @@ const FloatingI18nEditor: React.FC = () => {
         <div className="flex gap-2">
           <button 
             onClick={() => setShowVisibleKeys(!showVisibleKeys)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all ${
+            className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-bold transition-all ${
               showVisibleKeys ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50'
             }`}
             title="Show keys visible on current page"
@@ -304,12 +304,12 @@ const FloatingI18nEditor: React.FC = () => {
 
           <button 
             onClick={handleExport}
-            className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all"
+            className="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-600 rounded text-sm font-bold hover:bg-indigo-100 transition-all"
           >
             <Download size={16} /> Export
           </button>
           
-          <label className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all cursor-pointer">
+          <label className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded text-sm font-bold hover:bg-indigo-700 transition-all cursor-pointer">
             <Upload size={16} /> Import
             <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
           </label>
@@ -350,7 +350,7 @@ const FloatingI18nEditor: React.FC = () => {
               <div key={key} className="flex flex-col gap-1">
                 <button
                   onClick={() => setActiveKey(key)}
-                  className={`w-full px-3 py-2 rounded-lg text-xs font-bold transition-all text-left flex items-center justify-between ${
+                  className={`w-full px-3 py-2 rounded text-xs font-bold transition-all text-left flex items-center justify-between ${
                     activeKey === key 
                       ? 'bg-indigo-600 text-white shadow-md' 
                       : 'bg-white border border-indigo-200 text-indigo-600 hover:border-indigo-400'
@@ -403,7 +403,7 @@ const FloatingI18nEditor: React.FC = () => {
             id="i18n-new-key-block"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-5 rounded-2xl bg-indigo-900 text-white shadow-xl border border-indigo-700 relative overflow-hidden"
+            className="p-5 rounded bg-indigo-900 text-white shadow-xl border border-indigo-700 relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
               <Globe size={120} />
@@ -423,7 +423,7 @@ const FloatingI18nEditor: React.FC = () => {
                         setNewKeyData(prev => ({ ...prev, ['zh-TW']: originalText }));
                       }
                     }}
-                    className="text-[10px] font-black text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-white/10 px-2 py-1 rounded-lg transition-colors"
+                    className="text-[10px] font-black text-amber-400 hover:text-amber-300 flex items-center gap-1 bg-white/10 px-2 py-1 rounded transition-colors"
                   >
                     <RefreshCw size={10} /> 填入原始文字 (zh-TW)
                   </button>
@@ -432,7 +432,7 @@ const FloatingI18nEditor: React.FC = () => {
               
               <div className="mb-4 flex flex-col gap-1">
                 <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest">系統代碼(內碼)</span>
-                <code className="text-sm font-black bg-indigo-800 px-3 py-1.5 rounded-lg border border-indigo-700">
+                <code className="text-sm font-black bg-indigo-800 px-3 py-1.5 rounded border border-indigo-700">
                   {activeKey}
                 </code>
               </div>
@@ -447,7 +447,7 @@ const FloatingI18nEditor: React.FC = () => {
                       type="text"
                       value={newKeyData[lang] || ''}
                       onChange={(e) => setNewKeyData(prev => ({ ...prev, [lang]: e.target.value }))}
-                      className="w-full p-3 bg-indigo-800/50 border border-indigo-700 rounded-xl text-sm text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
+                      className="w-full p-3 bg-indigo-800/50 border border-indigo-700 rounded text-sm text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all"
                       placeholder={`Enter ${lang} translation...`}
                     />
                   </div>
@@ -456,7 +456,7 @@ const FloatingI18nEditor: React.FC = () => {
 
               <button
                 onClick={handleSaveNewKey}
-                className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-indigo-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-indigo-950 font-black rounded shadow-lg transition-all flex items-center justify-center gap-2"
               >
                 <Save size={18} />
                 新增至資料庫
@@ -475,7 +475,7 @@ const FloatingI18nEditor: React.FC = () => {
             <div 
               key={key} 
               id={`i18n-editor-row-${key}`}
-              className={`p-4 rounded-2xl border transition-all ${
+              className={`p-4 rounded border transition-all ${
                 activeKey === key 
                   ? 'bg-white shadow-xl border-indigo-200 ring-2 ring-indigo-500/20' 
                   : 'bg-white/50 border-gray-100 hover:border-indigo-100 hover:shadow-md'
@@ -513,7 +513,7 @@ const FloatingI18nEditor: React.FC = () => {
                       value={(editingData[key] ? editingData[key][lang] : translations[key][lang]) || ''}
                       onChange={(e) => handleUpdateLocal(key, lang, e.target.value)}
                       onBlur={() => handleSaveUpdate(key)}
-                      className="w-full p-3 bg-white border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-200 transition-all min-h-[60px] resize-none"
+                      className="w-full p-3 bg-white border border-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-200 transition-all min-h-[60px] resize-none"
                       placeholder={`Translation for ${lang}...`}
                     />
                   </div>

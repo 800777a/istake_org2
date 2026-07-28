@@ -112,10 +112,10 @@ const BusManagementTab: React.FC<BusManagementTabProps> = ({ currentEvent, setti
             />
 
             {/* Main Header conforming to 60-30-10 & RWD rules */}
-            <div className="bg-indigo-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
                 {/* Row 1: Title Row Only */}
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded-lg border border-white/10 shadow-inner">
+                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-inner">
                         <Truck className="text-blue-300" size={24} />
                     </div>
                     <div>
@@ -130,19 +130,19 @@ const BusManagementTab: React.FC<BusManagementTabProps> = ({ currentEvent, setti
                 
                 {/* Row 2: Stats Aligned Right beneath title row */}
                 <div className="flex flex-wrap justify-end gap-3">
-                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded-lg flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
+                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
                         <span className="text-[10px] opacity-40 uppercase tracking-widest leading-none mb-2 font-black">車行</span>
                         <span className="text-base font-black leading-none">{(settings.busCompanies || []).length}</span>
                     </div>
-                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded-lg flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
+                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
                         <span className="text-[10px] opacity-40 uppercase tracking-widest leading-none mb-2 font-black">車輛</span>
                         <span className="text-base font-black leading-none">{(settings.busVehicles || []).length}</span>
                     </div>
-                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded-lg flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
+                    <div className="bg-white/10 border border-white/10 px-5 py-2.5 rounded flex flex-col items-center min-w-[80px] shadow-sm backdrop-blur-sm">
                         <span className="text-[10px] opacity-40 uppercase tracking-widest leading-none mb-2 font-black">司機</span>
                         <span className="text-base font-black leading-none">{(settings.busDrivers || []).length}</span>
                     </div>
-                    <div className="bg-blue-600 border border-blue-500 px-5 py-2.5 rounded-lg flex flex-col items-center min-w-[80px] shadow-md">
+                    <div className="bg-blue-600 border border-blue-500 px-5 py-2.5 rounded flex flex-col items-center min-w-[80px] shadow-md">
                         <span className="text-[10px] text-blue-200 uppercase tracking-widest leading-none mb-2 font-black">評分</span>
                         <span className="text-base font-black leading-none">4.8</span>
                     </div>

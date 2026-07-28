@@ -192,6 +192,7 @@ const App = () => {
             onClearMessage={handleClearStatsMessage}
             activeTab={statsTab}
             onTabChange={setStatsTab}
+            onRoleChange={handleRoleChange}
         />;
     }
 
@@ -230,6 +231,8 @@ const App = () => {
                 setIsDirty={setIsRegistrationDirty}
                 activeTab={registrationTab}
                 onTabChange={setRegistrationTab}
+                onRoleChange={handleRoleChange}
+                currentUser={user}
             />;
         }
 
@@ -242,6 +245,8 @@ const App = () => {
             setIsDirty={setIsRegistrationDirty}
             activeTab={registrationTab}
             onTabChange={setRegistrationTab}
+            onRoleChange={handleRoleChange}
+            currentUser={user}
           />;
         }
     }
@@ -254,6 +259,8 @@ const App = () => {
             setIsDirty={setIsRegistrationDirty}
             activeTab={registrationTab}
             onTabChange={setRegistrationTab}
+            onRoleChange={handleRoleChange}
+            currentUser={user || undefined}
         />;
     }
 
@@ -267,7 +274,7 @@ const App = () => {
   };
   
   return (
-    <div className={`flex h-screen bg-[#F0F4F8] overflow-hidden`}>
+    <div className={`flex h-screen bg-[#F8F9FA] overflow-x-hidden overflow-y-auto`}>
       <ConfirmDialog 
           isOpen={showExitConfirm}
           title="放棄報名？"
@@ -278,8 +285,8 @@ const App = () => {
           isDangerous={true}
       />
       
-      {/* 左側主畫面：自動縮放 */}
-      <div className="flex-1 flex flex-col relative min-h-0">
+      {/* 左側主畫面：自動縮放 - Rule 4.4 Chain of min-w-0 */}
+      <div className="flex-1 flex flex-col relative min-w-0 w-full">
         <Layout 
           user={user} 
           viewMode={viewMode}
@@ -293,7 +300,9 @@ const App = () => {
           onRoleChange={handleRoleChange}
           onLoginSuccess={handleLoginSuccess}
         >
-          {renderContent()}
+          <div className="flex-1 flex flex-col min-w-0 w-full">
+            {renderContent()}
+          </div>
         </Layout>
       </div>
 

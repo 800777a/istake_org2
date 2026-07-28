@@ -78,7 +78,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
-      <div className="bg-white w-[900px] max-w-full rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-[900px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-gradient-to-r from-purple-700 to-indigo-800 p-4 text-white flex justify-between items-center shrink-0">
             <h2 className="text-xl font-bold flex items-center">
                 <ImageIcon className="w-5 h-5 mr-2" /> 
@@ -117,7 +117,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
         {/* Upload Preview Area */}
         {previewImage && (
             <div className="p-4 bg-gray-50 border-b flex flex-col md:flex-row gap-4 items-start shrink-0 animate-fade-in">
-                <img src={previewImage} className="w-32 h-32 object-cover rounded-lg shadow border-2 border-white" />
+                <img src={previewImage} className="w-32 h-32 object-cover rounded shadow border-2 border-white" />
                 <div className="flex-1 w-full">
                     <label className="block text-sm font-bold text-gray-700 mb-1">照片說明</label>
                     <div className="flex gap-2">
@@ -168,7 +168,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {approvedPhotos.map(photo => (
                             <div key={photo.id} className="group relative break-inside-avoid mb-4">
-                                <div className="aspect-square overflow-hidden rounded-lg bg-gray-200 shadow-sm relative">
+                                <div className="aspect-square overflow-hidden rounded bg-gray-200 shadow-sm relative">
                                     <img 
                                         src={photo.url} 
                                         alt="Event" 
@@ -201,7 +201,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
                         <div className="col-span-full text-center py-10 text-gray-400">您尚未上傳任何照片</div>
                     ) : (
                         myPhotos.map(photo => (
-                            <div key={photo.id} className="relative aspect-square rounded-lg overflow-hidden border">
+                            <div key={photo.id} className="relative aspect-square rounded overflow-hidden border">
                                 <img src={photo.url} className="w-full h-full object-cover opacity-80" />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                                     {photo.status === 'approved' ? (

@@ -63,7 +63,7 @@ const BusSeatMapModal: React.FC<BusSeatMapModalProps> = ({ busName, assignedPass
           <div 
               onClick={() => handleSeatClick(seatNo)}
               className={`
-                  w-10 h-10 md:w-12 md:h-12 rounded-lg border-2 flex flex-col items-center justify-center cursor-pointer transition-all relative
+                  w-10 h-10 md:w-12 md:h-12 rounded border-2 flex flex-col items-center justify-center cursor-pointer transition-all relative
                   ${isSelected ? 'ring-4 ring-yellow-400 z-10' : ''}
                   ${passenger ? getSeatColor(passenger) : 'bg-white border-gray-300 hover:border-blue-400'}
               `}
@@ -82,7 +82,7 @@ const BusSeatMapModal: React.FC<BusSeatMapModalProps> = ({ busName, assignedPass
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
-      <div className="bg-white w-[900px] max-w-full h-[90vh] rounded-2xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row">
+      <div className="bg-white w-[900px] max-w-full h-[90vh] rounded shadow-2xl relative overflow-hidden flex flex-col md:flex-row">
         
         {/* Left: Map */}
         <div className="flex-1 bg-gray-100 p-4 overflow-y-auto flex flex-col items-center border-r">
@@ -96,7 +96,7 @@ const BusSeatMapModal: React.FC<BusSeatMapModalProps> = ({ busName, assignedPass
             </div>
 
             {/* Bus Body */}
-            <div className="bg-white border-4 border-gray-300 rounded-[2rem] p-6 w-full max-w-[320px] shadow-lg relative min-h-[600px]">
+            <div className="bg-white border-4 border-gray-300 rounded p-6 w-full max-w-[320px] shadow-lg relative min-h-[600px]">
                 {/* Driver */}
                 <div className="flex justify-end mb-8 border-b-2 border-dashed border-gray-200 pb-4">
                     <div className="w-12 h-12 rounded-full border-4 border-gray-400 flex items-center justify-center bg-gray-200 text-gray-500 font-bold">
@@ -143,14 +143,14 @@ const BusSeatMapModal: React.FC<BusSeatMapModalProps> = ({ busName, assignedPass
             <div className="flex-1 overflow-y-auto p-4">
                 {selectedSeat ? (
                     <div className="space-y-4 animate-fade-in">
-                        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-center">
+                        <div className="bg-yellow-50 p-4 rounded border border-yellow-200 text-center">
                             <div className="text-sm text-yellow-800 mb-1">目前選取座位</div>
                             <div className="text-4xl font-bold text-gray-800">{selectedSeat}</div>
                         </div>
 
                         {seatedMap.has(selectedSeat) ? (
                             <div className="text-center space-y-4">
-                                <div className="p-4 border rounded-lg bg-blue-50">
+                                <div className="p-4 border rounded bg-blue-50">
                                     <User className="w-12 h-12 mx-auto text-blue-500 mb-2" />
                                     <div className="font-bold text-lg">{seatedMap.get(selectedSeat)?.name}</div>
                                     <div className="text-sm text-gray-500">{seatedMap.get(selectedSeat)?.unit}</div>

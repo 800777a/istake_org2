@@ -27,21 +27,21 @@ const RatingSection: React.FC<RatingSectionProps> = ({
     const filtered = ratings.filter(r => r.plate.includes(search) || r.driver1Name.includes(search) || r.eventDate.includes(search));
 
     return (
-        <section className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+        <section className="bg-white rounded shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
             {/* Block Title Row */}
             <div 
                 className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-all border-b border-slate-100 bg-slate-50/30"
                 onClick={onToggle}
             >
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-900 rounded-lg text-white">
+                    <div className="p-2 bg-indigo-900 rounded text-white">
                         <Star className="fill-amber-400 text-amber-400" size={18} />
                     </div>
                     <div>
                         <h2 className="text-base md:text-lg font-bold text-slate-900 tracking-tight leading-none">{t('bus.rating_history')}</h2>
                     </div>
                 </div>
-                <div className={`p-1.5 rounded-md transition-all ${isOpen ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                <div className={`p-1.5 rounded transition-all ${isOpen ? 'bg-indigo-900 text-white' : 'bg-slate-100 text-slate-400'}`}>
                     {isOpen ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
                 </div>
             </div>
@@ -55,14 +55,14 @@ const RatingSection: React.FC<RatingSectionProps> = ({
                             <input 
                                 type="text" value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder={tString('bus.search_rating_placeholder', '搜尋車牌、司機或日期...')}
-                                className="w-full h-10 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-lg outline-none text-sm font-medium transition-all text-slate-900 focus:bg-white focus:border-indigo-500"
+                                className="w-full h-10 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded outline-none text-sm font-medium transition-all text-slate-900 focus:bg-white focus:border-indigo-500"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filtered.map(r => (
-                            <div key={r.id} className="p-5 bg-slate-50 rounded-lg border border-slate-200 hover:bg-white hover:border-indigo-500 hover:shadow-md transition-all group">
+                            <div key={r.id} className="p-5 bg-slate-50 rounded border border-slate-200 hover:bg-white hover:border-indigo-500 hover:shadow-md transition-all group">
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
                                         <h4 className="font-bold text-lg text-slate-900 leading-none mb-2">{r.plate}</h4>
@@ -87,7 +87,7 @@ const RatingSection: React.FC<RatingSectionProps> = ({
                                 </div>
 
                                 {r.remarks && (
-                                    <div className="flex gap-2 p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 italic">
+                                    <div className="flex gap-2 p-3 bg-white border border-slate-200 rounded text-xs text-slate-600 italic">
                                         <MessageSquare size={14} className="shrink-0 text-indigo-400" />
                                         <p>{r.remarks}</p>
                                     </div>
@@ -95,7 +95,7 @@ const RatingSection: React.FC<RatingSectionProps> = ({
                             </div>
                         ))}
                         {filtered.length === 0 && (
-                            <div className="text-center py-12 text-slate-400 col-span-full border border-dashed border-slate-200 rounded-lg bg-slate-50">
+                            <div className="text-center py-12 text-slate-400 col-span-full border border-dashed border-slate-200 rounded bg-slate-50">
                                 <Star size={48} className="mx-auto mb-3 text-slate-200" />
                                 <p className="font-bold text-base tracking-wider uppercase">{t('common.no_data')}</p>
                                 <p className="text-xs mt-1 opacity-60">目前無評價記錄符合搜尋條件</p>
