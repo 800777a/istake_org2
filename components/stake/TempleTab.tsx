@@ -41,6 +41,35 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
+
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = useMemo(() => {
+        // Vxxx: Combine all potential sources of unit names
+        const billingUnits = settings.billingConfig?.units?.map(u => u.shortName) || [];
+        const configUnits = settings.units || [];
+        const regUnits = registrations.map(r => r.unit).filter(u => u && String(u).trim() !== '');
+        
+        // Use Set to unique, then filter out empty/null/whitespace
+        const allUnits = Array.from(new Set([...billingUnits, ...configUnits, ...regUnits]))
+            .filter(u => u != null && String(u).trim() !== '');
+        
+        // Sort them: priority to billingUnits order, then configUnits, then alphabetical
+        return allUnits.sort((a, b) => {
+            const idxBillingA = billingUnits.indexOf(a);
+            const idxBillingB = billingUnits.indexOf(b);
+            if (idxBillingA !== -1 && idxBillingB !== -1) return idxBillingA - idxBillingB;
+            if (idxBillingA !== -1) return -1;
+            if (idxBillingB !== -1) return 1;
+            
+            const idxConfigA = configUnits.indexOf(a);
+            const idxConfigB = configUnits.indexOf(b);
+            if (idxConfigA !== -1 && idxConfigB !== -1) return idxConfigA - idxConfigB;
+            if (idxConfigA !== -1) return -1;
+            if (idxConfigB !== -1) return 1;
+
+            return String(a).localeCompare(String(b));
+        });
+    }, [settings, registrations]);
     
     // Collapse State
     const [isEndowmentExpanded, setIsEndowmentExpanded] = useState(true);
@@ -126,7 +155,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             if (genderA !== genderB) return genderA.localeCompare(genderB);
 
             // 3. Name
-            return a.name.localeCompare(b.name, 'zh-TW');
+            return String(a.name || '').localeCompare(String(b.name || ''), 'zh-TW');
         });
 
         // New Export Logic: Output Session, Gender, Name
@@ -190,8 +219,8 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             let valB: any = '';
 
             if (sortState.key === 'unit') {
-                valA = (settings.units || []).indexOf(a.unit);
-                valB = (settings.units || []).indexOf(b.unit);
+                valA = unitOptions.indexOf(a.unit);
+                valB = unitOptions.indexOf(b.unit);
                 // If unit not in list, put at end
                 if (valA === -1) valA = 999;
                 if (valB === -1) valB = 999;
@@ -429,29 +458,33 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     // Calculate unit-specific ordinance counts for assigned people
     const unitStats = useMemo(() => {
         const stats: Record<string, { end: number, bap: number, seal: number, endWait: number, bapWait: number, sealWait: number }> = {};
-        (settings.units || []).forEach(u => stats[u] = { end: 0, bap: 0, seal: 0, endWait: 0, bapWait: 0, sealWait: 0 });
+        unitOptions.forEach(u => stats[u] = { end: 0, bap: 0, seal: 0, endWait: 0, bapWait: 0, sealWait: 0 });
         
         registrations.forEach(r => {
+            // Vxxx: Skip records without a unit name to avoid "empty row" in stats
+            const unitName = String(r.unit || '').trim();
+            if (!unitName) return;
+
             if (r.status === RegStatus.NORMAL) {
                 if (r.ordinance_item === OrdinanceItem.ENDOWMENT) {
-                    if (stats[r.unit]) stats[r.unit].end++;
+                    if (stats[unitName]) stats[unitName].end++;
                 } else if (r.ordinance_item === OrdinanceItem.BAPTISM) {
-                    if (stats[r.unit]) stats[r.unit].bap++;
+                    if (stats[unitName]) stats[unitName].bap++;
                 } else if (r.ordinance_item === OrdinanceItem.SEALING) {
-                    if (stats[r.unit]) stats[r.unit].seal++;
+                    if (stats[unitName]) stats[unitName].seal++;
                 }
             } else if (r.status === RegStatus.WAITING) {
                 if (r.ordinance_item === OrdinanceItem.ENDOWMENT) {
-                    if (stats[r.unit]) stats[r.unit].endWait++;
+                    if (stats[unitName]) stats[unitName].endWait++;
                 } else if (r.ordinance_item === OrdinanceItem.BAPTISM) {
-                    if (stats[r.unit]) stats[r.unit].bapWait++;
+                    if (stats[unitName]) stats[unitName].bapWait++;
                 } else if (r.ordinance_item === OrdinanceItem.SEALING) {
-                    if (stats[r.unit]) stats[r.unit].sealWait++;
+                    if (stats[unitName]) stats[unitName].sealWait++;
                 }
             }
         });
         return stats;
-    }, [registrations, (settings.units || [])]);
+    }, [registrations, unitOptions]);
 
     // Update settings wrappers
     const updateEndowmentSettings = async (newSettings: OrdinanceSessionItem[]) => {
@@ -550,7 +583,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {(settings.units || []).map((unit, idx) => {
+                            {unitOptions.map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
                                     <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
@@ -620,7 +653,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {(settings.units || []).map((unit, idx) => {
+                            {unitOptions.map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
                                     <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>
@@ -690,7 +723,7 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {(settings.units || []).map((unit, idx) => {
+                            {unitOptions.map((unit, idx) => {
                                 const theme = rainbowThemes[idx % 7];
                                 return (
                                     <div key={unit} className={`flex flex-col gap-3 p-4 rounded border shadow-sm transition-all group ${theme.bg} ${theme.border}`}>

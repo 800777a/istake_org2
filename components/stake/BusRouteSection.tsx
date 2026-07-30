@@ -48,8 +48,8 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                         <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
                             <Bus size={20} />
                         </div>
-                        <h3 className={`font-bold text-sm md:text-base lg:text-lg ${theme.text}`}>
-                            {busName} {t('common.bus', '號車')} - {t('route.subtitle.schedule', '行程規劃')}
+                        <h3 className={`font-bold text-xs md:text-sm lg:text-base ${theme.text}`}>
+                            {busName}-行程規劃
                         </h3>
                     </div>
                     <div className={theme.text}>
@@ -61,141 +61,108 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                 <div className="w-full flex flex-wrap justify-end items-center gap-3 mt-3">
                     {busConfig.company && (
                         <div className="flex flex-col items-end">
-                            <span className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>遊覽車公司</span>
-                            <span className={`text-sm font-bold ${theme.text}`}>{busConfig.company}</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>遊覽車公司</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.company}</span>
                         </div>
                     )}
                     {busConfig.licensePlate && (
                         <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>車牌號碼</span>
-                            <span className={`text-sm font-bold ${theme.text}`}>{busConfig.licensePlate}</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>車牌</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.licensePlate}</span>
                         </div>
                     )}
                     {busConfig.driverName1 && (
                         <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>司機</span>
-                            <span className={`text-sm font-bold ${theme.text}`}>{busConfig.driverName1}</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>司機</span>
+                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.driverName1}</span>
                         </div>
                     )}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const stakeName = settings?.stake_name || '嘉義支聯會';
-                            const fileName = `行程安排_${busName}.txt`;
-                            const outboundText = (Array.isArray(route.outbound) ? route.outbound : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
-                            const returnText = (Array.isArray(route.returnTrip) ? route.returnTrip : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
-                            const text = `【${busName}號車 行程規劃】\n\n[去程]\n${outboundText}\n\n[回程]\n${returnText}`;
-                            const blob = new Blob([text], { type: 'text/plain' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = fileName;
-                            a.click();
-                        }}
-                        className={`h-9 px-4 rounded text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
-                    >
-                        <Download size={14} /> 匯出文字
-                    </button>
                 </div>
             </div>
             
             {!isCollapsed && (
-                <div className="p-6 bg-white/40 backdrop-blur-sm flex flex-col gap-6">
-                    {/* Outbound & Return Grid */}
-                    <div className="grid lg:grid-cols-2 gap-8">
+                <div className="p-1 flex flex-col gap-1 bg-white/40 backdrop-blur-sm">
+                    {/* Outbound & Return Grid - Vertically Stacked */}
+                    <div className="flex flex-col gap-4">
                         {/* Outbound Column */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between px-2">
+                        <div className="space-y-1">
+                            <div className="flex items-center px-2 py-1">
                                 <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-6 rounded-full ${theme.text.replace('text', 'bg')}`} />
-                                    <h4 className={`font-bold ${theme.text}`}>去程 (OUTBOUND)</h4>
+                                    <div className={`w-1.5 h-4 rounded-full ${theme.text.replace('text', 'bg')}`} />
+                                    <h4 className={`font-black text-xs md:text-sm lg:text-base ${theme.text}`}>去程路線</h4>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => onExport('outbound')} className={`p-2 transition-all ${theme.text} opacity-60 hover:opacity-100`}><Download size={16}/></button>
-                                    <label className={`p-2 transition-all cursor-pointer ${theme.text} opacity-60 hover:opacity-100`}>
-                                        <Upload size={16}/>
-                                        <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('outbound', e)}/>
-                                    </label>
-                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
-                                        <button onClick={() => onTogglePublish('outbound')} className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${route.isOutboundPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                            <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isOutboundPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                                        </button>
-                                    </div>
+                            </div>
+                            
+                            {/* Action Row for Outbound */}
+                            <div className="flex items-center justify-end gap-2 px-2 pb-1 border-b border-dashed border-gray-100">
+                                <button onClick={() => onExport('outbound')} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="匯出">
+                                    <Download size={12}/> 匯出
+                                </button>
+                                <label className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all cursor-pointer ${theme.text} opacity-80 hover:opacity-100`} title="匯入">
+                                    <Upload size={12}/> 匯入
+                                    <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('outbound', e)}/>
+                                </label>
+                                <div className={`flex items-center gap-1.5 ml-1 bg-white/60 px-2 py-1 rounded border border-gray-100 shadow-sm ${theme.border}`}>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
+                                    <button onClick={() => onTogglePublish('outbound')} className={`relative inline-flex h-3.5 w-7 items-center rounded-full transition-colors ${route.isOutboundPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isOutboundPublished ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className={`bg-white/60 p-4 rounded border shadow-sm space-y-4 ${theme.border}`}>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>發車時間</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundStartTime || ''} onChange={e => onTimeChange('outbound', 'Start', e.target.value)} />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>預計抵達</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.outboundEndTime || ''} onChange={e => onTimeChange('outbound', 'End', e.target.value)} />
-                                    </div>
-                                </div>
-                                <BusRouteTable 
-                                    items={route.outbound || []} 
-                                    stations={settings?.stations} 
-                                    busPrefix="A"
-                                    onUpdate={(idx, f, v) => onUpdateRouteItem('outbound', idx, f, v)}
-                                    onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('outbound', idx, u)}
-                                    onDelete={(idx) => onDeleteRouteRow('outbound', idx)}
-                                    onAdd={() => onAddRouteRow('outbound')}
-                                    onMove={(idx, d) => onMoveRouteRow('outbound', idx, d)}
-                                    theme={{ bg: 'bg-white/40', text: theme.text, border: theme.border, header: 'bg-white/60' }}
-                                />
-                            </div>
+                            <BusRouteTable 
+                                items={route.outbound || []} 
+                                stations={settings?.stations} 
+                                busPrefix="A"
+                                onUpdate={(idx, f, v) => onUpdateRouteItem('outbound', idx, f, v)}
+                                onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('outbound', idx, u)}
+                                onDelete={(idx) => onDeleteRouteRow('outbound', idx)}
+                                onAdd={() => onAddRouteRow('outbound')}
+                                onMove={(idx, d) => onMoveRouteRow('outbound', idx, d)}
+                                theme={{ bg: 'bg-white/40', text: theme.text, border: theme.border, header: 'bg-white/60' }}
+                            />
                         </div>
 
                         {/* Return Trip Column */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between px-2">
+                        <div className="space-y-1">
+                            <div className="flex items-center px-2 py-1">
                                 <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-6 rounded-full ${theme.text.replace('text', 'bg')}`} />
-                                    <h4 className={`font-bold ${theme.text}`}>回程 (RETURN)</h4>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button onClick={onReverseRoute} className={`p-2 transition-all ${theme.text} opacity-60 hover:opacity-100`} title="回程反向"><RefreshCw size={16}/></button>
-                                    <button onClick={() => onExport('return')} className={`p-2 transition-all ${theme.text} opacity-60 hover:opacity-100`}><Download size={16}/></button>
-                                    <label className={`p-2 transition-all cursor-pointer ${theme.text} opacity-60 hover:opacity-100`}>
-                                        <Upload size={16}/>
-                                        <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('return', e)}/>
-                                    </label>
-                                    <div className={`flex items-center gap-2 ml-2 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
-                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
-                                        <button onClick={() => onTogglePublish('return')} className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors ${route.isReturnPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
-                                            <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isReturnPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                                        </button>
-                                    </div>
+                                    <div className={`w-1.5 h-4 rounded-full ${theme.text.replace('text', 'bg')}`} />
+                                    <h4 className={`font-black text-xs md:text-sm lg:text-base ${theme.text}`}>回程路線</h4>
                                 </div>
                             </div>
 
-                            <div className={`bg-white/60 p-4 rounded border shadow-sm space-y-4 ${theme.border}`}>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>發車時間</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnStartTime || ''} onChange={e => onTimeChange('return', 'Start', e.target.value)} />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>預計抵達</label>
-                                        <input type="time" className={`w-full h-10 bg-white/80 border rounded px-3 font-bold outline-none focus:bg-white transition-all ${theme.text} ${theme.border}`} value={route.returnEndTime || ''} onChange={e => onTimeChange('return', 'End', e.target.value)} />
-                                    </div>
+                            {/* Action Row for Return */}
+                            <div className="flex items-center justify-end gap-2 px-2 pb-1 border-b border-dashed border-gray-100">
+                                <button onClick={onReverseRoute} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="回程反向">
+                                    <RefreshCw size={12}/> 反向
+                                </button>
+                                <button onClick={() => onExport('return')} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="匯出">
+                                    <Download size={12}/> 匯出
+                                </button>
+                                <label className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all cursor-pointer ${theme.text} opacity-80 hover:opacity-100`} title="匯入">
+                                    <Upload size={12}/> 匯入
+                                    <input type="file" className="hidden" accept=".json" onChange={(e) => onImport('return', e)}/>
+                                </label>
+                                <div className={`flex items-center gap-1.5 ml-1 bg-white/60 px-2 py-1 rounded border border-gray-100 shadow-sm ${theme.border}`}>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
+                                    <button onClick={() => onTogglePublish('return')} className={`relative inline-flex h-3.5 w-7 items-center rounded-full transition-colors ${route.isReturnPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                        <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${route.isReturnPublished ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                    </button>
                                 </div>
-                                <BusRouteTable 
-                                    items={route.returnTrip || []} 
-                                    stations={settings?.stations} 
-                                    busPrefix="B"
-                                    onUpdate={(idx, f, v) => onUpdateRouteItem('returnTrip', idx, f, v)}
-                                    onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('returnTrip', idx, u)}
-                                    onDelete={(idx) => onDeleteRouteRow('returnTrip', idx)}
-                                    onAdd={() => onAddRouteRow('returnTrip')}
-                                    onMove={(idx, d) => onMoveRouteRow('returnTrip', idx, d)}
-                                    theme={{ bg: 'bg-white/40', text: theme.text, border: theme.border, header: 'bg-white/60' }}
-                                />
                             </div>
+
+                            <BusRouteTable 
+                                items={route.returnTrip || []} 
+                                stations={settings?.stations} 
+                                busPrefix="B"
+                                onUpdate={(idx, f, v) => onUpdateRouteItem('returnTrip', idx, f, v)}
+                                onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('returnTrip', idx, u)}
+                                onDelete={(idx) => onDeleteRouteRow('returnTrip', idx)}
+                                onAdd={() => onAddRouteRow('returnTrip')}
+                                onMove={(idx, d) => onMoveRouteRow('returnTrip', idx, d)}
+                                theme={{ bg: 'bg-white/40', text: theme.text, border: theme.border, header: 'bg-white/60' }}
+                            />
                         </div>
                     </div>
                 </div>

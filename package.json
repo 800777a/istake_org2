@@ -9,17 +9,21 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "deploy": "firebase deploy"
+    "deploy-rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
     "@google/genai": "^1.43.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.2",
-    "@types/express": "^5.0.6",
+    "@types/express": "4.17.21",
     "@types/papaparse": "^5.5.2",
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
     "antd": "^6.4.5",
     "esbuild": "^0.28.1",
-    "express": "^5.2.1",
+    "express": "4.19.2",
     "firebase": "^10.8.0",
     "google-auth-library": "^10.7.0",
     "googleapis": "^173.0.0",
@@ -36,14 +40,9 @@
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^4.3.2",
     "tsx": "^4.22.4",
+    "typescript": "^5.2.2",
+    "vite": "^8.1.5",
     "xlsx": "^0.18.5"
   },
-  "devDependencies": {
-    "@tailwindcss/typography": "^0.5.20",
-    "@types/react": "^18.2.56",
-    "@types/react-dom": "^18.2.19",
-    "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.2.2",
-    "vite": "^8.1.5"
-  }
+  "devDependencies": {}
 }

@@ -3,8 +3,11 @@ import { initializeApp } from "firebase/app";
 import { 
     initializeFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, 
     query, where, onSnapshot, orderBy, limit, writeBatch, arrayUnion, arrayRemove,
-    persistentLocalCache, persistentMultipleTabManager
+    persistentLocalCache, persistentMultipleTabManager, setLogLevel
 } from "firebase/firestore";
+
+// Suppress benign Firestore SDK internal clock-skew info logs
+setLogLevel("error");
 
 const firebaseConfig = {
     apiKey: "AIzaSyA50_rXJ3gBnu4oYLG5nzNxlDL67Xgcwrg",

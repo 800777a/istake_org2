@@ -69,8 +69,9 @@ const AnnouncementDisplay: React.FC = () => {
 
       {/* Urgent Modal */}
       {urgentMsg && !dismissedUrgentIds.has(urgentMsg.id) && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
-            <div className="bg-white rounded shadow-2xl w-full max-w-md overflow-hidden border-t-8 border-red-600">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => dismissUrgent(urgentMsg.id)} />
+            <div className="relative bg-white rounded shadow-2xl w-full max-w-md overflow-hidden border-t-8 border-red-600">
                 <div className="p-6 text-center">
                     <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                         <AlertTriangle className="w-10 h-10" />

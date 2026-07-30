@@ -68,11 +68,17 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
             const container = document.getElementById('public-scroll-container');
             if (!container) return;
             const currentScrollY = container.scrollTop;
+            
+            // Add a threshold (e.g., 10px) to prevent jittering on minor scroll changes
+            if (Math.abs(currentScrollY - lastScrollY.current) < 10) return;
+
             if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                 setShowHeader(false);
-            } else {
+            } else if (currentScrollY < lastScrollY.current) {
+                // Only show header when scrolling up
                 setShowHeader(true);
             }
+            
             lastScrollY.current = currentScrollY;
         };
 
@@ -314,7 +320,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
   const breadcrumbs = getBreadcrumb();
 
   return (
-    <div className="flex-1 bg-[#F8F9FA] flex flex-col font-sans overflow-visible">
+    <div className="flex-1 bg-[#F8F9FA] flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       {/* Maintenance Overlay */}
       {settings.maintenance_mode && user?.role !== 'engineer' && (
           <div className="bg-rose-600 text-white text-center py-2 text-xs font-bold animate-pulse sticky top-0 z-[70] shadow-md">
@@ -333,7 +339,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
           />
       )}
 
-      <div className="flex flex-1 overflow-visible">
+      <div className="flex flex-1 w-full max-w-full overflow-x-hidden">
         {/* Sidebar Backdrop (Mobile) */}
         <AnimatePresence>
             {isSidebarOpen && (
@@ -342,14 +348,14 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsSidebarOpen(false)}
-                    className={`fixed inset-0 ${isManagement ? 'bg-[#4B0091]/60' : 'bg-amber-950/60'} backdrop-blur-sm z-[998] lg:hidden`}
+                    className="fixed inset-0 bg-white/40 backdrop-blur-md z-[1000] lg:hidden"
                 />
             )}
         </AnimatePresence>
 
         {/* Unified Sidebar */}
         <aside className={`
-            w-64 ${isManagement ? 'bg-indigo-950' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} flex flex-col shrink-0 z-[999] shadow-2xl border-r ${isManagement ? 'border-indigo-800' : 'border-amber-700/50'}
+            w-64 ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} flex flex-col shrink-0 z-[1001] shadow-2xl border-r ${isManagement ? (user?.role === 'engineer' ? 'border-green-800' : 'border-blue-800') : 'border-amber-700/50'}
             fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
@@ -360,14 +366,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         <Bus className={`h-5 w-5 ${isManagement ? 'text-white' : 'text-amber-950'}`} />
                     </div>
                     <div>
-                        <h2 className={`${isManagement ? 'text-white' : 'text-amber-950'} font-bold text-lg md:text-xl lg:text-2xl tracking-tight leading-none mb-1`}>
-                            {settings.stake_name || '聖殿旅行'}
+                        <h2 className={`${isManagement ? 'text-white' : 'text-amber-950'} font-bold text-base md:text-lg lg:text-xl tracking-tight leading-none`}>
+                            聖殿旅行
                         </h2>
-                        {activeEvent && (
-                            <p className={`${isManagement ? 'text-white' : 'text-amber-950'} text-xl font-black mb-1`}>
-                                {activeEvent.event_date}
-                            </p>
-                        )}
                     </div>
                 </div>
                 <button onClick={() => setIsSidebarOpen(false)} className={`p-2 ${isManagement ? 'text-indigo-100' : 'text-amber-950'} hover:scale-110 transition-transform`}>
@@ -384,7 +385,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
                                 <UserCircle size={14} />
                             </div>
-                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black overflow-hidden`}>
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold overflow-hidden`}>
                                 <span className="font-bold truncate">{user.name}</span>
                                 <span className="text-[8px] opacity-70 ml-2 whitespace-nowrap">{getRoleName(user.role)}</span>
                             </div>
@@ -399,7 +400,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
                                 <Shield size={14} />
                             </div>
-                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center px-3 text-[10px] font-black`}>
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
                                 <span>切換到後台</span>
                             </div>
                         </button>
@@ -419,7 +420,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             <div className="bg-indigo-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                 <Home size={14} />
                             </div>
-                            <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] font-black">
+                            <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold">
                                 <span>切換至前台</span>
                             </div>
                         </button>
@@ -432,7 +433,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             >
                                 <div className="flex items-center gap-2">
                                     <Shield size={12} className="text-emerald-400" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-90">切換管理權限</span>
+                                    <span className="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-white opacity-90">切換管理權限</span>
                                 </div>
                                 <ChevronDown 
                                     size={12} 
@@ -455,7 +456,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             <div className="bg-emerald-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                                 <ShieldCheck size={14} />
                                             </div>
-                                            <div className={`${user?.role === 'engineer' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black`}>
+                                            <div className={`${user?.role === 'engineer' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
                                                 <span>資管</span>
                                                 {user?.role === 'engineer' && <Check size={12} />}
                                             </div>
@@ -464,10 +465,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             onClick={() => { handleNavAction('stake_admin'); setIsSidebarOpen(false); }}
                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded transition-all group ${user?.role === 'stake_admin' ? 'shadow-md brightness-105' : 'opacity-90'}`}
                                         >
-                                            <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                                            <div className="bg-blue-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                                 <Shield size={14} />
                                             </div>
-                                            <div className={`${user?.role === 'stake_admin' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-950'} flex-1 flex items-center justify-between px-3 text-[10px] font-black`}>
+                                            <div className={`${user?.role === 'stake_admin' ? 'bg-blue-600 text-white' : 'bg-white text-blue-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
                                                 <span>主辦</span>
                                                 {user?.role === 'stake_admin' && <Check size={12} />}
                                             </div>
@@ -490,7 +491,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                     <div className="bg-amber-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
                                         <Shield size={14} />
                                     </div>
-                                    <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] font-black">
+                                    <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold">
                                         <span>切換至後台</span>
                                     </div>
                                 </button>
@@ -500,7 +501,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 {/* Section: Main Menu */}
                 <div className="space-y-1">
                     {isManagement ? (
-                        <p className="text-[10px] font-black text-white uppercase tracking-widest px-3 mb-3 opacity-90">
+                        <p className="text-[10px] md:text-xs lg:text-sm font-bold text-white uppercase tracking-widest px-3 mb-3 opacity-90">
                             管理功能選單
                         </p>
                     ) : (
@@ -516,7 +517,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         >
                             <div className="flex items-center gap-2">
                                 <Layers size={12} className={isManagement ? 'text-white' : 'text-amber-950'} />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>系統功能導航</span>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>系統功能導航</span>
                             </div>
                             <ChevronDown 
                                 size={12} 
@@ -576,7 +577,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                     >
                                                         <div className="flex items-center gap-2">
                                                             <group.icon size={12} className="text-white" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-90">{group.label}</span>
+                                                            <span className="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-white opacity-90">{group.label}</span>
                                                         </div>
                                                         <ChevronDown 
                                                             size={12} 
@@ -605,7 +606,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                             <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
                                                                                 <Icon size={14} />
                                                                             </div>
-                                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] font-normal`}>
+                                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
                                                                                 <span>{tabLabels[tabId]}</span>
                                                                             </div>
                                                                         </button>
@@ -628,7 +629,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                     >
                                         <div className="flex items-center gap-2">
                                             <Shield size={12} className="text-white" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-white opacity-90">行政管理</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white opacity-90">行政管理</span>
                                         </div>
                                         <ChevronDown 
                                             size={12} 
@@ -702,7 +703,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <item.icon size={12} className={isManagement ? 'text-white' : 'text-amber-950'} />
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>{item.label}</span>
+                                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isManagement ? 'text-white' : 'text-amber-950'} opacity-90`}>{item.label}</span>
                                                     </div>
                                                     <ChevronDown 
                                                         size={12} 
@@ -731,7 +732,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                         <div className={`${subColor.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isSubActive ? 'border border-white' : ''}`}>
                                                                             <sub.icon size={14} />
                                                                         </div>
-                                                                        <div className={`${isSubActive ? subColor.bg + ' text-white' : 'bg-white ' + subColor.text} flex-1 flex items-center px-3 text-[10px] font-normal`}>
+                                                                        <div className={`${isSubActive ? subColor.bg + ' text-white' : 'bg-white ' + subColor.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
                                                                             <span>{sub.label}</span>
                                                                         </div>
                                                                     </button>
@@ -753,7 +754,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
                                                 <item.icon size={14} />
                                             </div>
-                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] font-normal`}>
+                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
                                                 <span>{item.label}</span>
                                             </div>
                                         </button>
@@ -770,7 +771,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         <div className={`${isManagement ? 'bg-indigo-500' : 'bg-amber-600'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20`}>
                             <ArrowUp size={14} />
                         </div>
-                        <div className={`bg-white ${isManagement ? 'text-indigo-900' : 'text-amber-900'} flex-1 flex-row flex items-center px-3 text-[10px] font-normal`}>
+                        <div className={`bg-white ${isManagement ? 'text-indigo-900' : 'text-amber-900'} flex-1 flex-row flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
                             <span>回到頂端</span>
                         </div>
                     </button>
@@ -823,7 +824,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 initial={{ y: 0 }}
                 animate={{ y: showHeader ? 0 : -64 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className={`h-16 ${isManagement ? 'bg-[#A23400]' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-b border-white/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-30 shadow-xl ${isManagement ? 'text-white' : 'text-amber-950'} sticky top-0`}
+                className={`h-16 ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-b border-white/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-[40] shadow-xl ${isManagement ? 'text-white' : 'text-amber-950'} fixed top-0 left-0 right-0`}
             >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <button 
@@ -842,7 +843,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                 {idx > 0 && <ChevronRight size={10} className={`${isManagement ? 'text-white/40' : 'text-amber-950/40'} shrink-0`} />}
                                 <button 
                                     onClick={crumb.action}
-                                    className={`flex items-center gap-1 px-1.5 py-1 rounded transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? (isManagement ? 'text-white bg-white/10' : 'text-amber-950 font-black bg-black/5') : (isManagement ? 'text-indigo-100 hover:text-white hover:bg-white/10 underline decoration-white/20 underline-offset-4' : 'text-amber-900 hover:text-amber-950 hover:bg-black/5 underline decoration-amber-900/20 underline-offset-4')}`}
+                                    className={`flex items-center gap-1 px-1.5 py-1 rounded transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? (isManagement ? 'text-white bg-white/10' : 'text-amber-950 font-bold bg-black/5') : (isManagement ? 'text-indigo-100 hover:text-white hover:bg-white/10 underline decoration-white/20 underline-offset-4' : 'text-amber-900 hover:text-amber-950 hover:bg-black/5 underline decoration-amber-900/20 underline-offset-4')}`}
                                 >
                                     {idx === 0 && <crumb.icon size={12} className="shrink-0" />}
                                     <span>{crumb.label}</span>
@@ -858,11 +859,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
             </motion.header>
 
             {/* Actual Content Wrapper - Optimized for horizontal scrolling and space maximization */}
-            <main ref={mainScrollRef} id="public-scroll-container" className="flex-1 overflow-y-auto overflow-x-visible relative scroll-smooth min-h-0 w-full max-w-full">
+            <main ref={mainScrollRef} id="public-scroll-container" className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth min-h-0 w-full max-w-full">
                 {(() => {
                     const isFullWidthView = isManagement || ['public_stats', 'instructions', 'feedback', 'login', 'privacy', 'member', 'guest'].includes(viewMode || '');
                     return (
                         <div className="flex flex-col min-h-full">
+                            {/* Static Header Spacer - Reclaimed naturally as page scrolls */}
+                            <div className="h-16 shrink-0 w-full bg-transparent" />
                             <div className={`mx-auto w-full flex-1 max-w-full p-1`}>
                                 <div className={`min-h-full w-full max-w-full ${isFullWidthView ? '' : 'bg-white border shadow-sm rounded'}`}>
                                     {children}
@@ -870,7 +873,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             </div>
 
                             {/* Footer Bar - Scrolling with content - Rule 3.1 Background Color */}
-                            <footer className={`w-full ${isManagement ? 'bg-[#A23400]' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-t border-white/10 px-4 py-6 flex items-center justify-center ${isManagement ? 'text-white' : 'text-amber-950'} text-[10px] md:text-xs opacity-90 mt-auto`}>
+                            <footer className={`w-full ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-t border-white/10 px-4 py-6 flex items-center justify-center ${isManagement ? 'text-white' : 'text-amber-950'} text-[8px] md:text-[8px] lg:text-[9px] opacity-90 mt-auto relative`}>
+                                <button 
+                                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                    className={`absolute left-4 p-2 ${isManagement ? 'text-white' : 'text-amber-950'} hover:bg-white/10 rounded transition-colors shrink-0`}
+                                >
+                                    <Menu className="w-5 h-5" />
+                                </button>
                                 <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2 whitespace-nowrap">
                                     <span>智聯會 istake.org ©</span>
                                     <span className="opacity-40">|</span>

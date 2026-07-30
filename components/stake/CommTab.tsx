@@ -17,6 +17,11 @@ interface CommTabProps {
 
 const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent }) => {
     const { t, tString } = useI18n();
+
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = useMemo(() => {
+        return settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+    }, [settings]);
     
     // UI States
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
@@ -346,7 +351,7 @@ const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent
                                                                 <td className="px-2 py-2">
                                                                     <select className="w-full h-8 border rounded px-1 text-xs" value={editServiceValues.unit} onChange={e => setEditServiceValues({...editServiceValues, unit: e.target.value})}>
                                                                         <option value="">{tString('common.select', '選擇')}</option>
-                                                                        {[...settings.units, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                        {[...unitOptions, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
                                                                     </select>
                                                                 </td>
                                                                 <td className="px-2 py-2"><input type="text" className="w-full h-8 border rounded px-2 text-xs" value={editServiceValues.calling} onChange={e => setEditServiceValues({...editServiceValues, calling: e.target.value})} /></td>
@@ -383,7 +388,7 @@ const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent
                                                     <td className="p-2">
                                                         <select className="w-full h-9 border border-indigo-200 rounded px-2 text-xs bg-white" value={newServicePerson.unit} onChange={e => setNewServicePerson({...newServicePerson, unit: e.target.value})}>
                                                             <option value="">{tString('common.unit', '單位')}</option>
-                                                            {[...settings.units, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            {[...unitOptions, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
                                                         </select>
                                                     </td>
                                                     <td className="p-2"><input type="text" placeholder={t('common.position', "職位")} className="w-full h-9 border border-indigo-200 rounded px-3 text-xs bg-white" value={newServicePerson.calling} onChange={e => setNewServicePerson({...newServicePerson, calling: e.target.value})} /></td>
@@ -430,7 +435,7 @@ const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent
                                             <input type="number" placeholder={t('common.order', '序')} className="h-8 border rounded px-2 text-[11px]" value={newServicePerson.order} onChange={e => setNewServicePerson({...newServicePerson, order: parseInt(e.target.value)})} />
                                             <select className="h-8 border rounded px-2 text-[11px] bg-white" value={newServicePerson.unit} onChange={e => setNewServicePerson({...newServicePerson, unit: e.target.value})}>
                                                 <option value="">{tString('common.unit', '單位')}</option>
-                                                {[...settings.units, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
+                                                {[...unitOptions, tString('common.stake', '支聯會')].map(u => <option key={u} value={u}>{u}</option>)}
                                             </select>
                                         </div>
                                         <input type="text" placeholder={t('common.position', '職位')} className="w-full h-8 border rounded px-2 text-[11px]" value={newServicePerson.calling} onChange={e => setNewServicePerson({...newServicePerson, calling: e.target.value})} />
@@ -470,7 +475,7 @@ const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent
                                     <label className="text-[10px] text-slate-400 font-bold block mb-1">{t('common.unit', '單位')}</label>
                                     <select className="w-full h-10 border border-slate-200 rounded px-2 text-xs bg-white outline-none focus:ring-2 focus:ring-indigo-500" value={newContact.unit} onChange={e => setNewContact({...newContact, unit: e.target.value})}>
                                         <option value="">{tString('common.select_unit', '選擇單位')}</option>
-                                        {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                        {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                     </select>
                                 </div>
                                 <div>

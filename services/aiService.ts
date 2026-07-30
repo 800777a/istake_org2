@@ -4,8 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 // 封裝 Gemini API 呼叫
 export const callGemini = async (prompt: string, systemInstruction?: string): Promise<string> => {
   try {
-    // 依據指引，直接使用 process.env.API_KEY
-    const apiKey = process.env.API_KEY;
+    // 優先使用 GEMINI_API_KEY，其次使用 API_KEY
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     if (!apiKey) {
         return "錯誤：未設定 API Key，無法使用 AI 功能。";
     }
@@ -66,7 +66,7 @@ export const analyzeEventStats = async (
 // V037: Analyze Image Content
 export const analyzeImageContent = async (base64Image: string): Promise<string> => {
   try {
-    const apiKey = process.env.API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     if (!apiKey) return "無法使用 AI (未設定 API Key)";
 
     const ai = new GoogleGenAI({ apiKey });
@@ -93,4 +93,22 @@ export const analyzeImageContent = async (base64Image: string): Promise<string> 
     console.error("AI Image Analysis Error:", error);
     return "活動花絮分享";
   }
+};
+
+/**
+ * 自動翻譯留言內容
+ * @param content 原始文字 (中文)
+ * @returns 翻譯後的文字 (英文)
+ */
+export const translateComment = async (content: string): Promise<string> => {
+    try {
+        const sys = `你是一個精確且優雅的翻譯助手。
+        請將輸入的繁體中文留言翻譯成自然、流暢且專業的英文。
+        僅回傳翻譯後的文字，不要包含任何解釋或標點符號。`;
+        
+        return await callGemini(content, sys);
+    } catch (error) {
+        console.error("Translation Error:", error);
+        return "";
+    }
 };

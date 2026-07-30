@@ -11,6 +11,7 @@ import { RainbowCard, rainbowStyles } from './fee-config/RainbowCard';
 import ConfirmDialog from '../ConfirmDialog';
 import ExportChoiceModal from '../ExportChoiceModal';
 import EditMemberModal from '../EditMemberModal';
+import PaymentInfoModal from '../PaymentInfoModal';
 import Toast, { ToastType } from '../Toast';
 import { useStats, useRanks } from '../../hooks/useStats';
 import { useI18n } from '../../src/contexts/LanguageContext';
@@ -47,6 +48,36 @@ const THEME = {
 
 const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settings, currentEventId, activeEvent, onRefresh, onUpdateEvent, onPushToEditor }) => {
     const { t, tString, currentLang: langCode } = useI18n();
+    
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = useMemo(() => {
+        // Vxxx: Combine all potential sources of unit names
+        const billingUnits = settings.billingConfig?.units?.map(u => u.shortName) || [];
+        const configUnits = settings.units || [];
+        const regUnits = registrations.map(r => r.unit).filter(u => u && String(u).trim() !== '');
+        
+        // Use Set to unique, then filter out empty/null/whitespace
+        const allUnits = Array.from(new Set([...billingUnits, ...configUnits, ...regUnits]))
+            .filter(u => u != null && String(u).trim() !== '');
+        
+        // Sort them: priority to billingUnits order, then configUnits, then alphabetical
+        return allUnits.sort((a, b) => {
+            const idxBillingA = billingUnits.indexOf(a);
+            const idxBillingB = billingUnits.indexOf(b);
+            if (idxBillingA !== -1 && idxBillingB !== -1) return idxBillingA - idxBillingB;
+            if (idxBillingA !== -1) return -1;
+            if (idxBillingB !== -1) return 1;
+            
+            const idxConfigA = configUnits.indexOf(a);
+            const idxConfigB = configUnits.indexOf(b);
+            if (idxConfigA !== -1 && idxConfigB !== -1) return idxConfigA - idxConfigB;
+            if (idxConfigA !== -1) return -1;
+            if (idxConfigB !== -1) return 1;
+
+            return String(a).localeCompare(String(b));
+        });
+    }, [settings, registrations]);
+
     const i18n = { language: langCode }; 
     const [searchUnit, setSearchUnit] = useState('');
     const [searchName, setSearchName] = useState('');
@@ -61,6 +92,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     // View mode and RWD
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [remountKey, setRemountKey] = useState(0);
+    const [selectedPaymentReg, setSelectedPaymentReg] = useState<Registration | null>(null);
     const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
     const scrollTable = (unit: string, direction: 'left' | 'right') => {
@@ -166,7 +198,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     // Group by Unit
     const groupedRegs = useMemo(() => {
         const groups: Record<string, Registration[]> = {};
-        (settings.units || []).forEach(u => groups[u] = []);
+        unitOptions.forEach(u => groups[u] = []);
         
         // Apply Sorting
         const sorted = [...filteredRegs].sort((a, b) => {
@@ -218,7 +250,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             });
         }
         return groups;
-    }, [filteredRegs, (settings.units || []), searchUnit, searchName, sortKey, sortOrder, primaryContactMap]);
+    }, [filteredRegs, unitOptions, searchUnit, searchName, sortKey, sortOrder, primaryContactMap]);
 
     const toggleSort = (key: string) => {
         if (sortKey === key) {
@@ -535,7 +567,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             phone: '',
             identity_id: '',
             birth_date: '',
-            unit: settings.units?.[0] || '',
+            unit: unitOptions[0] || '',
             identity_type: '成人',
             trip_type: TripType.ROUND_TRIP,
             ordinance_type: OrdinanceType.PROXY,
@@ -572,44 +604,70 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                 </div>
             </div>
 
-            {/* Level 2: Action Row & View Switcher */}
-            <div className="bg-[#FFEDD5] text-orange-900 px-4 py-3 shadow-md flex flex-wrap items-center justify-between gap-3 mx-1 md:mx-4 lg:mx-8 rounded border-2 border-orange-200 mt-2 font-title">
-                <div className="flex flex-wrap items-center gap-2">
+            {/* Level 2: Action Row & View Switcher - Elevated Z-Index and Rainbow Styling */}
+            <div className="bg-gradient-to-r from-amber-50 via-yellow-100 to-amber-50 border-b-2 border-amber-200 px-4 py-3 sticky top-0 z-[100] shadow-md flex flex-col md:flex-row items-center justify-between gap-4 mx-1 md:mx-4 lg:mx-8 rounded mt-2 font-title min-w-0 overflow-visible">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
                     <button 
                         onClick={handleAddMember}
-                        className={`${THEME.btnPrimary} border-2 border-orange-800/20 shadow-sm`}
+                        className={`h-10 px-4 rounded border-2 border-red-300 shadow-sm bg-red-100 text-red-900 font-bold hover:bg-red-200 transition-all text-sm flex items-center gap-2`}
                     >
                         <PlusCircle size={16} /> {t('common.add_member', '新增成員')}
                     </button>
                     <button 
                         onClick={() => setIsExportModalOpen(true)}
-                        className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm`}
+                        className={`h-10 px-4 rounded border-2 border-orange-300 shadow-sm bg-orange-100 text-orange-900 font-bold hover:bg-orange-200 transition-all text-sm flex items-center gap-2`}
                     >
                         <ListOrdered size={16} /> {t('stake.registration.export_txt', '匯出純文字')}
                     </button>
                     <button 
                         onClick={handleExportRegistrations}
-                        className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm`}
+                        className={`h-10 px-4 rounded border-2 border-emerald-300 shadow-sm bg-emerald-100 text-emerald-900 font-bold hover:bg-emerald-200 transition-all text-sm flex items-center gap-2`}
                     >
                         <Download size={16} /> CSV 報表
                     </button>
-                    <label className={`${THEME.btnSecondary} border-2 border-slate-200 shadow-sm cursor-pointer`}>
-                        <Upload size={16} /> JSON 匯入
-                        <input type="file" className="hidden" accept=".json" onChange={handleImportFileChange}/>
-                    </label>
                 </div>
 
-                <div className="flex items-center bg-white/50 rounded p-1 border-2 border-orange-300/30">
+                <div className="flex flex-1 items-center gap-2 w-full md:w-auto min-w-0">
+                    <div className="relative flex-1 min-w-0 group">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-700 group-focus-within:text-emerald-900" />
+                        <input
+                            type="text"
+                            placeholder="搜尋 個人 (姓名、電話、身分證)..."
+                            value={searchName}
+                            onChange={(e) => setSearchName(e.target.value)}
+                            className="w-full h-10 pl-9 pr-3 bg-emerald-50 border-2 border-emerald-200 rounded text-xs font-black text-emerald-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all truncate"
+                        />
+                    </div>
+                    
+                    <div className="relative w-40 shrink-0 group">
+                        <Users className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-700 group-focus-within:text-blue-900" />
+                        <select
+                            value={searchUnit}
+                            onChange={(e) => setSearchUnit(e.target.value)}
+                            className="w-full h-10 pl-9 pr-3 bg-blue-50 border-2 border-blue-200 rounded text-xs font-black text-blue-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer truncate"
+                        >
+                            <option value="">搜尋 單位</option>
+                            {unitOptions.map(unit => (
+                                <option key={unit} value={unit}>{unit}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronDown className="w-4 h-4 text-blue-400" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center bg-white/50 rounded p-1 border-2 border-amber-300/30 gap-1 shrink-0">
                     <button 
                         onClick={() => setViewMode('table')}
-                        className={`px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${viewMode === 'table' ? 'bg-[#A23400] text-white shadow-md' : 'text-orange-400 hover:bg-orange-100'}`}
+                        className={`px-3 py-1.5 rounded border-2 transition-all flex items-center gap-1.5 ${viewMode === 'table' ? 'bg-blue-100 text-blue-900 border-blue-300 shadow-md' : 'bg-blue-50 text-blue-400 border-blue-100 hover:bg-blue-100/50'}`}
                     >
                         <List size={16} />
-                        <span className="text-xs font-black">表格</span>
+                        <span className="text-xs font-black">列表</span>
                     </button>
                     <button 
                         onClick={() => setViewMode('card')}
-                        className={`px-3 py-1.5 rounded transition-all flex items-center gap-1.5 ${viewMode === 'card' ? 'bg-[#A23400] text-white shadow-md' : 'text-orange-400 hover:bg-orange-100'}`}
+                        className={`px-3 py-1.5 rounded border-2 transition-all flex items-center gap-1.5 ${viewMode === 'card' ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-md' : 'bg-purple-50 text-purple-400 border-purple-100 hover:bg-purple-100/50'}`}
                     >
                         <LayoutDashboard size={16} />
                         <span className="text-xs font-black">卡片</span>
@@ -720,68 +778,16 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             {/* Main Management Block (Rainbow: Orange) */}
             <div className="px-2 md:px-4 lg:px-8 mt-2">
                 <RainbowCard
-                    title={t('stake.registration.list_mgmt', '篩選與工具 (Filters & Tools)')}
+                    title={t('stake.registration.list_mgmt', '批量處理工具 (Batch Processing Tools)')}
                     icon={<Search size={20} />}
                     colorIndex={1}
                     isExpanded={isFilterOpen}
                     onToggle={() => setIsFilterOpen(!isFilterOpen)}
                 >
                     <div className="space-y-6">
-                        {/* Filters */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div className="space-y-3">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-1 h-3 bg-blue-600 rounded-full"></div>
-                                    {t('stake.registration.unit_filter', '單位快速篩選')}
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    <button 
-                                        onClick={() => handleUnitSelect('')}
-                                        className={`h-9 px-4 rounded text-xs font-bold transition-all border shadow-sm ${
-                                            searchUnit === '' 
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                                                : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
-                                        }`}
-                                    >
-                                        {t('stake.registration.all_units', '全部')}
-                                    </button>
-                                    {((settings.billingConfig?.units || []).map(u => u.shortName)).map((u) => (
-                                        <button 
-                                            key={u}
-                                            onClick={() => handleUnitSelect(u)}
-                                            className={`h-9 px-4 rounded text-xs font-bold transition-all border shadow-sm ${
-                                                searchUnit === u 
-                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
-                                                    : 'bg-white/60 text-slate-600 border-white/40 hover:border-indigo-300'
-                                        }`}
-                                        >
-                                            {u}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-1 h-3 bg-blue-600 rounded-full"></div>
-                                    {t('stake.registration.search_name', '搜尋成員姓名')}
-                                </label>
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                    <input 
-                                        type="text" 
-                                        placeholder={t('stake.registration.search_placeholder', "輸入姓名...")}
-                                        value={searchName}
-                                        onChange={e => setSearchName(e.target.value)}
-                                        className={`${THEME.input} pl-10 h-10`}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
                         {/* Advanced Actions Row - Right Aligned */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-white/40">
-                            <span className="text-[10px] font-bold text-slate-500 mr-2 uppercase tracking-widest">批量處理工具:</span>
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                            <span className="text-[10px] font-bold text-slate-500 mr-2 uppercase tracking-widest">操作:</span>
                             <button 
                                 onClick={handleAssignSerials} 
                                 className={`h-9 px-4 text-xs rounded transition-all font-bold shadow-sm border bg-white/60 ${rainbowStyles[1].text} ${rainbowStyles[1].border}`}
@@ -829,14 +835,14 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                 <span className="text-xs font-bold text-slate-700">新增黑名單成員</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                <select 
-                                    value={newBlacklistUnit} 
-                                    onChange={e => setNewBlacklistUnit(e.target.value)}
-                                    className={`${THEME.input} h-10 bg-white`}
-                                >
-                                    <option value="">{t('stake.registration.select_unit', '選擇單位')}</option>
-                                    {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
-                                </select>
+                                    <select 
+                                        value={newBlacklistUnit} 
+                                        onChange={e => setNewBlacklistUnit(e.target.value)}
+                                        className={`${THEME.input} h-10 bg-white`}
+                                    >
+                                        <option value="">{t('stake.registration.select_unit', '選擇單位')}</option>
+                                        {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
+                                    </select>
                                 <input 
                                     type="text" 
                                     placeholder={t('stake.registration.name_placeholder', '姓名')}
@@ -976,7 +982,12 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                                                 <tr key={r.reg_id} className="hover:bg-orange-50/50 transition-colors group">
                                                                     <td className="px-1 py-3 md:px-4 md:py-4 text-center text-[10px] md:text-xs font-mono text-slate-400 sticky left-0 z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] border-r border-slate-100">{r.serial_number || idx + 1}</td>
                                                                     <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm font-bold text-orange-800 sticky left-12 z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap border-r border-slate-100">{r.primary_contact_name || primaryContactMap.get(r.family_group_id) || '--'}</td>
-                                                                    <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm font-black text-slate-900 sticky left-[80px] md:left-[100px] z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap border-r border-slate-100">{r.name}</td>
+                                                                    <td 
+                                                                        className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm font-black text-slate-900 sticky left-[80px] md:left-[100px] z-10 bg-white group-hover:bg-orange-50/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] whitespace-nowrap border-r border-slate-100 cursor-pointer hover:text-blue-600 transition-colors"
+                                                                        onClick={() => setSelectedPaymentReg(r)}
+                                                                    >
+                                                                        {r.name}
+                                                                    </td>
                                                                     <td className="px-1 py-3 md:px-4 md:py-4 text-[11px] md:text-sm text-slate-600 font-medium">{r.identity_type}</td>
                                                                     <td className="px-1 py-3 md:px-4 md:py-4">
                                                                         <div className="flex items-center gap-2">
@@ -1033,7 +1044,12 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                                                         <div className="flex justify-between items-start mb-3">
                                                             <div>
                                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">#{r.serial_number || '--'}</span>
-                                                                <h4 className="text-sm font-bold text-slate-900">{r.name}</h4>
+                                                                <h4 
+                                                                    className="text-sm font-bold text-slate-900 cursor-pointer hover:text-blue-600 transition-colors"
+                                                                    onClick={() => setSelectedPaymentReg(r)}
+                                                                >
+                                                                    {r.name}
+                                                                </h4>
                                                                 <p className="text-[10px] text-indigo-600 font-bold">{r.unit} • {r.identity_type}</p>
                                                             </div>
                                                             <div className="flex gap-1">
@@ -1084,6 +1100,17 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
                         <p className="text-slate-400 font-bold text-sm">{t('stake.registration.no_matches', '查無任何報名資料')}</p>
                     </div>
                 </div>
+            )}
+
+            {selectedPaymentReg && (
+                <PaymentInfoModal
+                    key={`payment-${selectedPaymentReg.reg_id}`}
+                    currentReg={selectedPaymentReg}
+                    allRegistrations={registrations}
+                    settings={settings}
+                    onClose={() => setSelectedPaymentReg(null)}
+                    onRefresh={onRefresh}
+                />
             )}
         </div>
     );

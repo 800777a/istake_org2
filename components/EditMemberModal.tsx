@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useI18n } from '../src/contexts/LanguageContext';
 import { Registration, GlobalSettings, IdentityType, TripType, OrdinanceType, OrdinanceItem, PaymentMethod, RegStatus } from '../types';
 import { updateRegistration, deleteRegistration } from '../services/sheetService';
@@ -78,14 +78,23 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
 
   const isSpecialStatus = [RegStatus.RESTRICTED, RegStatus.DELETED, RegStatus.RETAINED, RegStatus.REFUNDED].includes(formData.status);
 
+  // V002: Get unit options from Billing Engine if available, fallback to settings.units
+  const unitOptions = useMemo(() => {
+    const billingUnits = settings.billingConfig?.units?.map(u => u.shortName) || [];
+    const configUnits = settings.units || [];
+    return Array.from(new Set([...billingUnits, ...configUnits])).filter(u => u && String(u).trim() !== '');
+  }, [settings]);
+
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in text-sans">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 animate-fade-in text-sans">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[600px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] border-4 border-white/50">
         
         {/* Internal custom confirmation overlay to avoid sandbox block */}
         {pendingStatus && (
-            <div className="absolute inset-0 z-[130] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
-                <div className="bg-white rounded p-6 shadow-2xl w-full max-w-sm text-center border-4 border-yellow-400">
+            <div className="absolute inset-0 z-[130] flex items-center justify-center p-6 animate-fade-in">
+                <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => setPendingStatus(null)} />
+                <div className="relative bg-white rounded p-6 shadow-2xl w-full max-w-sm text-center border-4 border-yellow-400">
                     <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertTriangle className="w-8 h-8" />
                     </div>
@@ -121,7 +130,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({ registration, onClose
                 <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">{t('common.unit', '單位')}</label>
                     <select className="w-full border rounded p-2 text-sm" value={formData.unit} onChange={e => handleChange('unit', e.target.value)}>
-                        {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                        {unitOptions.map((u: string) => <option key={u} value={u}>{u}</option>)}
                     </select>
                 </div>
                 <div>

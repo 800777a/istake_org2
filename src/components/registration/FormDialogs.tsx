@@ -46,8 +46,9 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
     return (
         <>
             {showLockModal && lockCountdown > 0 && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded shadow-2xl p-8 max-w-sm w-full text-center border-t-4 border-amber-600 animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => setShowLockModal(false)} />
+                    <div className="bg-white rounded shadow-2xl p-8 max-w-sm w-full text-center border-t-4 border-amber-600 animate-in zoom-in-95 duration-200 relative z-10">
                         <Clock className="w-16 h-16 text-amber-600 mx-auto mb-6 animate-pulse" />
                         <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">{t('stake.registration.form.dialogs.locked_title')}</h3>
                         <p className="text-gray-600 mb-8 leading-relaxed font-medium">
@@ -67,8 +68,9 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
             )}
 
             {showSubmitConfirm && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-fade-in">
-                    <div className="bg-white rounded shadow-2xl max-w-md w-full overflow-hidden border-2 border-amber-500 animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => setShowSubmitConfirm(false)} />
+                    <div className="bg-white rounded shadow-2xl max-w-md w-full overflow-hidden border-2 border-amber-500 animate-in zoom-in-95 duration-200 relative z-10">
                         <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-4 text-amber-950 flex items-center gap-3">
                             <CheckCircle className="w-6 h-6 text-amber-900" />
                             <h3 className="font-black text-lg tracking-tight">確認送出報名？</h3>
@@ -141,8 +143,9 @@ const FormDialogs: React.FC<FormDialogsProps> = ({
             />
             
             {showQueryConfirm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
-                    <div className="bg-white rounded shadow-2xl overflow-hidden max-w-sm w-full animate-fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => setShowQueryConfirm(false)} />
+                    <div className="bg-white rounded shadow-2xl overflow-hidden max-w-sm w-full animate-fade-in relative z-10">
                         <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-4 text-amber-950">
                             <h3 className="text-lg font-black tracking-tight">{t('stake.registration.form.dialogs.abandon_query_title')}</h3>
                         </div>

@@ -20,7 +20,8 @@ const BusManifest: React.FC<BusManifestProps> = ({ busName, event, registrations
   });
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 overflow-y-auto flex justify-center py-10">
+    <div className="fixed inset-0 z-50 overflow-y-auto flex justify-center py-10">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[210mm] min-h-[297mm] p-10 shadow-lg relative print:w-full print:shadow-none print:p-0">
         
         {/* Actions - Hidden in Print */}

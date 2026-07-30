@@ -363,8 +363,8 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
             const newSettings: GlobalSettings = { 
                 ...settings, 
                 stake_name: stakeName, 
-                app_version: currentEngVer.toString(),
-                maintenance_date: today,
+                app_version: appVersion,
+                maintenance_date: maintenanceDate,
                 internet_fee: internetFee,
                 latest_news: latestNews,
                 engineering_version: (currentEngVer + 1).toString(),
@@ -520,6 +520,8 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
       setConfirmAction(null);
+      setMsg('資料已成功匯出');
+      setTimeout(() => setMsg(null), 3000);
   };
 
   const handleImportCloudDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -840,167 +842,96 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Content Views */}
             {activeTab === 'system' && (
-              <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Maintenance & Security */}
-                  <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-slate-100 bg-white">
-                      <h3 className="font-bold text-slate-900 flex items-center">
-                        <ShieldAlert className="w-5 h-5 mr-3 text-rose-600" /> 系統狀態與安全性
-                      </h3>
+              <div className="space-y-4 animate-in fade-in duration-500">
+                <div className="rounded border border-slate-200 shadow-sm overflow-hidden bg-white">
+                    {/* Block Header */}
+                    <div className="bg-[#007500] p-2 flex items-center justify-between">
+                        <h3 className="text-white font-bold text-sm flex items-center">
+                            <Settings className="w-4 h-4 mr-2" /> 系統核心參數 (System Settings)
+                        </h3>
                     </div>
-                    <div className="p-6 space-y-6">
-                      <div className="flex items-center justify-between p-4 rounded bg-[#F0F4F8] border border-indigo-100/50">
-                        <div>
-                          <p className="font-bold text-slate-900 text-sm">系統維護模式 (Maintenance)</p>
-                          <p className="text-[11px] text-slate-600 mt-0.5">開啟後，全站將顯示維護中頁面</p>
-                        </div>
-                        <div 
-                          onClick={toggleMaintenance}
-                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings.maintenance_mode ? 'bg-amber-600' : 'bg-slate-300'}`}
-                        >
-                          <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.maintenance_mode ? 'translate-x-5' : 'translate-x-0'}`} />
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Google API 整合狀態</p>
-                        <div className="grid grid-cols-1 gap-3">
-                          <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
-                            <span className="text-xs text-slate-700 font-medium">Client ID 讀取狀態</span>
-                            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? 
-                              <span className="flex items-center text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-tighter">Connected</span> : 
-                              <span className="flex items-center text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase tracking-tighter">Missing Key</span>}
-                          </div>
-                          <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
-                            <span className="text-xs text-slate-700 font-medium">Gmail 授權</span>
+                    
+                    {/* Action Row */}
+                    <div className="p-2 border-b border-slate-100 flex flex-wrap gap-2 items-center justify-between bg-slate-50/50">
+                        <div className="flex gap-2">
                             <button 
-                              onClick={handleLinkGmail}
-                              disabled={isProcessing}
-                              className="flex items-center bg-indigo-950 text-white px-3 py-1.5 rounded text-[10px] font-bold hover:bg-slate-800 transition-all shadow-sm active:scale-95"
+                                onClick={handleSaveSettings}
+                                className="h-8 px-4 rounded bg-[#007500] text-white text-[11px] font-bold hover:bg-green-700 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
                             >
-                              <KeyRound className="w-3 h-3 mr-2 text-blue-400" /> 立即連結 Gmail
+                                <Save size={14} /> 儲存並發佈 (Save & Publish)
                             </button>
-                          </div>
                         </div>
-                      </div>
+                        <div className="flex gap-2">
+                             <button onClick={handleExportSettings} className="h-8 px-3 rounded bg-white border border-slate-200 text-slate-700 text-[11px] font-bold hover:bg-slate-50 transition-all flex items-center gap-2">
+                                <Download size={14} className="text-blue-600" /> 匯出設定
+                            </button>
+                            <label className="h-8 px-3 rounded bg-white border border-slate-200 text-slate-700 text-[11px] font-bold hover:bg-slate-50 transition-all flex items-center gap-2 cursor-pointer">
+                                <Upload size={14} className="text-emerald-600" /> 匯入設定
+                                <input type="file" className="hidden" accept=".json" onChange={handleImportSettingsChange}/>
+                            </label>
+                        </div>
                     </div>
-                  </div>
 
-                  {/* Core Parameters */}
-                  <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
-                      <h3 className="font-bold text-slate-900 flex items-center">
-                        <Settings className="w-5 h-5 mr-3 text-blue-600" /> 系統核心參數
-                      </h3>
-                      <div className="flex gap-2">
-                        <button onClick={handleExportSettings} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all" title="匯出設定">
-                          <Download className="w-4 h-4" />
-                        </button>
-                        <label className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-all cursor-pointer" title="匯入設定">
-                          <Upload className="w-4 h-4" />
-                          <input type="file" className="hidden" accept=".json" onChange={handleImportSettingsChange}/>
-                        </label>
-                      </div>
-                    </div>
-                    <div className="p-6 space-y-5">
-                      <div className="space-y-2">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">單位主標題 (Header Name)</label>
-                        <input 
-                          type="text" 
-                          className="w-full px-4 py-2.5 rounded border border-slate-200 bg-white text-sm text-slate-900 focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
-                          value={stakeName} 
-                          onChange={e => setStakeName(e.target.value)} 
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">版本序號 (Version)</label>
-                          <input 
-                            type="text" 
-                            className="w-full px-4 py-2.5 rounded border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:ring-4 focus:ring-blue-50 focus:border-blue-600 outline-none transition-all font-bold" 
-                            value={settings.app_version || ''} 
-                            onChange={e => setSettingsData({ ...settings, app_version: e.target.value })} 
-                          />
+                    {/* Content Area */}
+                    <div className="p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="space-y-1.5">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-0.5">版本序號 (App Version)</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full h-10 px-3 rounded border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:ring-2 focus:ring-green-500/10 focus:border-[#007500] outline-none transition-all font-bold" 
+                                    value={appVersion} 
+                                    onChange={e => setAppVersion(e.target.value)} 
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-0.5">最後更新 (Last Publish)</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full h-10 px-3 rounded border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:ring-2 focus:ring-green-500/10 focus:border-[#007500] outline-none transition-all font-bold" 
+                                    value={maintenanceDate} 
+                                    onChange={e => setMaintenanceDate(e.target.value)} 
+                                />
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1">最後更新 (Last Publish)</label>
-                          <input 
-                            type="text" 
-                            className="w-full px-4 py-2.5 rounded border border-slate-200 bg-slate-50 text-sm text-slate-500 font-mono outline-none" 
-                            value={settings.maintenance_date || ''} 
-                            disabled
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Database Maintenance - Full Width */}
-                <div className="bg-white rounded border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="p-5 border-b border-slate-100 bg-white flex items-center justify-between">
-                    <h3 className="font-bold text-slate-900 flex items-center">
-                      <Database className="w-5 h-5 mr-3 text-amber-600" /> 全站資料一鍵同步與修正 (Core DB Sync)
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="animate-pulse w-2 h-2 rounded-full bg-rose-600"></span>
-                      <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">
-                        High Risk Operations
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
-                        <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
-                          <UploadCloud className="w-5 h-5 text-blue-600" />
+                         <div className="p-4 rounded bg-slate-50 border border-slate-200 flex items-center justify-between">
+                            <div>
+                                <p className="font-bold text-slate-900 text-sm flex items-center">
+                                    <ShieldAlert className="w-4 h-4 mr-2 text-rose-600" /> 系統維護模式 (Maintenance)
+                                </p>
+                                <p className="text-[11px] text-slate-500 mt-0.5">開啟後，前台將顯示系統維護訊息</p>
+                            </div>
+                            <div 
+                                onClick={toggleMaintenance}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings.maintenance_mode ? 'bg-[#007500]' : 'bg-slate-300'}`}
+                            >
+                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings.maintenance_mode ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </div>
                         </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">全域快取上雲</h4>
-                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">將此裝置暫存的 coreData 全面覆蓋 Firestore 雲端庫。</p>
-                        </div>
-                        <button 
-                          onClick={() => setConfirmAction({ type: 'migrate' })}
-                          className="w-full bg-indigo-950 text-white py-2.5 rounded text-xs font-bold hover:bg-slate-800 transition-all shadow-md active:scale-95"
-                        >
-                          立即執行同步
-                        </button>
-                      </div>
 
-                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
-                        <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
-                          <RefreshCw className="w-5 h-5 text-amber-600" />
+                        <div className="space-y-3">
+                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Google API 整合狀態</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
+                                    <span className="text-xs text-slate-700 font-bold">Client ID</span>
+                                    {import.meta.env.VITE_GOOGLE_CLIENT_ID ? 
+                                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-widest">Active</span> : 
+                                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase tracking-widest">Missing</span>}
+                                </div>
+                                <div className="flex items-center justify-between p-3 rounded border border-slate-100 bg-white shadow-sm">
+                                    <span className="text-xs text-slate-700 font-bold">Gmail 授權</span>
+                                    <button 
+                                        onClick={handleLinkGmail}
+                                        disabled={isProcessing}
+                                        className="h-7 px-3 rounded bg-[#007500] text-white text-[10px] font-bold hover:bg-green-700 transition-all flex items-center gap-1.5"
+                                    >
+                                        <KeyRound size={12} /> 連結授權
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">資料全域修正</h4>
-                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">修復全站代表人密碼格式 (XYZ &rarr; ID)。</p>
-                        </div>
-                        <button 
-                          onClick={() => setConfirmAction({ type: 'resetPasswords' })}
-                          className="w-full bg-amber-600 text-white py-2.5 rounded text-xs font-bold hover:bg-amber-700 transition-all shadow-md active:scale-95"
-                        >
-                          執行密碼重設
-                        </button>
-                      </div>
-
-                      <div className="bg-[#F0F4F8] p-6 rounded border border-indigo-100/50 space-y-4">
-                        <div className="bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center border border-slate-100 shadow-sm">
-                          <Save className="w-5 h-5 text-emerald-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">儲存所有變動</h4>
-                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">發佈系統設定到全站，同步更新快取。</p>
-                        </div>
-                        <button 
-                          onClick={handleSaveSettings}
-                          className="w-full bg-blue-600 text-white py-2.5 rounded text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95"
-                        >
-                          發佈系統設定
-                        </button>
-                      </div>
                     </div>
-                  </div>
                 </div>
               </div>
             )}
@@ -1144,7 +1075,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                         <h3 className="font-bold text-red-900 flex items-center">
                             < Bell className="w-5 h-5 mr-3 text-red-600 animate-pulse" /> 最新消息管理 (Home Page Banner)
                         </h3>
-                        <div className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-black uppercase tracking-widest">
+                        <div className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase tracking-widest">
                             Global Announcement
                         </div>
                     </div>
@@ -1160,7 +1091,7 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
                                 <Info size={14} className="text-red-400" />
                                 <span className="font-bold uppercase tracking-widest">此內容將立即同步至首頁底部公告區</span>
                             </div>
-                            <span className="text-red-600 font-black">
+                            <span className="text-red-600 font-bold">
                                 {latestNews ? '已輸入內容' : '尚未設定'}
                             </span>
                         </div>
@@ -1358,6 +1289,50 @@ const Engineer: React.FC<EngineerProps> = ({ onRoleChange, activeTab: passedActi
         )}
         </div>
       </div>
+      <ConfirmDialog 
+          isOpen={confirmAction !== null}
+          title={
+              confirmAction?.type === 'migrate' ? '全域雲端遷移' :
+              confirmAction?.type === 'saveCloudData' ? '重建雲端資料庫' :
+              confirmAction?.type === 'importSettings' ? '匯入全域設定' :
+              confirmAction?.type === 'exportCloudData' ? '匯出雲端備份' :
+              confirmAction?.type === 'importCloudData' ? '匯入雲端備份' :
+              confirmAction?.type === 'resetPasswords' ? '修正密碼' :
+              confirmAction?.type === 'saveSettings' ? '儲存變更' :
+              confirmAction?.type === 'publishTranslations' ? '發佈翻譯' :
+              confirmAction?.type === 'exportDictionaryExcel' ? '匯出字典 Excel' :
+              confirmAction?.type === 'importDictionaryExcel' ? '匯入字典 Excel' :
+              '確認操作'
+          }
+          message={
+              confirmAction?.type === 'migrate' ? '確定要將目前的資料同步並遷移至雲端嗎？' :
+              confirmAction?.type === 'saveCloudData' ? '確定要使用編輯區的資料「覆蓋並重建」雲端資料庫嗎？此操作不可逆！' :
+              confirmAction?.type === 'importSettings' ? '確定要從檔案匯入並覆蓋目前的系統設定嗎？' :
+              confirmAction?.type === 'exportCloudData' ? '確定要匯出目前的雲端備份資料嗎？' :
+              confirmAction?.type === 'importCloudData' ? '確定要載入此備份檔案到編輯區嗎？' :
+              confirmAction?.type === 'resetPasswords' ? '確定要執行批次密碼修正嗎？' :
+              confirmAction?.type === 'saveSettings' ? '確定要儲存並發佈目前的系統設定嗎？' :
+              confirmAction?.type === 'publishTranslations' ? '確定要將目前的字典內容發佈為全站翻譯嗎？' :
+              confirmAction?.type === 'exportDictionaryExcel' ? '確定要匯出字典檔為 Excel 嗎？' :
+              confirmAction?.type === 'importDictionaryExcel' ? '確定要從 Excel 匯入字典檔嗎？' :
+              '您確定要執行此操作嗎？'
+          }
+          onConfirm={
+              confirmAction?.type === 'migrate' ? executeMigrate :
+              confirmAction?.type === 'saveCloudData' ? executeSaveCloudData :
+              confirmAction?.type === 'importSettings' ? executeImportSettings :
+              confirmAction?.type === 'exportCloudData' ? executeExportCloudData :
+              confirmAction?.type === 'importCloudData' ? executeImportCloudData :
+              confirmAction?.type === 'resetPasswords' ? executeResetPasswordsToID :
+              confirmAction?.type === 'saveSettings' ? executeSaveSettings :
+              confirmAction?.type === 'publishTranslations' ? executePublishTranslations :
+              confirmAction?.type === 'exportDictionaryExcel' ? handleExportExcel :
+              confirmAction?.type === 'importDictionaryExcel' ? executeImportExcel :
+              () => setConfirmAction(null)
+          }
+          onCancel={() => setConfirmAction(null)}
+          isDangerous={['migrate', 'saveCloudData', 'resetPasswords'].includes(confirmAction?.type || '')}
+      />
     </div>
   );
 };

@@ -47,16 +47,10 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
 
   if (showComments && activeEvent && settings) {
       return (
-          <div className="min-h-[calc(100vh-64px)] bg-[#F0F4F8] p-4 pb-24">
-              <div className="max-w-md mx-auto">
-                <div className="mb-6 flex items-center gap-3">
-                    <div className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 p-2 rounded shadow-sm">
-                        <MessageSquare className="w-5 h-5 text-amber-950" />
-                    </div>
-                    <h1 className="text-xl md:text-2xl font-black text-amber-950">留言</h1>
-                </div>
-                <div className="bg-white rounded shadow-xl border-2 border-amber-300 overflow-hidden">
-                    <PublicCommentTab activeEvent={activeEvent} settings={settings} lang={lang} />
+          <div className="flex-1 flex flex-col min-w-0 w-full bg-[#F8F9FA] overflow-x-hidden">
+              <div className="flex-1 p-1 overflow-y-auto">
+                <div className="w-full min-w-0">
+                    <PublicCommentTab activeEvent={activeEvent} settings={settings} />
                 </div>
               </div>
           </div>
@@ -66,7 +60,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
   return (
     <div className="min-h-full bg-[#F8F9FA] flex flex-col p-1 space-y-1 w-full max-w-full min-w-0">
       {/* Hero Section - Level 1 Gold Gradient - Rule 3.2 Space Maximization */}
-      <section className="max-w-7xl mx-auto w-full min-w-0">
+      <section className="w-full min-w-0">
           <div className="bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 border-2 border-amber-400 rounded shadow-sm overflow-hidden animate-fade-in group">
               <div className="px-4 py-6 md:py-8 text-center relative overflow-hidden">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-white/20 -z-0"></div>
@@ -81,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
               </div>
               
               <div className="p-4 md:p-6 bg-white border-t-2 border-amber-400">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                       <button
                           onClick={isUnavailable ? undefined : handleGuestEntry}
                           disabled={isUnavailable}
@@ -94,7 +88,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
                           `}
                       >
                           <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                          <span>{isUnavailable ? t('stake.login.paused') : t('stake.login.register', '報名')}</span>
+                          <span>{isUnavailable ? t('stake.login.paused', '報名暫停') : t('stake.login.register', '報名')}</span>
                       </button>
                       
                       <button
@@ -102,7 +96,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
                           className="w-full h-12 px-6 text-base bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-amber-950 border-b-2 border-amber-700 rounded font-black hover:brightness-105 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-95"
                       >
                           <Info size={20} className="text-amber-950" />
-                          <span>{t('stake.login.instructions')}</span>
+                          <span>{t('stake.login.instructions', '說明')}</span>
                       </button>
 
                       <button
@@ -110,7 +104,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
                           className="w-full h-12 px-6 text-base bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-amber-950 border-b-2 border-amber-700 rounded font-black hover:brightness-105 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-95 group/btn"
                       >
                           <BarChart3 size={20} className="text-amber-950 group-hover/btn:scale-110 transition-transform" />
-                          <span>查詢</span>
+                          <span>{t('stake.login.query', '查詢')}</span>
                       </button>
 
                       <button
@@ -118,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
                           className="w-full h-12 px-6 text-base bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 text-amber-950 border-b-2 border-amber-700 rounded font-black hover:brightness-105 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-95 group/btn"
                       >
                           <MessageSquare size={20} className="text-amber-950 group-hover/btn:scale-110 transition-transform" />
-                          <span>留言</span>
+                          <span>{t('stake.login.feedback', '留言')}</span>
                       </button>
                   </div>
               </div>
@@ -126,7 +120,7 @@ const Login: React.FC<LoginProps> = ({ onGuestAccess, onGoToStats, onGoToInstruc
       </section>
 
       {/* Latest News Announcement - Gold Header & Gray Content */}
-      <section className="max-w-7xl mx-auto w-full min-w-0">
+      <section className="w-full min-w-0">
           <div className="bg-white border-2 border-amber-400 rounded shadow-sm overflow-hidden group hover:border-amber-500 transition-colors">
               <div className="bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 px-4 py-2 flex items-center gap-3 border-b-2 border-amber-400">
                   <Info className="w-4 h-4 text-amber-950" />

@@ -82,7 +82,8 @@ const AncestorManagerModal: React.FC<AncestorManagerModalProps> = ({ registratio
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[800px] max-w-full h-[80vh] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header */}

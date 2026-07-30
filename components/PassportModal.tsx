@@ -35,7 +35,8 @@ const PassportModal: React.FC<PassportModalProps> = ({ registration, event, onCl
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-[#fdfbf7] w-[800px] max-w-full h-[600px] rounded-r-2xl rounded-l-md shadow-2xl relative overflow-hidden flex flex-col md:flex-row border-l-[12px] border-l-blue-900 book-spine">
         
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">

@@ -163,6 +163,11 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
 
     const { vehicleStats, ordinanceStats } = useStats(currentEvent, registrations);
 
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = React.useMemo(() => {
+        return settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+    }, [settings]);
+
     // Modern Business Theme constants
     const SIDEBAR_WIDTH = 'w-64';
     const THEME = {
@@ -320,7 +325,7 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
                                 {activeTab === 'subsidy' && currentEvent && <SubsidyTab registrations={registrations} settings={settings} currentEvent={currentEvent} onRefresh={() => {}} onPushToEditor={pushToEditor} />}
                                 {activeTab === 'restrictions' && currentEvent && <RestrictionsTab settings={settings} blacklist={blacklist} registrations={registrations} onRefresh={() => {}} />}
                                 {activeTab === 'representatives' && <RepresentativesTab event_id={currentEvent ? currentEvent.event_id : ''} />}
-                                {activeTab === 'personalInfo' && <PersonalInfoTab units={settings.units} registrations={registrations} currentEvent={currentEvent} />}
+                                {activeTab === 'personalInfo' && <PersonalInfoTab units={unitOptions} registrations={registrations} currentEvent={currentEvent} settings={settings} />}
                                 {activeTab === 'comm' && currentEvent && <CommTab currentEvent={currentEvent} settings={settings} onUpdateEvent={handleUpdateEvent} />}
                                 {activeTab === 'progress' && currentEvent && <ProgressTab currentEvent={currentEvent} onUpdateEvent={handleUpdateEvent} />}
                                 {activeTab === 'temple' && currentEvent && <TempleTab currentEvent={currentEvent} registrations={registrations} settings={settings} onRefresh={() => {}} onUpdateEvent={handleUpdateEvent} />}

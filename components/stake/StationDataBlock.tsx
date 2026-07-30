@@ -188,7 +188,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                         <MapPin className="w-6 h-6" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-black text-gray-900 tracking-tight">{t('station.db_title', '站點資料庫')}</h2>
+                        <h2 className="text-lg md:text-xl lg:text-2xl font-black text-gray-900 tracking-tight">{t('station.db_title', '站點資料庫')}</h2>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -206,53 +206,55 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                     >
                         <div className="p-6 border-b border-indigo-50 flex justify-between items-center bg-gray-50/50">
                             <div>
-                                <h3 className="text-sm font-black text-indigo-900">{t('station.list_title', '站點列表')}</h3>
+                                <h3 className="text-xs md:text-sm lg:text-base font-black text-indigo-900">{t('station.list_title', '站點列表')}</h3>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={async (e) => {
-                                        e.stopPropagation();
-                                        const beforeCount = (settings.stations || []).length;
-                                        const seen = new Set();
-                                        const unique = (settings.stations || []).filter(s => {
-                                            // Identification key based on area, place and address
-                                            const key = `${(s.area || '').trim()}-${(s.place || '').trim()}-${(s.address || '').trim()}`;
-                                            if (seen.has(key)) return false;
-                                            seen.add(key);
-                                            return true;
-                                        });
+                        </div>
 
-                                        if (unique.length < beforeCount) {
-                                            const updatedSettings = { ...settings, stations: unique };
-                                            localStorage.setItem('STAKE_STATIONS_CACHE', JSON.stringify(unique));
-                                            await saveSettings(updatedSettings);
-                                            onUpdateSettings(updatedSettings);
-                                            setMsg(`已成功刪除 ${beforeCount - unique.length} 筆重複記錄`);
-                                            setTimeout(() => setMsg(null), 3000);
-                                        } else {
-                                            setMsg("未發現重複記錄");
-                                            setTimeout(() => setMsg(null), 3000);
-                                        }
-                                    }}
-                                    className="text-[10px] bg-red-50 text-red-600 px-3 py-2 rounded border border-red-100 hover:bg-red-100 font-bold transition-colors flex items-center gap-1 active:scale-95"
-                                >
-                                    <RefreshCw className="w-3 h-3" /> {t('station.button.cleanup_duplicates', '清理重複')}
-                                </button>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenAdd();
-                                    }}
-                                    className="bg-indigo-600 text-white p-2 px-6 rounded flex items-center gap-2 hover:bg-indigo-700 transition-all text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
-                                >
-                                    <Plus className="w-4 h-4" /> {t('station.button.add', '新增站點')}
-                                </button>
-                            </div>
+                        {/* Action Row - Separated from Title Bar */}
+                        <div className="p-2 border-b border-indigo-50 flex flex-wrap items-center justify-end gap-2 bg-white">
+                            <button 
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const beforeCount = (settings.stations || []).length;
+                                    const seen = new Set();
+                                    const unique = (settings.stations || []).filter(s => {
+                                        // Identification key based on area, place and address
+                                        const key = `${(s.area || '').trim()}-${(s.place || '').trim()}-${(s.address || '').trim()}`;
+                                        if (seen.has(key)) return false;
+                                        seen.add(key);
+                                        return true;
+                                    });
+
+                                    if (unique.length < beforeCount) {
+                                        const updatedSettings = { ...settings, stations: unique };
+                                        localStorage.setItem('STAKE_STATIONS_CACHE', JSON.stringify(unique));
+                                        await saveSettings(updatedSettings);
+                                        onUpdateSettings(updatedSettings);
+                                        setMsg(`已成功刪除 ${beforeCount - unique.length} 筆重複記錄`);
+                                        setTimeout(() => setMsg(null), 3000);
+                                    } else {
+                                        setMsg("未發現重複記錄");
+                                        setTimeout(() => setMsg(null), 3000);
+                                    }
+                                }}
+                                className="text-[10px] md:text-xs lg:text-sm bg-red-50 text-red-600 px-3 h-8 md:h-10 lg:h-12 rounded border border-red-100 hover:bg-red-100 font-bold transition-colors flex items-center gap-1 active:scale-95"
+                            >
+                                <RefreshCw className="w-3 h-3" /> {t('station.button.cleanup_duplicates', '清理重複')}
+                            </button>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenAdd();
+                                }}
+                                className="bg-indigo-600 text-white px-6 h-8 md:h-10 lg:h-12 rounded flex items-center gap-2 hover:bg-indigo-700 transition-all text-[10px] md:text-xs lg:text-sm font-black shadow-lg shadow-indigo-100 active:scale-95"
+                            >
+                                <Plus className="w-4 h-4" /> {t('station.button.add', '新增站點')}
+                            </button>
                         </div>
                         <div className="overflow-x-auto overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-indigo-200">
                             <table className="w-full text-left border-collapse table-auto">
                                 <thead className="sticky top-0 bg-indigo-50/95 backdrop-blur-md z-30">
-                                    <tr className="border-b-2 border-indigo-100 text-gray-500 text-[10px] font-black uppercase tracking-wider">
+                                    <tr className="border-b-2 border-indigo-100 text-gray-500 text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider">
                                         <th onClick={() => handleSort('area')} className="p-3 pl-6 cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap sticky left-0 bg-indigo-50/95 z-40 border-r border-indigo-100/50">
                                             <div className="flex items-center">{t('station.col.area', '地點')} {getSortIcon('area')}</div>
                                         </th>
@@ -269,18 +271,18 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
                                 <tbody className="divide-y divide-gray-50">
                                     {sortedStations.map((station, idx) => (
                                         <tr key={station.id} className={`${rainbowRows[idx % rainbowRows.length]} hover:brightness-95 transition-all group`}>
-                                            <td className="p-3 pl-6 font-bold text-[11px] text-gray-500 sticky left-0 bg-white/80 backdrop-blur-sm z-20 border-r border-dashed border-indigo-100/30 group-hover:bg-white whitespace-nowrap">{station.area || '-'}</td>
-                                            <td className="p-3 font-bold text-[11px] text-gray-500 whitespace-nowrap">{station.place}</td>
-                                            <td className="p-3 text-[11px] font-bold text-gray-400" title={station.address}>
+                                            <td className="p-3 pl-6 font-bold text-[10px] md:text-xs lg:text-sm text-gray-500 sticky left-0 bg-white/80 backdrop-blur-sm z-20 border-r border-dashed border-indigo-100/30 group-hover:bg-white whitespace-nowrap">{station.area || '-'}</td>
+                                            <td className="p-3 font-bold text-[10px] md:text-xs lg:text-sm text-gray-500 whitespace-nowrap">{station.place}</td>
+                                            <td className="p-3 text-[10px] md:text-xs lg:text-sm font-bold text-gray-400" title={station.address}>
                                                 {station.address || <span className="text-gray-300 italic">{t('common.status.not_set', '尚未設定')}</span>}
                                             </td>
                                             <td className="p-3 whitespace-nowrap">
                                                 {station.mapUrl ? (
-                                                    <a href={station.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-indigo-100 rounded text-[10px] font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                                                    <a href={station.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-indigo-100 rounded text-[10px] md:text-xs lg:text-sm font-black text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                                                         🌐 {t('station.col.map', '地圖')}
                                                     </a>
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-gray-300">{t('common.none', '無')}</span>
+                                                    <span className="text-[10px] md:text-xs lg:text-sm font-bold text-gray-300">{t('common.none', '無')}</span>
                                                 )}
                                             </td>
                                             <td className="p-3 pr-6 text-center whitespace-nowrap">
@@ -322,7 +324,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
             {/* Custom Modal for Add/Edit */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/40 backdrop-blur-md">
                         <motion.div 
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -410,7 +412,7 @@ const StationDataBlock: React.FC<StationDataBlockProps> = ({ settings, events, o
             {/* Custom Confirm Delete Modal */}
             <AnimatePresence>
                 {isConfirmDeleteOpen && (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-white/40 backdrop-blur-md">
                         <motion.div 
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}

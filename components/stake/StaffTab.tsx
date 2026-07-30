@@ -25,6 +25,11 @@ interface StaffTabProps {
 const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, personalInfo, settings, onUpdateEvent, onPushToEditor }) => {
     const { t, tString } = useI18n();
     
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = useMemo(() => {
+        return settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+    }, [settings]);
+
     // Updated Role Definitions
     const TEMPLE_WORKER_ROLES = [
         { key: 'A', label: tString('staff.role.A', 'A.協調員 (恩道門後的弟兄)') },
@@ -434,7 +439,7 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
                                         onChange={(e) => setNewVolunteer({...newVolunteer, unit: e.target.value})}
                                     >
                                         <option value="">{tString('common.select_unit', '選擇單位')}</option>
-                                        {settings.units.map(u => <option key={u} value={u}>{u}</option>)}
+                                        {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1">

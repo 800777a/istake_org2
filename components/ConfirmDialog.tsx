@@ -31,11 +31,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const displayCancelText = cancelText || t('common.cancel', '取消');
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-60 p-4 animate-fade-in">
-      <div className="bg-white rounded shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onCancel} />
+      <div className="relative bg-white rounded shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100">
         <div className={`p-4 flex items-center ${isDangerous ? 'bg-red-50 text-red-700 border-b-2 border-red-100' : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950'}`}>
           <AlertTriangle className={`w-6 h-6 mr-3 flex-shrink-0 ${isDangerous ? 'text-red-600' : 'text-amber-900'}`} />
-          <h3 className="font-black text-lg tracking-tight">{title}</h3>
+          <h3 className="font-bold text-lg tracking-tight">{title}</h3>
         </div>
         
         <div className="p-6 text-gray-700 text-sm leading-relaxed">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GlobalSettings, EventData, BusRoute, RoadSignItem } from '../../types';
 import { updateEvent } from '../../services/sheetService';
-import { Bus, Map, Save, ChevronDown, ChevronUp, ArrowRightLeft } from 'lucide-react';
+import { Bus, Map as MapIcon, Save, ChevronDown, ChevronUp, ArrowRightLeft, FileText, Upload, Download } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
 import Toast, { ToastType } from '../Toast';
 import { useI18n } from '../../src/contexts/LanguageContext';
@@ -66,13 +66,28 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         const newBusConfigs = event.busConfigs.map(config => {
             const route = event.busRoutes![config.name];
             if (!route) return config;
-            const stops = (route.outbound || [])
+            
+            const outboundStops: { code: string, location: string, time: string }[] = (route.outbound || [])
                 .filter(item => item.stopCode)
                 .map(item => ({
                     code: item.stopCode!,
                     location: item.location,
                     time: item.arrivalTime
                 }));
+                
+            const returnStops: { code: string, location: string, time: string }[] = (route.returnTrip || [])
+                .filter(item => item.stopCode)
+                .map(item => ({
+                    code: item.stopCode!,
+                    location: item.location,
+                    time: item.arrivalTime
+                }));
+            
+            // Combine both, avoiding duplicates based on code
+            const stopMap = new Map<string, { code: string, location: string, time: string }>();
+            [...outboundStops, ...returnStops].forEach(s => stopMap.set(s.code, s));
+            const stops = Array.from(stopMap.values()).sort((a, b) => a.code.localeCompare(b.code));
+            
             return { ...config, stops };
         });
         const syncedEvent = { ...event, busConfigs: newBusConfigs };
@@ -298,29 +313,91 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
             />
 
             {/* Main Header conforming to Bright Modern Business style */}
-            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded border border-white/10 shadow-sm">
-                        <Map className="w-6 h-6 text-blue-300" />
+            <div className="bg-[#004B97] text-white p-2 md:p-3 rounded shadow-lg flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white/10 rounded border border-white/10 shadow-sm">
+                            <MapIcon className="w-5 h-5 text-blue-300" />
+                        </div>
+                        <h2 className="text-lg md:text-xl lg:text-2xl font-black tracking-tight">
+                            行程路線
+                        </h2>
                     </div>
-                    <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
-                        {t('route.title', '路線規劃系統')}
-                    </h2>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <p className="text-xs text-indigo-200 font-medium uppercase tracking-wider opacity-80">
-                        Fleet Logistics & Strategic Path Optimization
-                    </p>
-                    <div className="flex justify-end">
-                        <button 
-                            onClick={handleSave} disabled={isSaving}
-                            className={`h-12 md:h-11 lg:h-10 px-6 rounded text-base md:text-sm font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${isSaving ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                        >
-                            <Save size={18} className={isSaving ? 'animate-spin' : ''} /> 
-                            {isSaving ? t('common.saving', '同步雲端中...') : t('common.save', '保存路線設定')}
-                        </button>
-                    </div>
+            </div>
+
+            {/* Action Row */}
+            <div className="flex flex-wrap items-center justify-between gap-2 p-1 bg-white/60 backdrop-blur-sm rounded border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                    <button 
+                        onClick={handleSave} disabled={isSaving}
+                        className={`h-9 px-4 rounded text-xs font-black transition-all shadow-sm active:scale-95 flex items-center gap-2 ${isSaving ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                    >
+                        <Save size={14} className={isSaving ? 'animate-spin' : ''} /> 
+                        {isSaving ? t('common.saving', '同步雲端中...') : '保存路線設定'}
+                    </button>
+                    <button
+                        onClick={() => {
+                            const stakeName = settings?.stake_name || '嘉義支聯會';
+                            const eventDate = currentEvent.event_date || '';
+                            const fileName = `行程規劃_${eventDate}.txt`;
+                            let fullText = `【行程規劃 - ${eventDate}】\n\n`;
+                            
+                            (currentEvent.busConfigs || []).forEach(bus => {
+                                const busName = bus.name;
+                                const route = currentEvent.busRoutes?.[busName];
+                                if (route) {
+                                    fullText += `--- ${busName} 號車 ---\n`;
+                                    fullText += `[去程]\n`;
+                                    fullText += (Array.isArray(route.outbound) ? route.outbound : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
+                                    fullText += `\n\n[回程]\n`;
+                                    fullText += (Array.isArray(route.returnTrip) ? route.returnTrip : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
+                                    fullText += `\n\n`;
+                                }
+                            });
+                            
+                            const blob = new Blob([fullText], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = fileName;
+                            a.click();
+                        }}
+                        className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2"
+                    >
+                        <FileText size={14} /> 印詢價單
+                    </button>
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2 cursor-pointer">
+                        <Upload size={14} /> 匯入
+                        <input type="file" className="hidden" accept=".json" onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (evt) => {
+                                try {
+                                    const data = JSON.parse(evt.target?.result as string);
+                                    syncAndSave({ ...currentEvent, ...data });
+                                    setMsg('匯入完成');
+                                } catch (err) { setMsg('匯入失敗'); setMsgType('error'); }
+                            };
+                            reader.readAsText(file);
+                        }} />
+                    </label>
+                    <button
+                        onClick={() => {
+                            const blob = new Blob([JSON.stringify(currentEvent.busRoutes || {}, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `routes_backup_${currentEvent.event_date}.json`;
+                            a.click();
+                        }}
+                        className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2"
+                    >
+                        <Download size={14} /> 匯出
+                    </button>
                 </div>
             </div>
 
@@ -373,42 +450,42 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
-                                            <Map size={20} />
+                                            <MapIcon size={20} />
                                         </div>
-                                        <h3 className={`font-bold text-sm md:text-base lg:text-lg ${theme.text}`}>
-                                            {busName} {t('common.bus', '號車')} - 路標指示 (DRIVER ROAD SIGNS)
+                                        <h3 className={`font-bold text-xs md:text-sm lg:text-base ${theme.text}`}>
+                                            {busName} - 路標指示
                                         </h3>
                                     </div>
                                     <div className={theme.text}>
                                         {isSignCollapsed ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
                                     </div>
                                 </div>
-
-                                {/* Info and buttons moved below title row and right-aligned */}
-                                <div className="w-full flex justify-end items-center gap-3 mt-3">
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setConfirmConfig({
-                                                isOpen: true, title: '回程反向 (路標)', message: `確定要將「${busName}去程」的指示內容，反向複製到「回程」嗎？這將覆蓋現有的回程資料。`,
-                                                onConfirm: () => {
-                                                    closeDialog();
-                                                    const outbound = route.outboundRoadSigns || [];
-                                                    const reversed = outbound.map((i: any) => i.instruction).reverse().map((inst: string) => ({ label: '', instruction: inst, checked: false }));
-                                                    syncAndSave({ ...currentEvent, busRoutes: { ...currentEvent.busRoutes, [busName]: { ...route, returnRoadSigns: reversed } } });
-                                                }
-                                            });
-                                        }} 
-                                        className={`h-9 px-4 rounded text-xs font-bold transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
-                                    >
-                                        <ArrowRightLeft size={14} /> 回程反向 (路標)
-                                    </button>
-                                </div>
                             </div>
 
                             {!isSignCollapsed && (
-                                <div className="p-6 bg-white/40 backdrop-blur-sm flex flex-col gap-6">
-                                    <div className="grid lg:grid-cols-2 gap-8">
+                                <div className="p-1 flex flex-col gap-2 bg-white/40 backdrop-blur-sm">
+                                    {/* Action Row for Road Signs */}
+                                    <div className="flex justify-start p-1">
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setConfirmConfig({
+                                                    isOpen: true, title: '回程反向', message: `確定要將「${busName}去程」的指示內容，反向複製到「回程」嗎？這將覆蓋現有的回程資料。`,
+                                                    onConfirm: () => {
+                                                        closeDialog();
+                                                        const outbound = route.outboundRoadSigns || [];
+                                                        const reversed = outbound.map((i: any) => i.instruction).reverse().map((inst: string) => ({ label: '', instruction: inst, checked: false }));
+                                                        syncAndSave({ ...currentEvent, busRoutes: { ...currentEvent.busRoutes, [busName]: { ...route, returnRoadSigns: reversed } } });
+                                                    }
+                                                });
+                                            }} 
+                                            className={`h-8 px-3 rounded text-[10px] font-black transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
+                                        >
+                                            <ArrowRightLeft size={12} /> 回程反向
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="p-1 grid lg:grid-cols-2 gap-4">
                                         <BusRoadSignSection busName={busName} type="outbound" items={route.outboundRoadSigns || []}
                                             theme={theme}
                                             isPublished={!!route.isOutboundRoadSignsPublished}

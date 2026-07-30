@@ -181,26 +181,32 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     };
 
     const sortedUnits = useMemo(() => {
-        const distinct = Array.from(new Set(registrations.map(r => r.unit))) as string[];
-        const baseUnits = [...(settings?.units || [])];
+        // Vxxx: Combine all potential sources of unit names
+        const billingUnits = settings?.billingConfig?.units?.map(u => u.shortName) || [];
+        const configUnits = settings?.units || [];
+        const regUnits = registrations.map(r => r.unit).filter(u => u && String(u).trim() !== '');
         
-        // 確保「民雄」一定存在於基礎清單中
-        if (!baseUnits.includes('民雄')) {
-            baseUnits.push('民雄');
-        }
+        // Use Set to unique, then filter out empty/null/whitespace
+        const allUnits = Array.from(new Set([...billingUnits, ...configUnits, ...regUnits]))
+            .filter(u => u != null && String(u).trim() !== '');
         
-        // 合併已報名單位與基礎單位，並進行去重與排序
-        const allUnits = Array.from(new Set([...distinct, ...baseUnits])).filter(Boolean);
-        
+        // Sort them: priority to billingUnits order, then configUnits, then alphabetical
         return allUnits.sort((a, b) => {
-            const idxA = baseUnits.indexOf(a);
-            const idxB = baseUnits.indexOf(b);
-            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-            if (idxA !== -1) return -1;
-            if (idxB !== -1) return 1;
-            return a.localeCompare(b);
+            const idxBillingA = billingUnits.indexOf(a);
+            const idxBillingB = billingUnits.indexOf(b);
+            if (idxBillingA !== -1 && idxBillingB !== -1) return idxBillingA - idxBillingB;
+            if (idxBillingA !== -1) return -1;
+            if (idxBillingB !== -1) return 1;
+            
+            const idxConfigA = configUnits.indexOf(a);
+            const idxConfigB = configUnits.indexOf(b);
+            if (idxConfigA !== -1 && idxConfigB !== -1) return idxConfigA - idxConfigB;
+            if (idxConfigA !== -1) return -1;
+            if (idxConfigB !== -1) return 1;
+
+            return String(a).localeCompare(String(b));
         });
-    }, [registrations, settings?.units]);
+    }, [registrations, settings?.units, settings?.billingConfig?.units]);
 
     const isWaiting = (reg: Registration) => {
         if (reg.trip_type === TripType.RETAINED || reg.trip_type === TripType.SELF_MANAGED) return false;
@@ -210,8 +216,8 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     };
 
     const handlePaymentClick = (reg: Registration) => {
-        if (eventStatus === 'confirmed' || eventStatus === 'planning') {
-            if (isWaiting(reg)) return;
+        // V700: Always allow viewing payment info if it exists
+        if (reg) {
             setSelectedPaymentReg(reg);
         }
     };
@@ -220,7 +226,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         if (!code || !busConfigs) return undefined;
         for (const bus of busConfigs) {
             const stop = (bus.stops || []).find(s => s.code === code);
-            if (stop) return { code: stop.code, location: stop.location };
+            if (stop) return { code: stop.code, location: stop.location, time: stop.time };
         }
         return undefined;
     };
@@ -323,17 +329,17 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                 </div>
             </div>
 
-            {/* Main Action Bar - Drastically lowered Z-Index (z-1) and compressed height */}
-            <div className="bg-white border-b border-slate-200 px-2 md:px-4 py-1.5 md:py-2 sticky top-0 z-[20] shadow-sm shrink-0 min-w-0">
+            {/* Main Action Bar - Elevated Z-Index and Rainbow Styling */}
+            <div className="bg-gradient-to-r from-amber-50 via-yellow-100 to-amber-50 border-b-2 border-amber-200 px-2 md:px-4 py-1.5 md:py-2 sticky top-0 z-[100] shadow-md shrink-0 min-w-0">
                 <div className="flex flex-col md:flex-row gap-2 md:items-center justify-between max-w-full min-w-0">
                     <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
                         {/* Left Column: Unit Selection */}
                         <div className="relative w-full sm:w-1/3 min-w-0 group">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500" />
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-yellow-700 group-focus-within:text-yellow-900" />
                             <select
                                 value={selectedUnit}
                                 onChange={(e) => setSelectedUnit(e.target.value)}
-                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded text-[10px] md:text-xs font-black focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-yellow-50 border-2 border-yellow-200 rounded text-[10px] md:text-xs font-black text-yellow-900 focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all appearance-none cursor-pointer"
                             >
                                 <option value="all">搜尋 單位</option>
                                 {sortedUnits.map(unit => (
@@ -341,35 +347,35 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                 ))}
                             </select>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                                <ChevronDown className="w-3.5 h-3.5 text-yellow-400" />
                             </div>
                         </div>
 
                         {/* Right Column: Personal Search */}
                         <div className="relative w-full sm:w-2/3 min-w-0 group">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 group-focus-within:text-indigo-500" />
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-emerald-700 group-focus-within:text-emerald-900" />
                             <input
                                 type="text"
                                 placeholder="搜尋 個人"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded text-[10px] md:text-xs font-black focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all truncate"
+                                className="w-full h-8 md:h-10 pl-9 pr-3 bg-emerald-50 border-2 border-emerald-200 rounded text-[10px] md:text-xs font-black text-emerald-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all truncate"
                             />
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 overflow-x-auto pb-0.5 md:pb-0 no-scrollbar min-w-0 shrink-0">
-                        <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
+                        <div className="flex bg-white/50 p-1 rounded border-2 border-amber-200 shrink-0 gap-1">
                             {[
-                                { id: 'normal', icon: Users, label: '概覽' },
-                                { id: 'fee', icon: DollarSign, label: '收費' },
-                                { id: 'checkin', icon: CheckSquare, label: '報到' }
+                                { id: 'normal', icon: Users, label: '概覽', active: 'bg-red-100 text-red-900 border-red-300', inactive: 'bg-red-50 text-red-400 border-red-100' },
+                                { id: 'fee', icon: DollarSign, label: '收費', active: 'bg-orange-100 text-orange-900 border-orange-300', inactive: 'bg-orange-50 text-orange-400 border-orange-100' },
+                                { id: 'checkin', icon: CheckSquare, label: '報到', active: 'bg-emerald-100 text-emerald-900 border-emerald-300', inactive: 'bg-emerald-50 text-emerald-400 border-emerald-100' }
                             ].map((mode) => (
                                 <button
                                     key={mode.id}
                                     onClick={() => setDisplayMode(mode.id as any)}
-                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded text-[10px] md:text-xs font-black transition-all ${
-                                        displayMode === mode.id ? 'bg-white text-indigo-900 shadow-sm border border-slate-200' : 'text-slate-500'
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded border-2 text-[10px] md:text-xs font-black transition-all ${
+                                        displayMode === mode.id ? mode.active + ' shadow-sm' : mode.inactive
                                     }`}
                                 >
                                     <mode.icon className="w-3 h-3 md:w-4 md:h-4" />
@@ -378,16 +384,16 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                             ))}
                         </div>
 
-                        <div className="flex bg-slate-100 p-0.5 rounded border border-slate-200 shrink-0">
+                        <div className="flex bg-white/50 p-1 rounded border-2 border-amber-200 shrink-0 gap-1">
                             {[
-                                { id: 'table', icon: List, label: '列表' },
-                                { id: 'card', icon: LayoutGrid, label: '卡片' }
+                                { id: 'table', icon: List, label: '列表', active: 'bg-blue-100 text-blue-900 border-blue-300', inactive: 'bg-blue-50 text-blue-400 border-blue-100' },
+                                { id: 'card', icon: LayoutGrid, label: '卡片', active: 'bg-purple-100 text-purple-900 border-purple-300', inactive: 'bg-purple-50 text-purple-400 border-purple-100' }
                             ].map((mode) => (
                                 <button
                                     key={mode.id}
                                     onClick={() => setViewMode(mode.id as any)}
-                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded text-[10px] md:text-xs font-black transition-all ${
-                                        viewMode === mode.id ? 'bg-white text-indigo-900 shadow-sm border border-slate-200' : 'text-slate-500'
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 md:px-4 md:py-2 h-8 md:h-10 rounded border-2 text-[10px] md:text-xs font-black transition-all ${
+                                        viewMode === mode.id ? mode.active + ' shadow-sm' : mode.inactive
                                     }`}
                                 >
                                     <mode.icon className="w-3 h-3 md:w-4 md:h-4" />
@@ -601,8 +607,11 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                             {displayMode === 'normal' && (
                                                                                 <>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
-                                                                                        {reg.bus_assigned && <span className="bg-slate-800 text-white px-1.5 py-0.5 rounded text-[10px] font-black mr-1">{reg.bus_assigned.charAt(0)}</span>}
-                                                                                        {getStopInfo(reg.bus_assigned)?.location || '-'}
+                                                                                        {(() => {
+                                                                                            const info = getStopInfo(reg.bus_assigned);
+                                                                                            if (!info) return '-';
+                                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
+                                                                                        })()}
                                                                                     </td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{translateOrdinance(reg.ordinance_item)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-emerald-700 truncate`}>{translateTripType(reg.trip_type)}</td>
@@ -650,7 +659,13 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                     </div>
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-2 min-w-0">
-                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">{getStopInfo(reg.bus_assigned)?.location || '-'}</div></div>
+                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">
+                                                                        {(() => {
+                                                                            const info = getStopInfo(reg.bus_assigned);
+                                                                            if (!info) return '-';
+                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
+                                                                        })()}
+                                                                    </div></div>
                                                                     <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">教儀</div><div className="text-[11px] font-bold text-slate-700 truncate">{translateOrdinance(reg.ordinance_item)}</div></div>
                                                                 </div>
                                                                 {displayMode === 'fee' && (
@@ -686,6 +701,17 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                 onCancel={() => setConfirmState({ isOpen: false, type: null })}
                 isDangerous={true}
             />
+
+            {selectedPaymentReg && (
+                <PaymentInfoModal
+                    key={`payment-${selectedPaymentReg.reg_id}`}
+                    currentReg={selectedPaymentReg}
+                    allRegistrations={registrations}
+                    settings={settings}
+                    onClose={() => setSelectedPaymentReg(null)}
+                    onRefresh={() => {}}
+                />
+            )}
 
             {statusMsg.type && (
                 <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[150] animate-in fade-in slide-in-from-bottom-4">

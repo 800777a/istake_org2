@@ -13,8 +13,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ registration, event, unit, 
   const currentDate = new Date().toLocaleDateString();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
-      <div className="bg-white w-[800px] max-w-full rounded shadow-xl relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white w-[800px] max-w-full rounded shadow-xl overflow-hidden">
         
         {/* Actions */}
         <div className="absolute top-4 right-4 flex space-x-2 print:hidden">

@@ -23,7 +23,7 @@ const ExportChoiceModal: React.FC<ExportChoiceModalProps> = ({ isOpen, onClose, 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-white/40 backdrop-blur-md"
           />
           <motion.div 
             initial={{ scale: 0.9, opacity: 0, y: 20 }}

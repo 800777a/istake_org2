@@ -9,7 +9,7 @@ import { Download, Upload, Plus, Trash2, Bus, DollarSign, Save, Power, CheckCirc
 import ConfirmDialog from '../ConfirmDialog';
 import Toast, { ToastType } from '../Toast';
 import RegistrationDashboard from '../../src/components/registration/RegistrationDashboard';
-import { useStats } from '../../hooks/useStats';
+import { useStats, calculateStats } from '../../hooks/useStats';
 import RegistrationSwitch from './RegistrationSwitch';
 
 interface BookingTabProps {
@@ -45,23 +45,6 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
         setMsg(t('stake.booking.alerts.settingAutoUpdated', '設定已自動更新'));
     };
 
-    // Calculate Capacity Stats
-    const { busCapacity, currentBusRiders, waitingCount, normalCount } = useMemo(() => {
-        const capacity = (currentEvent.busConfigs || []).reduce((sum, bus) => sum + Number(bus.capacity || 0), 0);
-
-        const validRegs = registrations.filter(r => r.status !== RegStatus.CANCELLED);
-        // V300: Exclude '留用' (RETAINED) from bus seat counters
-        const seatOccupiers = validRegs.filter(r => r.trip_type !== TripType.SELF_MANAGED && r.trip_type !== TripType.RETAINED);
-        const normalSeatOccupiers = seatOccupiers.filter(r => r.status === RegStatus.NORMAL);
-        const waitingSeatOccupiers = seatOccupiers.filter(r => r.status === RegStatus.WAITING);
-
-        return {
-            busCapacity: capacity,
-            currentBusRiders: normalSeatOccupiers.length,
-            waitingCount: waitingSeatOccupiers.length,
-            normalCount: normalSeatOccupiers.length
-        };
-    }, [registrations, currentEvent]); 
 
     // Handle Config Save
     const handleUpdateConfig = async () => {
@@ -173,6 +156,12 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
     const isDeadlinePassed = regDeadlineInput && new Date(regDeadlineInput) < new Date();
 
     const { vehicleStats: eventStats, ordinanceStats } = useStats(currentEvent, registrations);
+
+    const { busCapacity, currentBusRiders, waitingCount } = {
+        busCapacity: eventStats.capacity,
+        currentBusRiders: eventStats.occupied,
+        waitingCount: eventStats.waiting
+    }; 
 
     const handleAssignOrdinanceSerials = async () => {
         if (!currentEvent.event_id) return;

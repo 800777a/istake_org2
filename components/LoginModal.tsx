@@ -104,7 +104,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
             {/* Inner Service Personnel Modal */}
             {showServicePersonnel ? (
                 <div className="bg-white w-[600px] max-w-full rounded shadow-2xl overflow-hidden max-h-[90vh] flex flex-col relative z-[110] border-2 border-slate-100 animate-in zoom-in-95 duration-300">

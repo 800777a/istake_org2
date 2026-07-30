@@ -16,7 +16,8 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
   if (!report) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[210mm] max-w-full h-[90vh] rounded shadow-2xl relative overflow-hidden flex flex-col">
         
         {/* Header (No print) */}
@@ -49,7 +50,7 @@ const FinalReportModal: React.FC<FinalReportModalProps> = ({ event, onClose }) =
             <div className="mb-8 bg-blue-50 p-6 rounded border border-blue-100">
                 <h3 className="font-bold text-blue-900 mb-3 text-lg border-b border-blue-200 pb-2">{t('report.executive_summary', '執行摘要 (Executive Summary)')}</h3>
                 <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
-                    {report.aiSummary || t('report.no_ai_summary', '無 AI 摘要內容。')}
+                    {report.aiSummary || t('report.no_summary', '無摘要內容。')}
                 </p>
             </div>
 

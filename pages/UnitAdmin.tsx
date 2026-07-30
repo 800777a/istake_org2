@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { EventData, Registration, User } from '../types';
-import { getCurrentUser, subscribeToEvents, subscribeToRegistrations, updateUnitStaffInfo, toggleTaskStatus } from '../services/sheetService';
+import { EventData, Registration, User, GlobalSettings } from '../types';
+import { getCurrentUser, subscribeToEvents, subscribeToRegistrations, updateUnitStaffInfo, toggleTaskStatus, subscribeToSettings } from '../services/sheetService';
 import { Users, ClipboardList, CheckSquare } from 'lucide-react';
 import SharedOperations from '../components/SharedOperations';
 import SharedRegistrationList from '../components/SharedRegistrationList';
@@ -23,8 +23,10 @@ const STAFF_ROLES = [
 
 const UnitAdmin: React.FC = () => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [settings, setSettings] = useState<GlobalSettings | null>(null);
     const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
     const [registrations, setRegistrations] = useState<Registration[]>([]);
+    const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
     
     // UI State
     const [isLockedPayment, setIsLockedPayment] = useState(false);
@@ -41,6 +43,8 @@ const UnitAdmin: React.FC = () => {
         const user = getCurrentUser();
         setCurrentUser(user);
 
+        const unsubSettings = subscribeToSettings((s) => setSettings(s));
+
         const unsubEvents = subscribeToEvents((events) => {
             const active = events.find(e => e.is_active);
             setActiveEvent(active);
@@ -55,12 +59,16 @@ const UnitAdmin: React.FC = () => {
             }
         });
 
-        return () => unsubEvents();
+        return () => {
+            unsubEvents();
+            unsubSettings();
+        };
     }, []);
 
     useEffect(() => {
         if (activeEvent && currentUser?.unit) {
             const unsubRegs = subscribeToRegistrations(activeEvent.event_id, (allRegs) => {
+                setAllRegistrations(allRegs);
                 const unitRegs = allRegs.filter(r => r.unit === currentUser.unit);
                 setRegistrations(unitRegs);
             });
@@ -165,6 +173,8 @@ const UnitAdmin: React.FC = () => {
                     registrations={registrations}
                     unitName={selectedUnit}
                     currentUser={currentUser}
+                    settings={settings!}
+                    allRegistrations={allRegistrations}
                     isLockedPayment={isLockedPayment}
                     isLockedCheckInTo={isLockedTo}
                     isLockedCheckInBack={isLockedBack}

@@ -75,9 +75,11 @@ export const subscribeToTestimonies = (callback: (list: Testimony[]) => void) =>
     });
 };
 
-export const saveComment = async (eventId: string, c: Partial<Comment> & { author_name: string; content: string }) => {
+export const saveComment = async (eventId: string, c: Partial<Comment> & { author_name: string; content: string; content_en?: string }) => {
     const id = c.id || `CMT-${Date.now()}`;
     const created_at = c.created_at || new Date().toISOString();
+    
+    // V042: Save to Firestore
     await setDoc(doc(db, COLL_COMMENTS, id), { ...c, event_id: eventId, id, created_at });
 };
 
@@ -85,6 +87,18 @@ export const addComment = saveComment;
 
 export const subscribeToComments = (eventId: string, callback: (list: Comment[]) => void) => {
     const q = query(collection(db, COLL_COMMENTS), where('event_id', '==', eventId));
+    return onSnapshot(q, (snap) => {
+        const list: Comment[] = [];
+        snap.forEach(d => list.push(d.data() as Comment));
+        callback(list);
+    });
+};
+
+/**
+ * 訂閱全站留言 (跨月份/活動)
+ */
+export const subscribeToAllComments = (callback: (list: Comment[]) => void) => {
+    const q = query(collection(db, COLL_COMMENTS), orderBy('created_at', 'desc'));
     return onSnapshot(q, (snap) => {
         const list: Comment[] = [];
         snap.forEach(d => list.push(d.data() as Comment));

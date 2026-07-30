@@ -794,6 +794,7 @@ export interface Comment {
     author_unit?: string; // V180: 所屬單位
     category?: string; // V180: 留言分類
     content: string;
+    content_en?: string; // V410: 英文翻譯內容
     is_admin_reply: boolean;
     parent_id?: string; // For replies
     is_spam?: boolean;

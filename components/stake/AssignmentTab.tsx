@@ -20,6 +20,12 @@ interface AssignmentTabProps {
 
 const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registrations, settings, onRefresh, onPushToEditor }) => {
     const { t, tString } = useI18n();
+    
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = useMemo(() => {
+        return settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+    }, [settings]);
+
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
     const [batchUnit, setBatchUnit] = useState('');
@@ -60,18 +66,29 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
     const getAvailableStopsForBus = useCallback((busName: string) => {
         const route = currentEvent.busRoutes?.[busName];
         if (!route) return [];
+        
         const outboundItems = Array.isArray(route.outbound) ? route.outbound : [];
         const returnItems = Array.isArray(route.returnTrip) ? route.returnTrip : [];
-        const dbStations = settings?.stations || [];
-        const dbPlaces = new Set(dbStations.map(s => s.area));
+        
+        // Use a Map with stopCode as key to ensure all unique stops are included
         const map = new Map<string, RoutePlanItem>();
-        [...returnItems, ...outboundItems].forEach(item => {
-            if (item.location && dbPlaces.has(item.location)) {
-                map.set(item.location, { ...item, arrivalTime: item.departureTime || item.arrivalTime });
+        
+        // Process outbound stops
+        outboundItems.forEach(item => {
+            if (item.stopCode) {
+                map.set(item.stopCode, { ...item, arrivalTime: item.arrivalTime || item.departureTime });
             }
         });
-        return Array.from(map.values()).sort((a, b) => (a.stopCode || '').localeCompare(b.stopCode || '') || (a.location || '').localeCompare(b.location || '', 'zh-Hant'));
-    }, [currentEvent.busRoutes, settings?.stations]);
+        
+        // Process return stops
+        returnItems.forEach(item => {
+            if (item.stopCode) {
+                map.set(item.stopCode, { ...item, arrivalTime: item.arrivalTime || item.departureTime });
+            }
+        });
+        
+        return Array.from(map.values()).sort((a, b) => (a.stopCode || '').localeCompare(b.stopCode || ''));
+    }, [currentEvent.busRoutes]);
 
     const filteredRegistrations = useMemo(() => {
         if (!searchQuery) return registrations;
@@ -97,13 +114,13 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
             } else groups['unassigned'].push(r);
         });
         groups['unassigned'].sort((a, b) => {
-             const idxA = (settings.units || []).indexOf(a.unit);
-             const idxB = (settings.units || []).indexOf(b.unit);
+             const idxA = unitOptions.indexOf(a.unit);
+             const idxB = unitOptions.indexOf(b.unit);
              if (idxA !== -1 && idxB !== -1) return idxA - idxB;
              return a.unit.localeCompare(b.unit) || a.name.localeCompare(b.name);
         });
         return groups;
-    }, [filteredRegistrations, currentEvent.busConfigs, settings.units]);
+    }, [filteredRegistrations, currentEvent.busConfigs, unitOptions]);
 
     const handleAssignToBus = (regId: string, busNameOrCode: string) => {
         updateRegistrationField(regId, 'bus_assigned', busNameOrCode === 'unassigned' ? '' : busNameOrCode);
@@ -206,7 +223,7 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                         <label className="text-[11px] font-bold text-slate-500 uppercase ml-1">選擇單位</label>
                                         <select className="w-full bg-white border border-slate-200 text-sm font-medium p-3 rounded outline-none focus:border-blue-500 transition-all shadow-sm" value={batchUnit} onChange={e => setBatchUnit(e.target.value)}>
                                             <option value="">選擇單位</option>
-                                            {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                            {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
@@ -275,9 +292,27 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex flex-col"><span className="font-bold text-slate-900 text-sm">{reg.name}</span><span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit mt-1">{reg.unit}</span></div>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5">
+                                <div className="flex flex-wrap gap-1.5 mt-2">
                                     {(currentEvent?.busConfigs || []).map(bus => (
-                                        <button key={bus.name} onClick={() => handleAssignToBus(reg.reg_id, bus.name)} className="h-8 px-2.5 bg-slate-50 text-slate-600 text-[10px] font-bold rounded border border-slate-200 hover:bg-blue-600 hover:text-white transition-all">{bus.name}</button>
+                                        <div key={bus.name} className="flex flex-wrap gap-1 items-center bg-slate-50 p-1 rounded border border-slate-100">
+                                            <button 
+                                                onClick={() => handleAssignToBus(reg.reg_id, bus.name)} 
+                                                className="h-8 px-2.5 bg-indigo-600 text-white text-[10px] font-black rounded hover:bg-indigo-700 transition-all shadow-sm"
+                                                title={`${bus.name} 全車指派`}
+                                            >
+                                                {bus.name}
+                                            </button>
+                                            {(bus.stops || []).map(stop => (
+                                                <button 
+                                                    key={stop.code} 
+                                                    onClick={() => handleAssignToBus(reg.reg_id, stop.code)} 
+                                                    className="h-7 px-2 bg-white text-slate-600 text-[9px] font-bold rounded border border-slate-200 hover:border-blue-500 hover:text-blue-600 transition-all"
+                                                    title={`${stop.code} - ${stop.location}`}
+                                                >
+                                                    {stop.code}
+                                                </button>
+                                            ))}
+                                        </div>
                                     ))}
                                 </div>
                             </div>

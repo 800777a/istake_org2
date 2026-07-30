@@ -54,7 +54,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ registration, onClose, on
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[400px] max-w-full rounded shadow-xl relative overflow-hidden">
         <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 text-white text-center relative">
             <h2 className="text-xl font-bold">活動滿意度調查</h2>

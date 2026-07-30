@@ -27,8 +27,8 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
                     <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
                         <Map size={18} />
                     </div>
-                    <h4 className={`font-bold text-sm uppercase tracking-tight ${theme.text}`}>
-                        {type === 'outbound' ? '去程路標 (OUTBOUND)' : '回程路標 (RETURN)'}
+                    <h4 className={`font-black text-xs md:text-sm lg:text-base uppercase tracking-tight ${theme.text}`}>
+                        {type === 'outbound' ? '去程路標' : '回程路標'}
                     </h4>
                 </div>
                 <div className="flex items-center gap-4">
@@ -53,12 +53,12 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
             <div className="flex-1 overflow-x-auto">
                 <table className="w-full text-sm text-left border-collapse min-w-[500px]">
                     <thead>
-                        <tr className={`text-[10px] font-bold uppercase tracking-wider border-b bg-white/20 ${theme.text} ${theme.border}`}>
-                            <th className={`p-4 w-16 text-center border-r ${theme.border}`}>排序</th>
-                            <th className={`p-4 w-16 text-center border-r ${theme.border}`}>核對</th>
-                            <th className={`p-4 w-16 text-center border-r ${theme.border}`}>編號</th>
-                            <th className="p-4 min-w-[300px]">指示內容 (DRIVER INSTRUCTIONS)</th>
-                            <th className="p-4 w-16 text-right">操作</th>
+                        <tr className={`text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-wider border-b bg-white/20 ${theme.text} ${theme.border}`}>
+                            <th className={`p-2 w-12 text-center border-r ${theme.border}`}>排序</th>
+                            <th className={`p-2 w-12 text-center border-r ${theme.border}`}>核對</th>
+                            <th className={`p-2 w-12 text-center border-r ${theme.border}`}>編號</th>
+                            <th className="p-2 min-w-[300px]">指示內容</th>
+                            <th className="p-2 w-12 text-right">操作</th>
                         </tr>
                     </thead>
                     <tbody className={`divide-y bg-white/10 ${theme.border.replace('border', 'divide')}`}>
@@ -85,10 +85,10 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
                                 </td>
                                 <td className="p-3">
                                     <textarea 
-                                        className={`w-full bg-white/40 border rounded p-3 text-sm font-bold outline-none focus:bg-white transition-all shadow-sm min-h-[60px] resize-y ${theme.text} ${theme.border} ${isChecked ? 'line-through italic opacity-40' : ''}`}
+                                        className={`w-full bg-white/40 border rounded p-2 text-[10px] md:text-xs lg:text-sm font-black outline-none focus:bg-white transition-all shadow-sm min-h-[50px] resize-y ${theme.text} ${theme.border} ${isChecked ? 'line-through italic opacity-40' : ''}`}
                                         value={sign.instruction} 
                                         onChange={(e) => onUpdate(sIdx, 'instruction', e.target.value)}
-                                        placeholder="請輸入給司機的行車指示..."
+                                        placeholder="行車指示..."
                                     />
                                 </td>
                                 <td className="p-4 text-right">
@@ -104,7 +104,7 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
             </div>
             <button 
                 onClick={onAdd}
-                className={`w-full h-12 text-sm font-bold border-t flex justify-center items-center transition-all gap-2 bg-white/60 backdrop-blur-sm ${theme.text} ${theme.border} ${theme.hover}`}
+                className={`w-full h-8 md:h-10 lg:h-12 text-[10px] md:text-xs lg:text-sm font-bold border-t flex justify-center items-center transition-all gap-2 bg-white/60 backdrop-blur-sm ${theme.text} ${theme.border} ${theme.hover}`}
             >
                 <Plus size={18} /> 新增行車指示
             </button>

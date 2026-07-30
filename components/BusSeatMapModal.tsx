@@ -81,7 +81,8 @@ const BusSeatMapModal: React.FC<BusSeatMapModalProps> = ({ busName, assignedPass
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[900px] max-w-full h-[90vh] rounded shadow-2xl relative overflow-hidden flex flex-col md:flex-row">
         
         {/* Left: Map */}

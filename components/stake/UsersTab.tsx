@@ -115,8 +115,11 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
         {val: 'member', label: t('users.roles.member', '成員 / Member')},
     ].filter(r => !internalHiddenRoles.includes(r.val));
 
-    // Custom Unit List with Fixed additions
-    const unitOptions = [...(settings.units || []), tString('stake.common.stake_name', '支聯會'), tString('bus.a', 'A車'), tString('bus.b', 'B車'), tString('bus.c', 'C車'), tString('bus.d', 'D車')];
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = React.useMemo(() => {
+        const baseUnits = settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+        return [...baseUnits, tString('stake.common.stake_name', '支聯會'), tString('bus.a', 'A車'), tString('bus.b', 'B車'), tString('bus.c', 'C車'), tString('bus.d', 'D車')];
+    }, [settings, tString]);
 
     const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -495,7 +498,8 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
 
             {/* Modal Form - Modern Business Style */}
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 p-4 animate-fade-in backdrop-blur-sm">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={closeModal} />
                     <div className="bg-white w-[500px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col border border-slate-200">
                         <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-200">
                             <div className="flex items-center gap-3">
@@ -526,13 +530,14 @@ const UsersTab: React.FC<UsersTabProps> = ({ settings, hiddenRoles = [] }) => {
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('users.modal.unitLabel', '單位名稱')}</label>
-                                        <input 
-                                            type="text"
+                                        <select 
                                             value={newUser.unit || ''} 
                                             onChange={e => setNewUser({...newUser, unit: e.target.value})} 
                                             className="w-full border border-slate-200 h-10 rounded px-3 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none font-bold transition-all"
-                                            placeholder={tString('users.modal.unitPlaceholder', '單位名稱')}
-                                        />
+                                        >
+                                            <option value="">{tString('users.modal.unitPlaceholder', '單位名稱')}</option>
+                                            {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
+                                        </select>
                                     </div>
                                 </div>
 

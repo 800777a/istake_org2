@@ -1,6 +1,6 @@
 {
-  "name": "聖殿之旅服務系統",
-  "description": "耶穌基督後期聖徒教會 聖殿之旅服務系統",
+  "name": "聖殿旅行服務系統",
+  "description": "耶穌基督後期聖徒教會 聖殿旅行服務系統 - 提供活動報名、專車管理與統計分析",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

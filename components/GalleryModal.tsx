@@ -77,7 +77,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[900px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-gradient-to-r from-purple-700 to-indigo-800 p-4 text-white flex justify-between items-center shrink-0">
             <h2 className="text-xl font-bold flex items-center">
@@ -131,11 +132,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ event, onClose, currentUser
                         <button 
                             onClick={handleGenerateCaption}
                             disabled={isAnalyzing}
-                            className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded font-bold text-sm hover:bg-indigo-200 flex items-center whitespace-nowrap disabled:opacity-50"
-                            title="AI 自動產生說明"
+                            className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded font-black text-xs hover:bg-indigo-200 flex items-center whitespace-nowrap disabled:opacity-50 transition-colors"
+                            title="自動產生說明"
                         >
                             {isAnalyzing ? <Loader className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
-                            AI 魔法
+                            智能產文
                         </button>
                     </div>
                     <div className="mt-3 flex justify-end gap-2">

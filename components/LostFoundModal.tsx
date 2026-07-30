@@ -13,7 +13,8 @@ const LostFoundModal: React.FC<LostFoundModalProps> = ({ event, onClose }) => {
   const claimed = items.filter(i => i.status === 'claimed');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[500px] max-w-full rounded shadow-xl relative overflow-hidden flex flex-col max-h-[90vh]">
         <div className="bg-blue-800 p-4 text-white flex justify-between items-center shrink-0">
             <h2 className="text-xl font-bold flex items-center">

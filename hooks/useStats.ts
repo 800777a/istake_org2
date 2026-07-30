@@ -3,7 +3,7 @@ import { EventData, Registration, RegStatus, TripType, OrdinanceType, OrdinanceI
 
 export const calculateStats = (activeEvent: EventData | null | undefined, registrations: Registration[]) => {
     // vehicleStats
-    const validRegs = registrations.filter(r => r.status !== RegStatus.CANCELLED);
+    const validRegs = registrations.filter(r => r.status !== RegStatus.CANCELLED && r.status !== RegStatus.DELETED);
     // V300: Exclude RETAINED (留用) from bus seat counts
     const seatOccupiers = validRegs.filter(r => r.trip_type !== TripType.SELF_MANAGED && r.trip_type !== TripType.RETAINED);
     
@@ -79,7 +79,7 @@ export const calculateRanks = (registrations: Registration[]) => {
     const baptismRanks = new Map<string, number>();
     const sealingRanks = new Map<string, number>();
     
-    const valid = registrations.filter(r => r.status !== RegStatus.CANCELLED);
+    const valid = registrations.filter(r => r.status !== RegStatus.CANCELLED && r.status !== RegStatus.DELETED);
     
     // V300: Exclude RETAINED (留用) from bus seat pool ranking
     const seatOccupiers = valid.filter(r => r.trip_type !== TripType.SELF_MANAGED && r.trip_type !== TripType.RETAINED);

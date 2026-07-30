@@ -147,6 +147,11 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
 
     const units = Object.keys(groupedByUnit).sort(new Intl.Collator('zh-Hant-TW-u-co-stroke').compare);
 
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = React.useMemo(() => {
+        return settings?.billingConfig?.units?.map(u => u.shortName) || settings?.units || [];
+    }, [settings]);
+
     const handleSave = async () => {
         if (!editingRep.unit || !editingRep.name || !editingRep.phone || !editingRep.password) {
             setMsg({ type: 'error', text: t('stake.reps.all_fields_required', '單位、姓名、電話、密碼 為必填') });
@@ -196,7 +201,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                 <div className="bg-indigo-100/50 p-2 rounded border border-indigo-200 flex items-center justify-between gap-2">
                     <button 
                         onClick={() => {
-                            setEditingRep({ unit: settings?.units[0] || '' });
+                            setEditingRep({ unit: unitOptions[0] || '' });
                             setIsEditing(true);
                         }}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white rounded font-bold shadow-sm transition-all flex items-center justify-center gap-2 h-9 px-4 text-xs md:h-10 md:px-5 md:text-sm active:scale-95"
@@ -226,7 +231,8 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
             {/* Modal for Adding/Editing */}
             <AnimatePresence>
                 {isEditing && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={() => { setIsEditing(false); setEditingRep({}); }} />
                         <motion.div 
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -260,7 +266,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                             className={THEME.input}
                                         >
                                             <option value="" disabled>{tString('stake.reps.select_unit_placeholder', '選擇單位')}</option>
-                                            {settings?.units.map(u => <option key={u} value={u}>{u}</option>)}
+                                            {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-1">
@@ -345,7 +351,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
                                         className={THEME.input}
                                      >
                                          <option value="">{tString('stake.reps.all_units', '全部單位')}</option>
-                                         { (settings?.units || []).map(u => <option key={u} value={u}>{u}</option>) }
+                                         { unitOptions.map(u => <option key={u} value={u}>{u}</option>) }
                                      </select>
                                 </div>
                                 <div className="space-y-1">

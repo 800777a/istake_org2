@@ -50,6 +50,10 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
         return registrations.filter(r => r.status === RegStatus.RESTRICTED);
     }, [registrations]);
 
+    const unitOptions = useMemo(() => {
+        return settings?.billingConfig?.units?.map(u => u.shortName) || settings?.units || [];
+    }, [settings]);
+
     const handleAdd = async () => {
         if (!name.trim() || !unit) return;
         setIsSaving(true);
@@ -144,7 +148,7 @@ const RestrictionsTab: React.FC<RestrictionsTabProps> = ({ settings, blacklist, 
                                 onChange={e => setUnit(e.target.value)}
                             >
                                 <option value="">{tString('stake.restrictions.select_unit_placeholder', '選擇單位...')}</option>
-                                {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                {(unitOptions).map(u => <option key={u} value={u}>{u}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1.5">

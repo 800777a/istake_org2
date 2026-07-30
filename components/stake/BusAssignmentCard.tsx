@@ -70,7 +70,7 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                                 className="h-8 text-[10px] border border-blue-400 rounded px-2 bg-white font-bold text-slate-900 outline-none shadow-sm"
                                 onChange={e => {
                                     if (e.target.value) {
-                                        const found = availableStops.find(s => s.location === e.target.value);
+                                        const found = availableStops.find(s => s.stopCode === e.target.value);
                                         if (found) {
                                             onAddStop({ 
                                                 code: found.stopCode || `${busName}-${(busConfig?.stops?.length || 0) + 1}`, 
@@ -84,7 +84,9 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
                             >
                                 <option value="">選擇站點</option>
                                 {availableStops.map(s => (
-                                    <option key={s.stopCode} value={s.location}>{s.location}</option>
+                                    <option key={s.stopCode} value={s.stopCode}>
+                                        {s.stopCode} - {s.location} {s.arrivalTime ? `(${s.arrivalTime})` : ''}
+                                    </option>
                                 ))}
                             </select>
                             <button onClick={() => setIsAddingStop(false)} className="h-8 w-8 bg-slate-200 text-slate-600 rounded hover:bg-slate-300 transition-all flex items-center justify-center"><X size={14}/></button>

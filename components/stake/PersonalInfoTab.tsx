@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '../../src/contexts/LanguageContext';
-import { PersonalInfo, Registration, EventData, OrdinanceItem } from '../../types';
+import { PersonalInfo, Registration, EventData, OrdinanceItem, GlobalSettings } from '../../types';
 import * as sheetService from '../../services/sheetService';
 import { Trash2, Search, PlusCircle, X, ChevronDown, ChevronUp, ArrowUpDown, Edit2, Users, Contact, List, LayoutDashboard, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
@@ -12,6 +12,7 @@ interface PersonalInfoTabProps {
     units: string[];
     registrations: Registration[];
     currentEvent?: EventData | null;
+    settings?: GlobalSettings;
 }
 
 // Enterprise Light/High-Contrast Theme definitions
@@ -24,11 +25,16 @@ const THEME = {
     input: 'w-full bg-white border border-slate-200 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all h-10 md:h-11 lg:h-10'
 };
 
-const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations, currentEvent }) => {
+const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations, currentEvent, settings }) => {
     const { t, tString } = useI18n();
     const [infos, setInfos] = useState<PersonalInfo[]>([]);
     const [searchUnit, setSearchUnit] = useState('');
     const [searchName, setSearchName] = useState('');
+    
+    // V002: Get unit options from Billing Engine if available, fallback to units prop
+    const unitOptions = React.useMemo(() => {
+        return settings?.billingConfig?.units?.map(u => u.shortName) || units || [];
+    }, [settings, units]);
     
     // View mode and RWD
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
@@ -308,7 +314,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                 className={THEME.input}
                             >
                                 <option value="">{tString('stake.personal_info.all_units', '全部單位')}</option>
-                                {(units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1">
@@ -521,7 +527,8 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
             {/* Modal for Add/Edit */}
             <AnimatePresence>
                 {isFormOpen && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={resetForm} />
                         <motion.div 
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -549,7 +556,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
                                                 required
                                             >
                                                 <option value="" disabled>{tString('stake.personal_info.select_unit_placeholder', '請選擇單位')}</option>
-                                                {(units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                                {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                             </select>
                                         </div>
                                         <div>

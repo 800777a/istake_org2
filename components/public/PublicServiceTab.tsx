@@ -46,6 +46,11 @@ const rainbowThemes = [
 ];
 
 const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settings, registrations = [] }) => {
+    // V002: Get unit options from Billing Engine if available, fallback to settings.units
+    const unitOptions = React.useMemo(() => {
+        return settings.billingConfig?.units?.map(u => u.shortName) || settings.units || [];
+    }, [settings]);
+
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
         rating: false,
         workers: false,
@@ -268,7 +273,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                                                     onChange={e => setRatingForm({ ...ratingForm, raterUnit: e.target.value })}
                                                                 >
                                                                     <option value="">選擇單位</option>
-                                                                    {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
+                                                                    {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
                                                                 </select>
                                                             </div>
                                                             <div className="space-y-1">
@@ -369,14 +374,14 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的單位</label>
-                                        <select 
-                                            className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
-                                            value={newVolunteer.unit}
-                                            onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
-                                        >
-                                            <option value="">請選擇單位</option>
-                                            {(settings.units || []).map(u => <option key={u} value={u}>{u}</option>)}
-                                        </select>
+                                            <select 
+                                                className="w-full border border-amber-200 h-8 md:h-10 lg:h-12 rounded px-3 text-xs md:text-sm font-bold bg-white focus:ring-2 focus:ring-amber-300 outline-none"
+                                                value={newVolunteer.unit}
+                                                onChange={e => setNewVolunteer({...newVolunteer, unit: e.target.value})}
+                                            >
+                                                <option value="">請選擇單位</option>
+                                                {unitOptions.map(u => <option key={u} value={u}>{u}</option>)}
+                                            </select>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">您的姓名</label>

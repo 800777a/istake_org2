@@ -1,14 +1,17 @@
 
 import React, { useMemo, useState } from 'react';
-import { Registration, RegStatus, TripType, PaymentMethod, User } from '../types';
+import { Registration, RegStatus, TripType, PaymentMethod, User, GlobalSettings } from '../types';
 import { ArrowRightCircle, ArrowLeftCircle } from 'lucide-react';
 import { updateRegistrationField } from '../services/sheetService';
+import PaymentInfoModal from './PaymentInfoModal';
 import Toast, { ToastType } from './Toast';
 
 interface SharedRegistrationListProps {
     registrations: Registration[];
     unitName: string;
     currentUser: User | null;
+    settings: GlobalSettings;
+    allRegistrations?: Registration[];
     isLockedPayment?: boolean;
     isLockedCheckInTo?: boolean;
     isLockedCheckInBack?: boolean;
@@ -20,6 +23,8 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
     registrations, 
     unitName, 
     currentUser, 
+    settings,
+    allRegistrations = [],
     isLockedPayment = false,
     isLockedCheckInTo = false,
     isLockedCheckInBack = false,
@@ -28,6 +33,7 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
 }) => {
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
+    const [selectedPaymentReg, setSelectedPaymentReg] = useState<Registration | null>(null);
     
     // Filter Valid
     const validRegs = registrations.filter(r => r.status === RegStatus.NORMAL);
@@ -137,7 +143,10 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
                             ) : (
                                 validRegs.map(reg => (
                                     <tr key={reg.reg_id} className="hover:bg-gray-50">
-                                        <td className="p-3 font-bold text-gray-800 sticky left-0 bg-white z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.1)]">
+                                        <td 
+                                            className="p-3 font-bold text-gray-800 sticky left-0 bg-white z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] cursor-pointer hover:text-blue-600 transition-colors"
+                                            onClick={() => setSelectedPaymentReg(reg)}
+                                        >
                                             {reg.name} {reg.bus_assigned && <span className="ml-2 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] rounded border border-indigo-100">{reg.bus_assigned}</span>}
                                         </td>
                                         <td className="p-3 text-gray-600">
@@ -174,6 +183,17 @@ const SharedRegistrationList: React.FC<SharedRegistrationListProps> = ({
                 </div>
             </div>
             <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />
+
+            {selectedPaymentReg && (
+                <PaymentInfoModal
+                    key={`payment-${selectedPaymentReg.reg_id}`}
+                    currentReg={selectedPaymentReg}
+                    allRegistrations={allRegistrations.length > 0 ? allRegistrations : registrations}
+                    settings={settings}
+                    onClose={() => setSelectedPaymentReg(null)}
+                    onRefresh={onRefresh}
+                />
+            )}
         </div>
     );
 };

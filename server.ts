@@ -4,7 +4,7 @@ import { google } from "googleapis";
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
 
@@ -16,6 +16,7 @@ async function startServer() {
   // OAuth2 Client Configuration
   const clientId = process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN || process.env.GMAIL_REFRESH_TOKEN;
   
   const oauth2Client = new google.auth.OAuth2(
     clientId,
@@ -30,9 +31,9 @@ async function startServer() {
     if (!clientId || !clientSecret) {
       throw new Error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment variables.");
     }
-    if (process.env.GOOGLE_REFRESH_TOKEN) {
+    if (refreshToken) {
       oauth2Client.setCredentials({
-        refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+        refresh_token: refreshToken
       });
     }
     return google.gmail({ version: "v1", auth: oauth2Client });
@@ -248,9 +249,24 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const indexPath = path.join(distPath, 'index.html');
+    
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    console.log("[SERVER] Production mode: Serving static files from", distPath);
+
+    // Explicit catch-all for SPA with error handling
+    app.get('*', (req, res, next) => {
+      // Skip if it looks like an API call that wasn't handled
+      if (req.url.startsWith('/api/')) {
+        return next();
+      }
+
+      res.sendFile(indexPath, (err) => {
+        if (err) {
+          console.error(`[SERVER] Error sending index.html for ${req.url}:`, err);
+          res.status(500).send("<h1>系統錯誤</h1><p>應用程式正在建置中或 index.html 遺失，請稍後重新整理。</p>");
+        }
+      });
     });
   }
 
@@ -261,5 +277,4 @@ async function startServer() {
 
 startServer().catch(err => {
   console.error("Critical error during server startup:", err);
-  process.exit(1);
 });

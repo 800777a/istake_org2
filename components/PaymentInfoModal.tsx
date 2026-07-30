@@ -139,7 +139,8 @@ const PaymentInfoModal: React.FC<PaymentInfoModalProps> = ({ currentReg, allRegi
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black bg-opacity-70 p-4 animate-fade-in">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-white/40 backdrop-blur-md" onClick={onClose} />
       <div className="bg-white w-[600px] max-w-full rounded shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header - Gold Gradient */}

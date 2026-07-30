@@ -56,7 +56,7 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
         if (active) {
             if (unsubRegs) unsubRegs(); 
             unsubRegs = subscribeToRegistrations(active.event_id, (allRegs) => {
-                const valid = allRegs.filter(r => r.status === RegStatus.NORMAL);
+                const valid = allRegs.filter(r => r.status !== RegStatus.CANCELLED && r.status !== RegStatus.DELETED);
                 setRegistrations(valid);
             });
         }

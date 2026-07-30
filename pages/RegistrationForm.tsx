@@ -300,11 +300,46 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       }
   }, [confirmAction]);
 
-  if (!activeEvent) return <div className="p-8 text-center text-gray-500">{t('stake.registration.form.no_active_event')}</div>;
+  const enabledIdentities = React.useMemo(() => {
+    return settings.billingConfig?.identityPricings?.length 
+      ? [...settings.billingConfig.identityPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.identity) 
+      : (settings.active_identities?.length ? settings.active_identities : Object.values(IdentityType));
+  }, [settings]);
 
-  const enabledIdentities = settings.billingConfig?.identityPricings?.length ? [...settings.billingConfig.identityPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.identity) : (settings.active_identities?.length ? settings.active_identities : Object.values(IdentityType));
-  const enabledTripTypes = settings.billingConfig?.tripPricings?.length ? [...settings.billingConfig.tripPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.trip) : Object.values(TripType).filter(t => t !== TripType.RETAINED);
-  const unitsOptions = settings.billingConfig?.units?.length ? [...settings.billingConfig.units].sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0)).map(u => ({ value: u.shortName, label: u.shortName })) : (settings.units || []).map(u => ({ value: u, label: u }));
+  const enabledTripTypes = React.useMemo(() => {
+    return settings.billingConfig?.tripPricings?.length 
+      ? [...settings.billingConfig.tripPricings].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => p.trip) 
+      : Object.values(TripType).filter(t => t !== TripType.RETAINED);
+  }, [settings]);
+
+  const unitsOptions = React.useMemo(() => {
+    // Vxxx: Combine all potential sources of unit names
+    const billingUnits = settings.billingConfig?.units?.map(u => u.shortName) || [];
+    const configUnits = settings.units || [];
+    
+    // Unique list, filtered for non-empty/whitespace
+    const allUnits = Array.from(new Set([...billingUnits, ...configUnits]))
+        .filter(u => u != null && String(u).trim() !== '');
+
+    // Sort: priority to billingUnits order, then configUnits, then alphabetical
+    return allUnits.sort((a, b) => {
+        const idxBillingA = billingUnits.indexOf(a);
+        const idxBillingB = billingUnits.indexOf(b);
+        if (idxBillingA !== -1 && idxBillingB !== -1) return idxBillingA - idxBillingB;
+        if (idxBillingA !== -1) return -1;
+        if (idxBillingB !== -1) return 1;
+        
+        const idxConfigA = configUnits.indexOf(a);
+        const idxConfigB = configUnits.indexOf(b);
+        if (idxConfigA !== -1 && idxConfigB !== -1) return idxConfigA - idxConfigB;
+        if (idxConfigA !== -1) return -1;
+        if (idxConfigB !== -1) return 1;
+
+        return String(a).localeCompare(String(b));
+    }).map(u => ({ value: u, label: u }));
+  }, [settings]);
+
+  if (!activeEvent) return <div className="p-8 text-center text-gray-500">{t('stake.registration.form.no_active_event')}</div>;
 
   return (
     <div key={remountKey} className="min-h-screen bg-[#F8F9FA] pb-12 animate-fade-in font-['微軟正黑體',_sans-serif] w-full min-w-0 overflow-x-visible">
@@ -387,7 +422,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
                     </div>
                     <div className="bg-emerald-50 p-2 rounded border border-emerald-100">
                         <div className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 truncate">預約位數</div>
-                        <div className="text-xl font-black text-slate-900">{(eventStats.occupied + eventStats.waiting)} <span className="text-[10px] text-slate-400">人</span></div>
+                        <div className="text-xl font-black text-emerald-900">{(eventStats.occupied + eventStats.waiting)} <span className="text-[10px] text-slate-400">人</span></div>
                     </div>
                     <div className="bg-amber-50 p-2 rounded border border-amber-100">
                         <div className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 truncate">剩餘位數</div>
