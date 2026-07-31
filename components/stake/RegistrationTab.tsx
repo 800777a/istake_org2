@@ -15,6 +15,7 @@ import PaymentInfoModal from '../PaymentInfoModal';
 import Toast, { ToastType } from '../Toast';
 import { useStats, useRanks } from '../../hooks/useStats';
 import { useI18n } from '../../src/contexts/LanguageContext';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface RegistrationTabProps {
     registrations: Registration[];
@@ -91,7 +92,7 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
     
     // View mode and RWD
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [remountKey, setRemountKey] = useState(0);
+    const remountKey = useRemountOnResize();
     const [selectedPaymentReg, setSelectedPaymentReg] = useState<Registration | null>(null);
     const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -105,16 +106,6 @@ const RegistrationTab: React.FC<RegistrationTabProps> = ({ registrations, settin
             });
         }
     };
-
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     // Auto-switch to card view on very small screens (portrait mobile)
     useEffect(() => {

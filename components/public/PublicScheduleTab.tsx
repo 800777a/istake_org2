@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { EventData, RoadSignItem } from '../../types';
 import { getWeatherForecast } from '../../services/sheetService';
 import { Clock, MapPin, Map as MapIcon, Briefcase, CheckSquare, Sun, CloudRain, Shirt, Umbrella, ChevronDown, ChevronUp, Bus, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface PublicScheduleTabProps {
     activeEvent: EventData;
@@ -26,16 +27,7 @@ const PublicScheduleTab: React.FC<PublicScheduleTabProps> = ({ activeEvent }) =>
     });
 
     // Orientation Reset補丁 (Hard Reset)
-    const [remountKey, setRemountKey] = useState(0);
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const remountKey = useRemountOnResize();
 
     const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const scroll = (id: string, direction: 'left' | 'right') => {

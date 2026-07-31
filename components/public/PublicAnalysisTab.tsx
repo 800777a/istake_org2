@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EventData, Registration, GlobalSettings, TripType, OrdinanceType, OrdinanceItem, PaymentMethod, InsuranceType, RegStatus } from '../../types';
 import { BookOpen, Bus, DollarSign, Activity, TrendingDown, Users, Wallet, ChevronUp, ChevronDown, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface PublicAnalysisTabProps {
     activeEvent: EventData;
@@ -100,16 +101,7 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
     };
 
     // Orientation Reset補丁 (Hard Reset)
-    const [remountKey, setRemountKey] = useState(0);
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const remountKey = useRemountOnResize();
 
     const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const scroll = (id: string, direction: 'left' | 'right') => {

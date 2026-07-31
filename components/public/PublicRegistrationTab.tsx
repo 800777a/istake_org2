@@ -5,6 +5,7 @@ import { Registration, GlobalSettings, PaymentMethod, RegStatus, BusConfig, Even
 import { isPaymentOverdue } from '../../src/utils/registrationUtils';
 import { Search, User, Globe, ChevronUp, ChevronDown, ArrowUpDown, Lock, Unlock, RotateCcw, Smartphone, CheckCircle2, XCircle, ChevronLeft, ChevronRight, Layout, Table2, CreditCard, Users, DollarSign, CheckSquare, Home, Bus, LayoutGrid, List } from 'lucide-react';
 import { maskName } from '../../utils/validation';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 import PaymentInfoModal from '../PaymentInfoModal';
 import TimeNodesDisplay from '../../src/components/registration/TimeNodesDisplay';
 import { useStats, useRanks } from '../../hooks/useStats';
@@ -30,16 +31,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     const { vehicleRanks, endowmentRanks, baptismRanks } = useRanks(registrations);
 
     // Orientation Reset補丁 (Hard Reset)
-    const [remountKey, setRemountKey] = useState(0);
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const remountKey = useRemountOnResize();
 
     const [currentUser, setCurrentUser] = useState<UserType | null>(null);
     useEffect(() => {

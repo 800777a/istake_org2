@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { EventData, GlobalSettings, Volunteer, Registration, BusRatingRecord } from '../../types';
 import { updateEvent, updateSettings } from '../../services/sheetService';
 import { Badge, HeartHandshake, Plus, Star, CheckCircle2, User, AlertCircle, Lock, ChevronDown, ChevronUp, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 import { maskName } from '../../utils/validation';
 
 import Toast, { ToastType } from '../Toast';
@@ -58,16 +59,7 @@ const PublicServiceTab: React.FC<PublicServiceTabProps> = ({ activeEvent, settin
     });
 
     // Orientation Reset補丁 (Hard Reset)
-    const [remountKey, setRemountKey] = useState(0);
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const remountKey = useRemountOnResize();
 
     const scrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const scroll = (id: string, direction: 'left' | 'right') => {

@@ -8,6 +8,7 @@ import { Phone, Download, Upload, Plus, ShieldCheck, Edit2, Trash2, Check, X, Li
 import ConfirmDialog from '../ConfirmDialog';
 import { RainbowCard } from './fee-config/RainbowCard';
 import Toast from '../Toast';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface CommTabProps {
     currentEvent: EventData;
@@ -27,18 +28,7 @@ const CommTab: React.FC<CommTabProps> = ({ currentEvent, settings, onUpdateEvent
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<'success' | 'error'>('success');
-    const [remountKey, setRemountKey] = useState(0);
-
-    // Orientation handling for RWD reset
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    const remountKey = useRemountOnResize();
 
     // 1. Staff List (Service Personnel) States
     const [newServicePerson, setNewServicePerson] = useState<ServicePerson>({ id: '', order: 0, unit: '', calling: '', name: '' });

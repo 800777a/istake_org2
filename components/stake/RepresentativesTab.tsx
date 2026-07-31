@@ -5,6 +5,7 @@ import { setRepresentative, deleteRepresentative, getSettings, subscribeToRepres
 import { Trash2, Edit2, Plus, Search, ArrowUpDown, X, ChevronUp, ChevronDown, CheckCircle, ShieldAlert, Users, MapPin, List, LayoutDashboard, ChevronLeft, ChevronRight } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
 import { motion, AnimatePresence } from 'motion/react';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface RepresentativesTabProps {
     event_id: string;
@@ -50,7 +51,7 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
     const [sortConfig, setSortConfig] = useState<{ key: keyof Representative; direction: 'asc' | 'desc' }>({ key: 'unit', direction: 'asc' });
     const [collapsedUnits, setCollapsedUnits] = useState<Record<string, boolean>>({});
     const [isFilterOpen, setIsFilterOpen] = useState(true);
-    const [remountKey, setRemountKey] = useState(0);
+    const remountKey = useRemountOnResize();
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -75,16 +76,6 @@ export const RepresentativesTab: React.FC<RepresentativesTabProps> = ({ event_id
             }
         };
         checkMobile();
-    }, []);
-
-    useEffect(() => {
-        const handleRotation = () => setRemountKey(prev => prev + 1);
-        window.addEventListener('orientationchange', handleRotation);
-        window.addEventListener('resize', handleRotation);
-        return () => {
-            window.removeEventListener('orientationchange', handleRotation);
-            window.removeEventListener('resize', handleRotation);
-        };
     }, []);
 
     useEffect(() => {

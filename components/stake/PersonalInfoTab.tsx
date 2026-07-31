@@ -7,6 +7,7 @@ import ConfirmDialog from '../ConfirmDialog';
 import { getGenderFromId, calculateAge } from '../../utils/validation';
 import { motion, AnimatePresence } from 'motion/react';
 import { RainbowCard } from './fee-config/RainbowCard';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 interface PersonalInfoTabProps {
     units: string[];
@@ -38,7 +39,7 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
     
     // View mode and RWD
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
-    const [remountKey, setRemountKey] = useState(0);
+    const remountKey = useRemountOnResize();
     const wrapperRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
     // 捲動控制函數
@@ -52,16 +53,6 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({ units, registrations,
             });
         }
     };
-
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('orientationchange', handleResize);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     // Auto-switch to card view on very small screens (portrait mobile)
     useEffect(() => {

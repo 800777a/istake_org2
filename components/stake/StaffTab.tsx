@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react';
 import ConfirmDialog from '../ConfirmDialog';
 import ExportChoiceModal from '../ExportChoiceModal';
 import { RainbowCard } from './fee-config/RainbowCard';
+import { useRemountOnResize } from '../../hooks/useRemountOnResize';
 
 import Toast, { ToastType } from '../Toast';
 
@@ -101,8 +102,8 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
 
     const [msg, setMsg] = useState<string | null>(null);
     const [msgType, setMsgType] = useState<ToastType>('success');
+    const remountKey = useRemountOnResize();
 
-    const [remountKey, setRemountKey] = useState(0);
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const wrapperRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -128,13 +129,6 @@ const StaffTab: React.FC<StaffTabProps> = ({ currentEvent, registrations, person
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    // Orientation change hard reset
-    useEffect(() => {
-        const handleResize = () => setRemountKey(k => k + 1);
-        window.addEventListener('orientationchange', handleResize);
-        return () => window.removeEventListener('orientationchange', handleResize);
     }, []);
 
     // Handlers

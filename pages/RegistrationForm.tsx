@@ -18,6 +18,7 @@ import PaymentSection from '../src/components/registration/PaymentSection';
 import FormDialogs from '../src/components/registration/FormDialogs';
 import ConfirmationModal from '../src/components/ConfirmationModal';
 import { useRegistrationForm } from '../hooks/useRegistrationForm';
+import { useRemountOnResize } from '../hooks/useRemountOnResize';
 // useI18n duplicate removed
 
 interface RegistrationFormProps {
@@ -35,17 +36,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
   const lang = currentLang as 'zh' | 'en';
   const { t, tString } = useI18n();
 
-  // Rule 4.2: Orientation & Hard Reset
-  const [remountKey, setRemountKey] = React.useState(0);
-  React.useEffect(() => {
-    const handleResize = () => setRemountKey(k => k + 1);
-    window.addEventListener('orientationchange', handleResize);
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('orientationchange', handleResize);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  // Rule 4.2: Orientation & Hard Reset (Width-aware)
+  const remountKey = useRemountOnResize();
 
   const {
       mode, setMode,
