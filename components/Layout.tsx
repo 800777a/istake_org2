@@ -348,7 +348,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsSidebarOpen(false)}
-                    className="fixed inset-0 bg-white/40 backdrop-blur-md z-[1000] lg:hidden"
+                    className="fixed inset-0 bg-white/40 backdrop-blur-md z-[1000]"
                 />
             )}
         </AnimatePresence>

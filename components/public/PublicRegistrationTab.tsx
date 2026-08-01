@@ -48,6 +48,20 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
     const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
+    // V700: Auto-scroll to right when switching to specific modes
+    useEffect(() => {
+        if (displayMode === 'fee' || displayMode === 'checkin') {
+            const timer = setTimeout(() => {
+                Object.values(scrollRefs.current).forEach(el => {
+                    if (el) {
+                        el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+                    }
+                });
+            }, 150);
+            return () => clearTimeout(timer);
+        }
+    }, [displayMode]);
+
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc';
         if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -413,8 +427,16 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                         const theme = UNIT_COLOR_THEMES[index % UNIT_COLOR_THEMES.length];
                         const cashTotal = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.payment_method === PaymentMethod.CASH).reduce((sum, r) => sum + (r.amount_due || 0), 0);
                         const transferTotal = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.payment_method === PaymentMethod.TRANSFER).reduce((sum, r) => sum + (r.amount_due || 0), 0);
-                        const goCheckedCount = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.is_checked_in_to).length;
-                        const backCheckedCount = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.is_checked_in_back).length;
+                        
+                        // V700: Statistics Logic - Exclude Self-Managed (自理)
+                        const eligibleGoRegs = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.trip_type !== TripType.SELF_MANAGED && (r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_TO));
+                        const eligibleBackRegs = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.trip_type !== TripType.SELF_MANAGED && (r.trip_type === TripType.ROUND_TRIP || r.trip_type === TripType.ONE_WAY_BACK));
+                        
+                        const goCheckedCount = eligibleGoRegs.filter(r => r.is_checked_in_to).length;
+                        const backCheckedCount = eligibleBackRegs.filter(r => r.is_checked_in_back).length;
+                        const goTotal = eligibleGoRegs.length;
+                        const backTotal = eligibleBackRegs.length;
+                        const selfManagedCount = unitRegs.filter(r => r.status !== RegStatus.CANCELLED && r.trip_type === TripType.SELF_MANAGED).length;
 
                         return (
                             <div key={unit} className={`bg-white border-2 ${theme.border} rounded shadow-sm p-0 mx-0 mt-2 w-full max-w-full animate-in fade-in slide-in-from-bottom-2 overflow-hidden min-w-0`}>
@@ -441,11 +463,8 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                             {/* Statistics - Compressed for Mobile, Level 2 header style */}
                                             <div className={`px-3 py-2 border-b-2 ${theme.border} flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center min-w-0 w-full bg-white/40`}>
                                                 <div className="flex flex-wrap gap-2 w-full sm:w-auto min-w-0">
-                                                    <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-slate-600 min-w-0 truncate">
-                                                        <Bus className="w-3.5 h-3.5 text-slate-400 shrink-0" /> <span className="truncate">乘車:{unitRegs.length}人</span>
-                                                    </div>
                                                     <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-emerald-700 min-w-0 truncate">
-                                                        <CheckSquare className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> <span className="truncate">去{goCheckedCount}/回{backCheckedCount}</span>
+                                                        <CheckSquare className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> <span className="truncate">去:{goCheckedCount}/{goTotal} 回:{backCheckedCount}/{backTotal} 自理:{selfManagedCount}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded border-2 border-black/5 shadow-sm text-[10px] md:text-xs font-black text-rose-700 min-w-0 truncate">
                                                         <DollarSign className="w-3.5 h-3.5 text-rose-500 shrink-0" /> <span className="truncate">轉${transferTotal.toLocaleString()} / 現${cashTotal.toLocaleString()}</span>
@@ -479,7 +498,9 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                             <table className={`min-w-full w-max table-auto border-separate border-spacing-0 ${theme.content} border-2 ${theme.border} rounded shadow-sm`}>
                                                                 <thead className={`${theme.header} border-b-2 ${theme.border}`}>
                                                                     <tr className="text-[10px] md:text-xs font-black text-left whitespace-nowrap uppercase tracking-wider">
-                                                                        <th className={`px-2 py-4 border-r-2 ${theme.border} text-center w-[40px] ${theme.header}`}>編號</th>
+                                                                        {displayMode === 'normal' && (
+                                                                            <th className={`px-2 py-4 border-r-2 ${theme.border} text-center w-[40px] ${theme.header}`}>編號</th>
+                                                                        )}
                                                                         <th 
                                                                             onClick={() => handleSort('name')}
                                                                             className={`px-3 py-4 sticky left-0 z-40 ${theme.header} border-r-2 ${theme.border} shadow-[6px_0_12px_rgba(0,0,0,0.15)] w-[100px] md:w-32 cursor-pointer hover:bg-black/5 transition-colors`}
@@ -507,6 +528,15 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                                     <div className="flex items-center justify-between">
                                                                                         教儀場次
                                                                                         {getSortIcon('ordinance_item')}
+                                                                                    </div>
+                                                                                </th>
+                                                                                <th 
+                                                                                    onClick={() => handleSort('identity_type')}
+                                                                                    className={`px-3 py-4 border-r-2 ${theme.border} w-[80px] md:w-28 cursor-pointer hover:bg-black/5 transition-colors`}
+                                                                                >
+                                                                                    <div className="flex items-center justify-between">
+                                                                                        身份
+                                                                                        {getSortIcon('identity_type')}
                                                                                     </div>
                                                                                 </th>
                                                                                 <th 
@@ -580,6 +610,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                         )}
                                                                         {displayMode === 'checkin' && (
                                                                             <>
+                                                                                <th className={`px-3 py-3 border-r-2 ${theme.border} w-[150px] md:w-44`}>上車地點和時間</th>
                                                                                 <th className={`px-3 py-3 text-center border-r-2 ${theme.border} w-[70px] md:w-24`}>去程</th>
                                                                                 <th className={`px-3 py-3 text-center w-[70px] md:w-24`}>回程</th>
                                                                             </>
@@ -589,7 +620,9 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                 <tbody className={`text-[10px] md:text-xs font-bold whitespace-nowrap`}>
                                                                     {unitRegs.map((reg, regIndex) => (
                                                                         <tr key={reg.reg_id} className={`hover:bg-black/5 transition-colors ${reg.status === RegStatus.CANCELLED ? 'opacity-40 grayscale italic' : ''}`}>
-                                                                            <td className={`px-2 py-2 border-r-2 border-b-[1px] ${theme.border} text-center text-slate-400 font-mono w-[40px]`}>{regIndex + 1}</td>
+                                                                            {displayMode === 'normal' && (
+                                                                                <td className={`px-2 py-2 border-r-2 border-b-[1px] ${theme.border} text-center text-slate-400 font-mono w-[40px]`}>{regIndex + 1}</td>
+                                                                            )}
                                                                             <td 
                                                                                 className={`px-3 py-2 sticky left-0 z-30 ${theme.content} border-r-2 border-b-[1px] ${theme.border} shadow-[6px_0_12px_rgba(0,0,0,0.15)] font-black text-slate-900 cursor-pointer truncate`} 
                                                                                 onClick={() => handlePaymentClick(reg)}
@@ -606,6 +639,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                                         })()}
                                                                                     </td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{translateOrdinance(reg.ordinance_item)}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>{translateIdentityType(reg.identity_type)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-emerald-700 truncate`}>{translateTripType(reg.trip_type)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-center truncate`}>{getMethodBadge(reg)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-right font-mono text-slate-900 truncate`}>${(reg.amount_due || 0).toLocaleString()}</td>
@@ -621,6 +655,13 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                             )}
                                                                             {displayMode === 'checkin' && (
                                                                                 <>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
+                                                                                        {(() => {
+                                                                                            const info = getStopInfo(reg.bus_assigned);
+                                                                                            if (!info) return '-';
+                                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
+                                                                                        })()}
+                                                                                    </td>
                                                                                     <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border}`}>
                                                                                         <button onClick={() => handleToggleCheckIn(reg, 'to')} className={`p-1.5 rounded-full transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
                                                                                             <CheckCircle2 className="w-4 h-4" />

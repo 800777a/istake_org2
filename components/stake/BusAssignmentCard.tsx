@@ -31,16 +31,15 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
     });
 
     return (
-        <div className="min-w-full md:min-w-[400px] bg-white rounded shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden group/bus transition-all hover:border-indigo-300">
-            <div className="bg-indigo-900 p-6 border-b border-indigo-950 shrink-0">
+        <div className="min-w-full md:min-w-[400px] bg-white rounded shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden group/bus transition-all hover:border-blue-300">
+            <div className="bg-[#003D79] p-2 border-b border-blue-900 shrink-0">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-white/10 rounded border border-white/10">
                             <Bus className="text-blue-300" size={20} />
                         </div>
                         <div>
-                            <h4 className="font-bold text-base text-white tracking-tight">{busName} {t('common.bus', '號車')}</h4>
-                            <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">Active Fleet Unit</p>
+                            <h4 className="font-bold text-base text-white tracking-tight">{busName}</h4>
                         </div>
                     </div>
                     <div className="flex items-baseline gap-1.5">
@@ -113,33 +112,64 @@ const BusAssignmentCard: React.FC<BusAssignmentCardProps> = ({
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-[#F0F4F8]/10 custom-scrollbar">
-                {(busConfig?.stops || [{ code: busName, location: '全車', time: '' }]).map(stop => {
+                {/* 1. 全車列表 (直接指派到車次的人員) */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between px-2 py-1 bg-blue-50 border border-blue-100 rounded">
+                        <h6 className="text-[10px] font-bold text-blue-700 uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                            全車 ({subGroups[busName]?.length || 0})
+                        </h6>
+                    </div>
+                    <div className="space-y-2">
+                        {(subGroups[busName] || []).map(m => (
+                            <div key={m.reg_id} className="bg-white p-3 rounded border border-slate-100 shadow-sm flex justify-between items-center group/member">
+                                <div className="flex items-center gap-2 overflow-hidden">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">{m.unit}</span>
+                                    <span className="text-sm font-bold text-slate-900 truncate">{m.name}</span>
+                                </div>
+                                <button 
+                                    onClick={() => onAssign(m.reg_id, 'unassigned')}
+                                    className="text-slate-200 hover:text-rose-500 transition-colors opacity-0 group-hover/member:opacity-100 shrink-0"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        ))}
+                        {(!subGroups[busName] || subGroups[busName].length === 0) && (
+                            <div className="text-[10px] text-slate-300 font-bold uppercase tracking-widest text-center py-4 border border-dashed border-slate-200 rounded">
+                                無全車指派人員
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* 2. 各停靠站列表 */}
+                {(busConfig?.stops || []).map(stop => {
                     const members = subGroups[stop.code] || [];
-                    if (members.length === 0 && stop.code !== busName) return null;
+                    if (members.length === 0) return null;
                     return (
                         <div key={stop.code} className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <h6 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                            <div className="flex items-center justify-between px-2 py-1 bg-slate-50 border border-slate-100 rounded">
+                                <h6 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
                                     {stop.location} ({members.length})
                                 </h6>
                             </div>
                             <div className="space-y-2">
                                 {members.map(m => (
                                     <div key={m.reg_id} className="bg-white p-3 rounded border border-slate-100 shadow-sm flex justify-between items-center group/member">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-slate-900">{m.name}</span>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase">{m.unit}</span>
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase shrink-0">{m.unit}</span>
+                                            <span className="text-sm font-bold text-slate-900 truncate">{m.name}</span>
                                         </div>
                                         <button 
                                             onClick={() => onAssign(m.reg_id, 'unassigned')}
-                                            className="text-slate-200 hover:text-rose-500 transition-colors opacity-0 group-hover/member:opacity-100"
+                                            className="text-slate-200 hover:text-rose-500 transition-colors opacity-0 group-hover/member:opacity-100 shrink-0"
                                         >
                                             <X size={16} />
                                         </button>
                                     </div>
                                 ))}
-                                {members.length === 0 && <div className="text-[10px] text-slate-300 font-bold uppercase tracking-widest text-center py-4 border border-dashed border-slate-200 rounded">無乘車名單</div>}
                             </div>
                         </div>
                     );

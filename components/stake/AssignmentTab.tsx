@@ -122,6 +122,8 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
         return groups;
     }, [filteredRegistrations, currentEvent.busConfigs, unitOptions]);
 
+    const [selectingBusFor, setSelectingBusFor] = useState<Record<string, string | null>>({});
+
     const handleAssignToBus = (regId: string, busNameOrCode: string) => {
         updateRegistrationField(regId, 'bus_assigned', busNameOrCode === 'unassigned' ? '' : busNameOrCode);
         onRefresh();
@@ -191,21 +193,14 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
             <ConfirmDialog isOpen={!!batchConfirmData} title="批量分配確認" message={batchConfirmData ? `確定將 ${batchConfirmData.count} 位 ${batchConfirmData.unit} 成員分配至 ${batchConfirmData.target} 嗎？` : ''} onConfirm={executeBatchAssign} onCancel={() => setBatchConfirmData(null)} />
             <ExportChoiceModal isOpen={!!exportTargetBus} onClose={() => setExportTargetBus(null)} onConfirm={(mask, toEditor) => { if (exportTargetBus) handleExportBusList(exportTargetBus, mask, toEditor); }} />
 
-            <div className="bg-indigo-900 text-white p-6 rounded shadow-lg flex flex-col gap-6">
+            <div className="bg-[#003D79] text-white p-2 flex flex-col gap-6">
                 <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/10 rounded border border-white/10">
+                    <div className="p-2 bg-white/10 rounded border border-white/10">
                         <Bus className="text-blue-300" size={24} />
                     </div>
                     <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
-                        {t('bus.title.assignmentSettings', '分車作業系統')}
+                        分車作業
                     </h2>
-                </div>
-                <div className="flex justify-end items-center gap-3">
-                    <p className="hidden md:block text-xs text-indigo-200 font-medium uppercase tracking-wider opacity-60 mr-auto">Fleet Distribution & Passenger Logistics</p>
-                    <button onClick={() => setIsToolsExpanded(!isToolsExpanded)} className="h-10 px-5 bg-white/10 text-white rounded text-xs font-bold shadow-sm hover:bg-white/20 transition-all flex items-center gap-2">
-                        {isToolsExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-                        {isToolsExpanded ? '收合工具' : '展開工具'}
-                    </button>
                 </div>
             </div>
 
@@ -282,38 +277,75 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
 
             <div className="flex flex-row gap-8 overflow-x-auto pb-12 snap-x custom-scrollbar">
                 <div className="min-w-full md:min-w-[400px] bg-white rounded shadow-sm border border-slate-200 flex flex-col h-[700px] snap-center shrink-0 overflow-hidden">
-                    <div className="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
-                        <h4 className="font-bold text-white text-base flex items-center gap-2"><AlertCircle className="text-amber-400" size={18} /> 未指派名單</h4>
-                        <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/10">{(busGroups['unassigned'] || []).length}</span>
+                    <div className="p-2 bg-orange-600 border-b border-orange-700 flex justify-between items-center">
+                        <h4 className="font-bold text-white text-sm md:text-base flex items-center gap-2"><AlertCircle className="text-amber-200" size={18} /> 未指派名單</h4>
+                        <span className="bg-white/10 text-white px-3 py-1 rounded text-[10px] font-bold border border-white/10">{(busGroups['unassigned'] || []).length}</span>
                     </div>
                     <div className="p-4 overflow-y-auto flex-1 space-y-3 bg-[#F0F4F8]/20 custom-scrollbar">
                         {(busGroups['unassigned'] || []).map((reg) => (
                             <div key={reg.reg_id} className="bg-white p-4 rounded shadow-sm border border-slate-100 hover:border-blue-400 transition-all group">
                                 <div className="flex justify-between items-start mb-3">
-                                    <div className="flex flex-col"><span className="font-bold text-slate-900 text-sm">{reg.name}</span><span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit mt-1">{reg.unit}</span></div>
+                                    <div className="flex items-center gap-2 w-full">
+                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 shrink-0">{reg.unit}</span>
+                                        <span className="font-bold text-slate-900 text-sm truncate">{reg.name}</span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                    {(currentEvent?.busConfigs || []).map(bus => (
-                                        <div key={bus.name} className="flex flex-wrap gap-1 items-center bg-slate-50 p-1 rounded border border-slate-100">
+                                <div className="flex flex-col gap-2 mt-2">
+                                    {/* Two-step assignment logic */}
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {(currentEvent?.busConfigs || []).map(bus => (
                                             <button 
-                                                onClick={() => handleAssignToBus(reg.reg_id, bus.name)} 
-                                                className="h-8 px-2.5 bg-indigo-600 text-white text-[10px] font-black rounded hover:bg-indigo-700 transition-all shadow-sm"
-                                                title={`${bus.name} 全車指派`}
+                                                key={bus.name}
+                                                onClick={() => {
+                                                    if (bus.stops && bus.stops.length > 0) {
+                                                        setSelectingBusFor(prev => ({ ...prev, [reg.reg_id]: prev[reg.reg_id] === bus.name ? null : bus.name }));
+                                                    } else {
+                                                        handleAssignToBus(reg.reg_id, bus.name);
+                                                    }
+                                                }} 
+                                                className={`h-7 px-3 text-[10px] font-black rounded transition-all shadow-sm ${selectingBusFor[reg.reg_id] === bus.name ? 'bg-indigo-900 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                                             >
                                                 {bus.name}
                                             </button>
-                                            {(bus.stops || []).map(stop => (
-                                                <button 
-                                                    key={stop.code} 
-                                                    onClick={() => handleAssignToBus(reg.reg_id, stop.code)} 
-                                                    className="h-7 px-2 bg-white text-slate-600 text-[9px] font-bold rounded border border-slate-200 hover:border-blue-500 hover:text-blue-600 transition-all"
-                                                    title={`${stop.code} - ${stop.location}`}
-                                                >
-                                                    {stop.code}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+
+                                    {/* Second step: Select Stop */}
+                                    <AnimatePresence>
+                                        {selectingBusFor[reg.reg_id] && (
+                                            <motion.div 
+                                                initial={{ height: 0, opacity: 0 }} 
+                                                animate={{ height: 'auto', opacity: 1 }} 
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="overflow-hidden bg-slate-50 p-2 rounded border border-slate-200"
+                                            >
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    <button 
+                                                        onClick={() => {
+                                                            handleAssignToBus(reg.reg_id, selectingBusFor[reg.reg_id]!);
+                                                            setSelectingBusFor(prev => ({ ...prev, [reg.reg_id]: null }));
+                                                        }}
+                                                        className="h-6 px-3 bg-white text-indigo-700 text-[9px] font-black rounded border border-indigo-200 hover:bg-indigo-50"
+                                                    >
+                                                        {selectingBusFor[reg.reg_id]}
+                                                    </button>
+                                                    {(currentEvent?.busConfigs?.find(b => b.name === selectingBusFor[reg.reg_id])?.stops || []).map(stop => (
+                                                        <button 
+                                                            key={stop.code} 
+                                                            onClick={() => {
+                                                                handleAssignToBus(reg.reg_id, stop.code);
+                                                                setSelectingBusFor(prev => ({ ...prev, [reg.reg_id]: null }));
+                                                            }} 
+                                                            className="h-6 px-3 bg-white text-slate-600 text-[9px] font-bold rounded border border-slate-200 hover:border-blue-500 hover:text-blue-600 transition-all"
+                                                            title={stop.location}
+                                                        >
+                                                            {stop.code}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         ))}

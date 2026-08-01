@@ -112,8 +112,13 @@ const ScrollNavigator: React.FC = () => {
                     {/* Row 2 */}
                     <button
                         onClick={(e) => scrollToLeft(e)}
+                        onDoubleClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.dispatchEvent(new CustomEvent('ais-cycle-tabs', { detail: { direction: 'prev' } }));
+                        }}
                         className="w-full h-full flex items-center justify-center hover:bg-indigo-500/20 active:bg-indigo-500/30 transition-colors border-r border-gray-200/50 pointer-events-auto"
-                        title="移至最左"
+                        title="移至最左 (連點兩次切換分頁)"
                     >
                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
                     </button>
@@ -124,8 +129,13 @@ const ScrollNavigator: React.FC = () => {
 
                     <button
                         onClick={(e) => scrollToRight(e)}
+                        onDoubleClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.dispatchEvent(new CustomEvent('ais-cycle-tabs', { detail: { direction: 'next' } }));
+                        }}
                         className="w-full h-full flex items-center justify-center hover:bg-indigo-500/20 active:bg-indigo-500/30 transition-colors border-l border-gray-200/50 pointer-events-auto"
-                        title="移至最右"
+                        title="移至最右 (連點兩次切換分頁)"
                     >
                         <ChevronRight className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" />
                     </button>

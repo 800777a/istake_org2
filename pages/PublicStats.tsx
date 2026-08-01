@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useI18n } from '../src/contexts/LanguageContext';
 import { subscribeToEvents, subscribeToRegistrations, subscribeToSettings } from '../services/sheetService';
 import { EventData, Registration, RegStatus, GlobalSettings } from '../types';
@@ -29,6 +30,13 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
  
  const PublicStats: React.FC<PublicStatsProps> = ({ onGoHome, onGoRegister, onGoToInstructions, initialMessage, onClearMessage, activeTab: propsActiveTab, onTabChange, onRoleChange }) => {
    const { t, tString } = useI18n();
+
+   const tabs = [
+       { id: 'list', label: t('stake.stats.tab_registration'), icon: List },
+       { id: 'schedule', label: t('stake.stats.tab_schedule'), icon: CalendarCheck },
+       { id: 'service', label: t('stake.stats.tab_service'), icon: HeartHandshake },
+       { id: 'stats', label: t('stake.stats.tab_stats'), icon: BarChart3 },
+   ];
    const [activeEvent, setActiveEvent] = useState<EventData | undefined>(undefined);
   const [allEvents, setAllEvents] = useState<EventData[]>([]);
    const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -44,6 +52,49 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
   const [selectedPaymentReg, setSelectedPaymentReg] = useState<Registration | null>(null);
 
   const { vehicleStats: eventStats } = useStats(activeEvent, registrations);
+
+  const cycleTab = (direction: 'next' | 'prev') => {
+    const currentIndex = tabs.findIndex(t => t.id === activeTab);
+    if (currentIndex === -1) return;
+    
+    let nextIndex;
+    if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % tabs.length;
+    } else {
+      nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    }
+    
+    setActiveTab(tabs[nextIndex].id as any);
+    // Smooth scroll to top when changing tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handleCycleEvent = (e: any) => {
+      if (e.detail && e.detail.direction) {
+        cycleTab(e.detail.direction);
+      }
+    };
+    window.addEventListener('ais-cycle-tabs', handleCycleEvent);
+    return () => window.removeEventListener('ais-cycle-tabs', handleCycleEvent);
+  }, [activeTab]);
+
+  const handlePanEnd = (event: any, info: any) => {
+    // Only trigger swipe on mobile/tablet
+    if (window.innerWidth >= 1024) return;
+    
+    const threshold = 100; // Increase threshold to avoid accidental swipes while scrolling tables
+    const velocityThreshold = 0.5;
+    
+    // Check if horizontal movement is significant and dominant
+    if (Math.abs(info.offset.x) > threshold && Math.abs(info.offset.x) > Math.abs(info.offset.y)) {
+      if (info.offset.x > 0) {
+        cycleTab('prev');
+      } else {
+        cycleTab('next');
+      }
+    }
+  };
 
   useEffect(() => {
     let unsubRegs = () => {};
@@ -73,12 +124,6 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
       return <div className="p-8 text-center text-slate-500 bg-[#F0F4F8] min-h-screen">{t('stake.stats.no_data')}</div>;
   }
 
-  const tabs = [
-    { id: 'list', label: t('stake.stats.tab_registration'), icon: List },
-    { id: 'schedule', label: t('stake.stats.tab_schedule'), icon: CalendarCheck },
-    { id: 'service', label: t('stake.stats.tab_service'), icon: HeartHandshake },
-    { id: 'stats', label: t('stake.stats.tab_stats'), icon: BarChart3 },
-  ];
 
   return (
     <div className="w-full max-w-full bg-[#F8F9FA] animate-fade-in flex flex-col min-w-0">
@@ -118,38 +163,50 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
 
       <div className="w-full max-w-7xl mx-auto p-1 flex-1 flex flex-col min-w-0">
         {/* Content Area - Rule 3.2 Space Maximization */}
-        <div className="mt-1 pb-1 w-full max-w-full min-w-0 flex-1 flex flex-col">
+        <motion.div 
+            onPanEnd={handlePanEnd}
+            className="mt-1 pb-1 w-full max-w-full min-w-0 flex-1 flex flex-col"
+        >
             <div className="bg-white border-none shadow-none rounded md:border md:rounded md:border-slate-200 md:shadow-sm min-h-[500px] w-full max-w-full min-w-0 flex-1 flex flex-col overflow-visible">
-                <div className="p-0 w-full max-w-full min-w-0 flex-1 flex flex-col">
-                    {activeTab === 'list' && (
-                        <PublicRegistrationTab 
-                            registrations={registrations} 
-                            settings={settings} 
-                            eventStatus={activeEvent.status}
-                            activeEvent={activeEvent}
-                            eventStats={eventStats}
-                            busConfigs={activeEvent.busConfigs}
-                            onRoleChange={onRoleChange}
-                        />
-                    )}
+                <AnimatePresence mode="wait">
+                    <motion.div 
+                        key={activeTab}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="p-0 w-full max-w-full min-w-0 flex-1 flex flex-col"
+                    >
+                        {activeTab === 'list' && (
+                            <PublicRegistrationTab 
+                                registrations={registrations} 
+                                settings={settings} 
+                                eventStatus={activeEvent.status}
+                                activeEvent={activeEvent}
+                                eventStats={eventStats}
+                                busConfigs={activeEvent.busConfigs}
+                                onRoleChange={onRoleChange}
+                            />
+                        )}
 
-                    {activeTab === 'schedule' && (
-                        <PublicScheduleTab activeEvent={activeEvent} />
-                    )}
+                        {activeTab === 'schedule' && (
+                            <PublicScheduleTab activeEvent={activeEvent} />
+                        )}
 
-                    {activeTab === 'service' && (
-                        <PublicServiceTab activeEvent={activeEvent} settings={settings} registrations={registrations} />
-                    )}
+                        {activeTab === 'service' && (
+                            <PublicServiceTab activeEvent={activeEvent} settings={settings} registrations={registrations} />
+                        )}
 
-                    {activeTab === 'stats' && (
-                        <PublicAnalysisTab 
-                            activeEvent={activeEvent} 
-                            registrations={registrations} 
-                            settings={settings} 
-                            allEvents={allEvents}
-                        />
-                    )}
-                </div>
+                        {activeTab === 'stats' && (
+                            <PublicAnalysisTab 
+                                activeEvent={activeEvent} 
+                                registrations={registrations} 
+                                settings={settings} 
+                                allEvents={allEvents}
+                            />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             {/* Subtle Mobile Register CTA */}
@@ -162,7 +219,7 @@ import PaymentInfoModal from '../components/PaymentInfoModal';
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
