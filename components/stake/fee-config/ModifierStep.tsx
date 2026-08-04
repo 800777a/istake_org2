@@ -24,6 +24,36 @@ interface ModifierTableData {
   sortOrder: number;
 }
 
+const SortOrderInput: React.FC<{
+  value: number;
+  onChange: (val: number) => void;
+  className?: string;
+}> = ({ value, onChange, className }) => {
+  const [localVal, setLocalVal] = React.useState<number | null>(value);
+
+  React.useEffect(() => {
+    setLocalVal(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    const finalVal = localVal === null || isNaN(Number(localVal)) ? 0 : Number(localVal);
+    if (finalVal !== value) {
+      onChange(finalVal);
+    }
+  };
+
+  return (
+    <InputNumber
+      size="small"
+      value={localVal}
+      onChange={(v) => setLocalVal(v)}
+      onBlur={handleBlur}
+      onPressEnter={handleBlur}
+      className={className}
+    />
+  );
+};
+
 export const ModifierStep: React.FC<ModifierStepProps> = ({ 
   type, 
   billingConfig, 
@@ -65,7 +95,7 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       content: (
         <div className="space-y-4 mt-4">
           <div>
-            <Text className="text-xs text-gray-500 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs text-gray-500 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={sort} onChange={v => sort = Number(v) || 0} className="w-full" />
           </div>
           <div>
@@ -151,7 +181,7 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       content: (
         <div className="space-y-4">
           <div>
-            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={sort} onChange={v => sort = Number(v) || 0} className="w-full border-amber-200" />
           </div>
           <div>
@@ -218,22 +248,21 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
       key: 'sortOrder',
       width: 80,
       render: (val: number, record: any) => (
-        <InputNumber 
-          size="small" 
+        <SortOrderInput 
           value={val} 
           onChange={v => {
             if (isIdentity) {
               const newList = [...(billingConfig.identityPricings || [])];
               const idx = newList.findIndex((p, i) => `${p.identity}_${i}` === record.key);
               if (idx > -1) {
-                newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
+                newList[idx] = { ...newList[idx], sortOrder: v };
                 onConfigChange({ ...billingConfig, identityPricings: newList });
               }
             } else {
               const newList = [...(billingConfig.tripPricings || [])];
               const idx = newList.findIndex((p, i) => `${p.trip}_${i}` === record.key);
               if (idx > -1) {
-                newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
+                newList[idx] = { ...newList[idx], sortOrder: v };
                 onConfigChange({ ...billingConfig, tripPricings: newList });
               }
             }
@@ -332,7 +361,7 @@ export const ModifierStep: React.FC<ModifierStepProps> = ({
 
   return (
     <RainbowCard
-      title={isIdentity ? t('stake.fee_config.step2_title', "第2步：身份規則 (Identity Rules)") : t('stake.fee_config.step3_title', "第3步：行程規則 (Trip Rules)")}
+      title={isIdentity ? t('stake.fee_config.step2_title', "第2步：身份規則") : t('stake.fee_config.step3_title', "第3步：行程規則")}
       icon={isIdentity ? <User size={20} /> : <Car size={20} />}
       colorIndex={colorIndex}
       isExpanded={isExpanded}

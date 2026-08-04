@@ -49,7 +49,11 @@ const PublicAnalysisTab: React.FC<PublicAnalysisTabProps> = ({ activeEvent, regi
     // V002: Get unit options from Billing Engine if available, fallback to settings.units
     const unitOptions = useMemo(() => {
         // Vxxx: Combine all potential sources of unit names
-        const billingUnits = settings.billingConfig?.units?.map(u => u.shortName) || [];
+        const billingUnitsConfig = settings?.billingConfig?.units || [];
+        // Sort the billing units by sortOrder first
+        const sortedBillingUnits = [...billingUnitsConfig].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        const billingUnits = sortedBillingUnits.map(u => u.shortName);
+
         const configUnits = settings.units || [];
         const regUnits = registrations.map(r => r.unit).filter(u => u && String(u).trim() !== '');
         

@@ -323,26 +323,14 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
         </div>
         <div>
           <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
-            {t('stake.fee_config.title', '收費設定 / Fee Config')}
+            {t('stake.fee_config.title', '收費設定')}
           </h2>
-          <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider opacity-60">
-            System Financial & Billing Configuration
-          </p>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-3 mb-6">
-        <button 
-          onClick={() => setSandboxVisible(true)}
-          className="h-11 px-6 bg-amber-500 text-white rounded text-sm font-bold shadow-md hover:bg-amber-600 transition-all flex items-center gap-2"
-        >
-          <Calculator size={18} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Sandbox')}
-        </button>
       </div>
 
       <div className="space-y-8">
         <RainbowCard
-          title={tString('stake.fee_config.payment_info_title', '付款資訊 (Payment Info)')}
+          title={tString('stake.fee_config.payment_info_title', '付款資訊')}
           icon={<CreditCard size={20} />}
           colorIndex={0}
           isExpanded={expandedSteps['payment_info']}
@@ -388,7 +376,7 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
         </RainbowCard>
 
         <RainbowCard
-          title={tString('stake.fee_config.payment_methods_title', '付款方式設定 (Payment Methods)')}
+          title={tString('stake.fee_config.payment_methods_title', '付款方式設定')}
           icon={<Globe size={20} />}
           colorIndex={1}
           isExpanded={expandedSteps['payment_methods']}
@@ -400,9 +388,9 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
             </p>
             <div className="flex flex-wrap gap-6">
               {[
-                { value: PaymentMethod.CASH, label: t('stake.fee_config.payment_methods.cash', '現金 (Cash)') },
-                { value: PaymentMethod.TRANSFER, label: t('stake.fee_config.payment_methods.transfer', '轉帳 (Transfer)') },
-                { value: PaymentMethod.EXTENDED, label: t('stake.fee_config.payment_methods.extended', '留用 (Roll-over)') }
+                { value: PaymentMethod.CASH, label: t('stake.fee_config.payment_methods.cash', '現金') },
+                { value: PaymentMethod.TRANSFER, label: t('stake.fee_config.payment_methods.transfer', '轉帳') },
+                { value: PaymentMethod.EXTENDED, label: t('stake.fee_config.payment_methods.extended', '留用') }
               ].map(method => (
                 <label key={method.value} className="flex items-center gap-2 cursor-pointer group">
                   <input 
@@ -426,14 +414,24 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
           </div>
         </RainbowCard>
 
+        {/* Sandbox button moved here */}
+        <div className="flex justify-end gap-3 mt-12 mb-4">
+          <button 
+            onClick={() => setSandboxVisible(true)}
+            className="h-11 px-6 bg-amber-500 text-white rounded text-sm font-bold shadow-md hover:bg-amber-600 transition-all flex items-center gap-2"
+          >
+            <Calculator size={18} /> {t('stake.fee_config.sandbox_btn', '收費試算')}
+          </button>
+        </div>
+
         {/* Billing Rules Header Row - Independent row as per rules */}
-        <div className="bg-indigo-900 text-white px-6 py-4 rounded shadow-md flex justify-between items-center mt-12 mb-6">
+        <div className="bg-indigo-900 text-white px-6 py-4 rounded shadow-md flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-white/10 rounded border border-white/10">
               <Coins className="text-blue-300" size={20} />
             </div>
             <h3 className="font-bold text-base md:text-lg tracking-tight">
-              {t('stake.fee_config.billing_rules_title', '收費邏輯配置 (Billing Rules)')}
+              {t('stake.fee_config.billing_rules_title', '收費邏輯配置')}
             </h3>
           </div>
           <div className="flex gap-2">
@@ -512,13 +510,13 @@ const FeeConfigTab: React.FC<FeeConfigTabProps> = ({ settings: initialSettings, 
       <Modal
         title={
           <div className="flex items-center text-amber-900">
-            <Calculator size={20} className="mr-2" /> {t('stake.fee_config.sandbox_modal_title', '收費試算 (Fee Calculation Sandbox)')}
+            <Calculator size={20} className="mr-2" /> {t('stake.fee_config.sandbox_modal_title', '收費試算')}
           </div>
         }
         open={sandboxVisible}
         onCancel={() => setSandboxVisible(false)}
         footer={[
-          <Button key="close" onClick={() => setSandboxVisible(false)}>{t('common.close', '關閉 (Close)')}</Button>
+          <Button key="close" onClick={() => setSandboxVisible(false)}>{t('common.close', '關閉')}</Button>
         ]}
         width={500}
         styles={{ body: { padding: '24px', backgroundColor: '#FFFBE6' } }}

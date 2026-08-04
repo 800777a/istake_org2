@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Registration, GlobalSettings, PaymentMethod, RegStatus, BusConfig, EventData, TripType, User as UserType } from '../../types';
+import { Registration, GlobalSettings, PaymentMethod, RegStatus, BusConfig, EventData, TripType, User as UserType, OrdinanceItem } from '../../types';
 import { isPaymentOverdue } from '../../src/utils/registrationUtils';
 import { Search, User, Globe, ChevronUp, ChevronDown, ArrowUpDown, Lock, Unlock, RotateCcw, Smartphone, CheckCircle2, XCircle, ChevronLeft, ChevronRight, Layout, Table2, CreditCard, Users, DollarSign, CheckSquare, Home, Bus, LayoutGrid, List } from 'lucide-react';
 import { maskName } from '../../utils/validation';
@@ -86,8 +86,8 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
             
             // Handle specific fields
             if (sortConfig.key === 'ordinance_item') {
-                valA = translateOrdinance(a.ordinance_item);
-                valB = translateOrdinance(b.ordinance_item);
+                valA = getDisplayOrdinanceText(a);
+                valB = getDisplayOrdinanceText(b);
             } else if (sortConfig.key === 'trip_type') {
                 valA = translateTripType(a.trip_type);
                 valB = translateTripType(b.trip_type);
@@ -186,9 +186,26 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         return dict[val] || val;
     };
 
+    const getDisplayOrdinanceText = (reg: Registration) => {
+        const ordText = translateOrdinance(reg.ordinance_item);
+        if (!reg.ordinance_item || reg.ordinance_item === OrdinanceItem.NONE) {
+            return ordText;
+        }
+        const sessionTime = reg.ceremony_session ? String(reg.ceremony_session).trim() : '';
+        if (sessionTime && sessionTime !== '未指定' && sessionTime !== '---') {
+            const formattedSession = sessionTime.startsWith('(') ? sessionTime : `(${sessionTime})`;
+            return `${ordText} ${formattedSession}`;
+        }
+        return ordText;
+    };
+
     const sortedUnits = useMemo(() => {
         // Vxxx: Combine all potential sources of unit names
-        const billingUnits = settings?.billingConfig?.units?.map(u => u.shortName) || [];
+        const billingUnitsConfig = settings?.billingConfig?.units || [];
+        // Sort the billing units by sortOrder first
+        const sortedBillingUnits = [...billingUnitsConfig].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        const billingUnits = sortedBillingUnits.map(u => u.shortName);
+
         const configUnits = settings?.units || [];
         const regUnits = registrations.map(r => r.unit).filter(u => u && String(u).trim() !== '');
         
@@ -661,7 +678,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
                                                                                         {getDisplayStopText(reg)}
                                                                                     </td>
-                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{translateOrdinance(reg.ordinance_item)}</td>
+                                                                                    <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{getDisplayOrdinanceText(reg)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>{translateIdentityType(reg.identity_type)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-emerald-700 truncate`}>{translateTripType(reg.trip_type)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-center truncate`}>{getMethodBadge(reg)}</td>
@@ -714,7 +731,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                     <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">
                                                                         {getDisplayStopText(reg)}
                                                                     </div></div>
-                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">教儀</div><div className="text-[11px] font-bold text-slate-700 truncate">{translateOrdinance(reg.ordinance_item)}</div></div>
+                                                                    <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">教儀</div><div className="text-[11px] font-bold text-slate-700 truncate">{getDisplayOrdinanceText(reg)}</div></div>
                                                                 </div>
                                                                 {displayMode === 'fee' && (
                                                                     <div className="flex items-center justify-between bg-slate-50 p-2 rounded border-2 border-slate-200 min-w-0 w-full gap-2"><div className="flex items-center gap-2 min-w-0 shrink-0">{getMethodBadge(reg)}<span className="text-xs font-black">${(reg.amount_due || 0).toLocaleString()}</span></div><div className="shrink-0">{getStatusBadge(reg)}</div></div>

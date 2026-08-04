@@ -28,7 +28,7 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
   return (
     <>
       <RainbowCard
-        title={tString('stake.fee_config.step5_title', '第5步：折扣設定 (Discounts)')}
+        title={tString('stake.fee_config.step5_title', '第5步：折扣設定')}
         icon={<Layers size={20} />}
         colorIndex={colorIndexStart}
         isExpanded={expandedSteps['step5']}
@@ -37,13 +37,13 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
         <div className="overflow-x-auto">
           <Row gutter={[24, 24]}>
             <Col span={24}>
-              <Text strong className="block mb-2 text-xs opacity-70">{t('stake.fee_config.calc_strategy_label', '折扣計算策略 (Calc Strategy)')}</Text>
+              <Text strong className="block mb-2 text-xs opacity-70">{t('stake.fee_config.calc_strategy_label', '折扣計算策略')}</Text>
               <Radio.Group 
                 value={billingConfig.calcStrategy} 
                 onChange={e => onConfigChange({ ...billingConfig, calcStrategy: e.target.value })}
               >
-                <Radio value="stack">{t('stake.fee_config.strategy_stack', '優惠疊加 (Stackable)')}</Radio>
-                <Radio value="min">{t('stake.fee_config.strategy_min', '取最低價者 (Cheapest Mode)')}</Radio>
+                <Radio value="stack">{t('stake.fee_config.strategy_stack', '優惠疊加')}</Radio>
+                <Radio value="min">{t('stake.fee_config.strategy_min', '取最低價者')}</Radio>
               </Radio.Group>
               <Paragraph className="mt-2 text-[10px] text-gray-400">
                 {t('stake.fee_config.strategy_stack_desc', '疊加：依序計算 身份 → 行程 → 特惠。')}<br/>
@@ -55,14 +55,14 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
       </RainbowCard>
 
       <RainbowCard
-        title={tString('stake.fee_config.step6_title', '第6步：四捨五入 (Rounding)')}
+        title={tString('stake.fee_config.step6_title', '第6步：四捨五入')}
         icon={<Target size={20} />}
         colorIndex={colorIndexStart + 1}
         isExpanded={expandedSteps['step6']}
         onToggle={() => onToggle('step6')}
       >
         <div className="flex items-center space-x-4 p-4 bg-white/50 rounded">
-          <Text strong className="text-xs opacity-70">{t('stake.fee_config.round_to_ten_label', '進位到十位數 (Rounding to Ten):')}</Text>
+          <Text strong className="text-xs opacity-70">{t('stake.fee_config.round_to_ten_label', '進位到十位數:')}</Text>
           <Switch 
             checked={billingConfig.roundingToTen} 
             onChange={checked => onConfigChange({ ...billingConfig, roundingToTen: checked })}
@@ -77,7 +77,7 @@ export const LogicRoundingStep: React.FC<LogicRoundingStepProps> = ({
             onClick={onOpenSandbox}
             className="h-12 px-8 bg-amber-500 text-white rounded text-sm font-bold shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2"
           >
-            <Calculator size={20} /> {t('stake.fee_config.sandbox_btn', '收費試算 / Fee Calculation Sandbox')}
+            <Calculator size={20} /> {t('stake.fee_config.sandbox_btn', '收費試算')}
           </button>
         </div>
       )}

@@ -15,6 +15,36 @@ interface UnitFeesStepProps {
   colorIndex?: number;
 }
 
+const SortOrderInput: React.FC<{
+  value: number;
+  onChange: (val: number) => void;
+  className?: string;
+}> = ({ value, onChange, className }) => {
+  const [localVal, setLocalVal] = React.useState<number | null>(value);
+
+  React.useEffect(() => {
+    setLocalVal(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    const finalVal = localVal === null || isNaN(Number(localVal)) ? 0 : Number(localVal);
+    if (finalVal !== value) {
+      onChange(finalVal);
+    }
+  };
+
+  return (
+    <InputNumber
+      size="small"
+      value={localVal}
+      onChange={(v) => setLocalVal(v)}
+      onBlur={handleBlur}
+      onPressEnter={handleBlur}
+      className={className}
+    />
+  );
+};
+
 export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({ 
   billingConfig, 
   onConfigChange, 
@@ -59,7 +89,7 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       content: (
         <div className="space-y-4">
           <div>
-            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={val3} onChange={v => val3 = Number(v) || 0} className="w-full border-amber-200" />
           </div>
           <div>
@@ -94,7 +124,7 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       content: (
         <div className="space-y-4">
           <div>
-            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={val3} onChange={v => val3 = Number(v) || 0} className="w-full border-amber-200" />
           </div>
           <div>
@@ -131,17 +161,15 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
       dataIndex: 'sortOrder',
       key: 'sortOrder',
       width: 80,
-      sorter: (a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0),
       render: (val: number, record: any) => (
         record.isGlobal ? '-' : (
-          <InputNumber 
-            size="small" 
+          <SortOrderInput 
             value={val} 
             onChange={v => {
               const newUnits = [...(billingConfig.units || [])];
               const idx = newUnits.findIndex(u => u.shortName === record.shortName);
               if (idx > -1) {
-                newUnits[idx] = { ...newUnits[idx], sortOrder: Number(v) || 0 };
+                newUnits[idx] = { ...newUnits[idx], sortOrder: v };
                 onConfigChange({ ...billingConfig, units: newUnits });
               }
             }}
@@ -209,7 +237,7 @@ export const UnitFeesStep: React.FC<UnitFeesStepProps> = ({
 
   return (
     <RainbowCard
-      title={tString('stake.fee_config.step1_title', '第1步：單位車資 (Unit Fees)')}
+      title={tString('stake.fee_config.step1_title', '第1步：單位車資')}
       icon={<LayoutGrid size={20} />}
       colorIndex={colorIndex}
       isExpanded={isExpanded}

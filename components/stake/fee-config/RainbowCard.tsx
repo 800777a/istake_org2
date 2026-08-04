@@ -56,7 +56,7 @@ export const RainbowCard: React.FC<RainbowCardProps> = ({
     >
       {/* Level 1: Block Title Row */}
       <div 
-        className={`w-full flex justify-between items-center cursor-pointer select-none transition-colors ${style.title} px-4 py-3 md:px-6 md:py-4 border-b-2 rounded-t-[10px] ${style.border}`}
+        className={`w-full flex justify-between items-center cursor-pointer transition-colors ${style.title} px-4 py-3 md:px-6 md:py-4 border-b-2 rounded-t-[10px] ${style.border}`}
         onClick={onToggle}
       >
         <div className="flex items-center gap-3 md:gap-4">

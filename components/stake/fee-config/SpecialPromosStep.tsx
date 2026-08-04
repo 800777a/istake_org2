@@ -15,6 +15,36 @@ interface SpecialPromosStepProps {
   colorIndex?: number;
 }
 
+const SortOrderInput: React.FC<{
+  value: number;
+  onChange: (val: number) => void;
+  className?: string;
+}> = ({ value, onChange, className }) => {
+  const [localVal, setLocalVal] = React.useState<number | null>(value);
+
+  React.useEffect(() => {
+    setLocalVal(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    const finalVal = localVal === null || isNaN(Number(localVal)) ? 0 : Number(localVal);
+    if (finalVal !== value) {
+      onChange(finalVal);
+    }
+  };
+
+  return (
+    <InputNumber
+      size="small"
+      value={localVal}
+      onChange={(v) => setLocalVal(v)}
+      onBlur={handleBlur}
+      onPressEnter={handleBlur}
+      className={className}
+    />
+  );
+};
+
 export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({ 
   billingConfig, 
   onConfigChange, 
@@ -44,7 +74,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
       content: (
         <div className="space-y-4">
           <div>
-            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={sort} onChange={v => sort = Number(v) || 0} className="w-full border-amber-200" />
           </div>
           <div>
@@ -130,7 +160,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
       content: (
         <div className="space-y-4">
           <div>
-            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序 (Sorting)')}</Text>
+            <Text className="text-xs font-black text-amber-900 mb-1 block">{t('stake.fee_config.sort_order', '排序')}</Text>
             <InputNumber defaultValue={sort} onChange={v => sort = Number(v) || 0} className="w-full border-amber-200" />
           </div>
           <div>
@@ -203,14 +233,13 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
       key: 'sortOrder',
       width: 80,
       render: (val: number, record: any) => (
-        <InputNumber 
-          size="small" 
+        <SortOrderInput 
           value={val} 
           onChange={v => {
             const newList = [...(billingConfig.specialPromos || [])];
             const idx = newList.findIndex(p => p.id === record.id);
             if (idx > -1) {
-              newList[idx] = { ...newList[idx], sortOrder: Number(v) || 0 };
+              newList[idx] = { ...newList[idx], sortOrder: v };
               onConfigChange({ ...billingConfig, specialPromos: newList });
             }
           }}
@@ -283,7 +312,7 @@ export const SpecialPromosStep: React.FC<SpecialPromosStepProps> = ({
 
   return (
     <RainbowCard
-      title={tString('stake.fee_config.step4_title', '第4步：優惠設定 (Promos)')}
+      title={tString('stake.fee_config.step4_title', '第4步：優惠設定')}
       icon={<Gift size={20} />}
       colorIndex={colorIndex}
       isExpanded={isExpanded}
