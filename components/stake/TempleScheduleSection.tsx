@@ -124,6 +124,20 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                 {/* Session counter removed */}
                             </div>
                             <div className="flex flex-wrap justify-end items-center gap-2 w-full sm:w-auto">
+                                <button
+                                    onClick={() => {
+                                        const blob = new Blob([JSON.stringify(config.items || [], null, 2)], { type: 'application/json' });
+                                        const url = URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `temple_schedule_${currentEvent.event_date}.json`;
+                                        a.click();
+                                        URL.revokeObjectURL(url);
+                                    }}
+                                    className="h-9 px-4 rounded bg-white border border-indigo-200 text-indigo-700 text-xs font-black hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2"
+                                >
+                                    <Plus size={14} /> 匯出
+                                </button>
                                 <label className="h-8 md:h-10 lg:h-12 px-4 rounded bg-white border border-indigo-200 text-indigo-700 text-[10px] md:text-xs lg:text-sm font-black hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2 cursor-pointer">
                                     <Plus size={14} /> 匯入
                                     <input type="file" className="hidden" accept=".json" onChange={(e) => {
@@ -139,20 +153,6 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                         reader.readAsText(file);
                                     }} />
                                 </label>
-                                <button
-                                    onClick={() => {
-                                        const blob = new Blob([JSON.stringify(config.items || [], null, 2)], { type: 'application/json' });
-                                        const url = URL.createObjectURL(blob);
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = `temple_schedule_${currentEvent.event_date}.json`;
-                                        a.click();
-                                        URL.revokeObjectURL(url);
-                                    }}
-                                    className="h-9 px-4 rounded bg-white border border-indigo-200 text-indigo-700 text-xs font-black hover:bg-indigo-50 shadow-sm transition-all flex items-center gap-2"
-                                >
-                                    <Plus size={14} /> 匯出
-                                </button>
                                 <div className="flex items-center gap-2 bg-white px-4 h-8 md:h-10 lg:h-12 rounded border border-indigo-200 shadow-sm">
                                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">公佈</span>
                                     <button 
@@ -177,7 +177,7 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                     <thead>
                                         <tr className="bg-indigo-50 font-black text-indigo-900 border-b border-indigo-100 text-[10px] md:text-xs lg:text-sm">
                                             <th className="p-2 w-12 text-center border-r border-indigo-100 uppercase tracking-wider">排序</th>
-                                            <th className="p-2 w-32 border-r border-indigo-100 uppercase tracking-wider">場次</th>
+                                            <th className="p-2 w-32 border-r border-indigo-100 uppercase tracking-wider text-left">場次</th>
                                             <th className="p-2 w-28 text-center border-r border-indigo-100 uppercase tracking-wider">開始時間</th>
                                             <th className="p-2 w-28 text-center border-r border-indigo-100 uppercase tracking-wider">結束時間</th>
                                             <th className="p-2 w-24 text-center border-r border-indigo-100 uppercase tracking-wider">需時(分)</th>
@@ -196,7 +196,7 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                                                     </div>
                                                 </td>
                                                 <td className="p-1 border-r border-indigo-50">
-                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-2 py-1.5 text-center font-bold text-indigo-700 focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm" value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder="如：洗禮" />
+                                                    <input className="w-full bg-white/60 border border-indigo-100 rounded px-2 py-1.5 text-left font-bold text-indigo-700 focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm" value={item.stopCode || ''} onChange={e => handleItemUpdate(idx, 'stopCode', e.target.value)} placeholder="如：洗禮" />
                                                 </td>
                                                 <td className="p-1 border-r border-indigo-50">
                                                     <input className="w-full bg-white/60 border border-indigo-100 rounded px-1 py-1.5 text-center font-bold text-slate-900 focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm" value={item.arrivalTime} onChange={e => handleItemUpdate(idx, 'arrivalTime', e.target.value)} placeholder="00:00" />
@@ -221,7 +221,7 @@ const TempleScheduleSection: React.FC<TempleScheduleSectionProps> = ({ currentEv
                             </div>
                             <button 
                                 onClick={handleAddItem}
-                                className="w-full h-8 md:h-10 lg:h-12 bg-white/80 text-indigo-900 hover:bg-indigo-900 hover:text-white text-[10px] md:text-xs lg:text-sm font-black border-t border-indigo-100 flex justify-center items-center transition-all gap-2"
+                                className="w-auto h-8 px-4 bg-white text-indigo-900 hover:bg-indigo-900 hover:text-white text-[10px] md:text-xs lg:text-sm font-black border border-indigo-100 flex justify-center items-center transition-all gap-2 mx-auto mt-2 rounded shadow-sm"
                             >
                                 <Plus size={16} /> 新增教儀場次
                             </button>

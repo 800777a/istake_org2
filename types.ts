@@ -445,6 +445,7 @@ export interface RoutePlanItem {
     stopCode?: string; // 停靠站代碼
     address?: string; // 地址
     mapUrl?: string; // 地圖網址
+    stationId?: string; // V502: Linked station ID
 }
 
 // V150: Road Sign Item Structure
@@ -542,6 +543,7 @@ export interface EventData {
   event_title?: string;
   organizer?: string;
   status: 'planning' | 'confirmed' | 'cancelled' | 'completed';
+  busStops?: Station[]; // V502: Event-specific stations
   
   // Historical Stats (V410 for HistoryTab)
   attendance_total?: number;

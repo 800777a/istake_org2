@@ -15,41 +15,55 @@ interface BusRoadSignSectionProps {
     onMove: (idx: number, direction: 'up' | 'down') => void;
     onExport: () => void;
     onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onReverse?: () => void;
 }
 
 const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
-    busName, type, items, theme, isPublished, onTogglePublish, onUpdate, onAdd, onDelete, onMove, onExport, onImport
+    busName, type, items, theme, isPublished, onTogglePublish, onUpdate, onAdd, onDelete, onMove, onExport, onImport, onReverse
 }) => {
     return (
         <div className={`rounded border shadow-sm overflow-hidden animate-fade-in h-full flex flex-col bg-white/60 backdrop-blur-sm ${theme.border}`}>
-            <div className={`p-4 border-b flex justify-between items-center flex-wrap gap-4 bg-white/40 ${theme.border}`}>
-                <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
-                        <Map size={18} />
+            <div className={`p-2 border-b flex justify-between items-center bg-white/40 ${theme.border}`}>
+                <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded border shadow-sm bg-white/40 ${theme.text} ${theme.border}`}>
+                        <Map size={16} />
                     </div>
-                    <h4 className={`font-black text-xs md:text-sm lg:text-base uppercase tracking-tight ${theme.text}`}>
+                    <h4 className={`font-black text-[10px] md:text-xs lg:text-sm uppercase tracking-tight ${theme.text}`}>
                         {type === 'outbound' ? '去程路標' : '回程路標'}
                     </h4>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex gap-2">
-                        <button onClick={onExport} className={`h-8 px-3 rounded text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}><Download size={14} className="mr-1.5"/>匯出</button>
-                        <label className={`h-8 px-3 rounded text-xs font-bold transition-all flex items-center border bg-white/60 shadow-sm cursor-pointer ${theme.text} ${theme.border} ${theme.hover}`}>
-                            <Upload size={14} className="mr-1.5"/>匯入
-                            <input type="file" className="hidden" accept=".json" onChange={onImport}/>
-                        </label>
-                    </div>
-                    <div className={`flex items-center gap-3 bg-white/60 px-3 py-1 rounded border shadow-sm ${theme.border}`}>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
+            </div>
+            
+            {/* New Action Row below header */}
+            <div className={`p-2 border-b flex flex-wrap items-center justify-end gap-2 bg-white/20 ${theme.border}`}>
+                <div className="flex items-center gap-2">
+                    {type === 'return' && onReverse && (
                         <button 
-                            onClick={onTogglePublish}
-                            className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${isPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                            onClick={onReverse} 
+                            className={`h-8 px-3 rounded text-[10px] font-black transition-all flex items-center gap-2 border bg-white shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
                         >
-                            <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${isPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                            <Plus size={14} className="rotate-45" /> 反向
                         </button>
-                    </div>
+                    )}
+                    <button onClick={onExport} className={`h-8 px-3 rounded text-[10px] font-bold transition-all flex items-center border bg-white shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}>
+                        <Download size={14} className="mr-1.5"/>匯出
+                    </button>
+                    <label className={`h-8 px-3 rounded text-[10px] font-bold transition-all flex items-center border bg-white shadow-sm cursor-pointer ${theme.text} ${theme.border} ${theme.hover}`}>
+                        <Upload size={14} className="mr-1.5"/>匯入
+                        <input type="file" className="hidden" accept=".json" onChange={onImport}/>
+                    </label>
+                </div>
+                <div className={`flex items-center gap-2 bg-white px-3 py-1 h-8 rounded border shadow-sm ${theme.border}`}>
+                    <span className={`text-[9px] font-bold uppercase tracking-widest ${theme.text} opacity-60`}>公佈</span>
+                    <button 
+                        onClick={onTogglePublish}
+                        className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors focus:outline-none ${isPublished ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                    >
+                        <span className={`inline-block h-2.5 w-2.5 transform rounded-full bg-white transition-transform ${isPublished ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </button>
                 </div>
             </div>
+
             <div className="flex-1 overflow-x-auto">
                 <table className="w-full text-sm text-left border-collapse min-w-[500px]">
                     <thead>
@@ -104,7 +118,7 @@ const BusRoadSignSection: React.FC<BusRoadSignSectionProps> = ({
             </div>
             <button 
                 onClick={onAdd}
-                className={`w-full h-8 md:h-10 lg:h-12 text-[10px] md:text-xs lg:text-sm font-bold border-t flex justify-center items-center transition-all gap-2 bg-white/60 backdrop-blur-sm ${theme.text} ${theme.border} ${theme.hover}`}
+                className={`w-auto h-8 px-4 text-[10px] md:text-xs lg:text-sm font-bold border flex justify-center items-center transition-all gap-2 bg-white shadow-sm ${theme.text} ${theme.border} ${theme.hover} mx-auto mt-2 rounded`}
             >
                 <Plus size={18} /> 新增行車指示
             </button>

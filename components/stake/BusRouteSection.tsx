@@ -9,6 +9,7 @@ interface BusRouteSectionProps {
     route: any;
     idx: number;
     settings?: GlobalSettings;
+    stations?: any[]; // Added stations prop
     theme: { bg: string; text: string; border: string; hover: string };
     isCollapsed: boolean;
     onToggleCollapse: () => void;
@@ -26,7 +27,7 @@ interface BusRouteSectionProps {
 }
 
 const BusRouteSection: React.FC<BusRouteSectionProps> = ({
-    busConfig, route, idx, settings, theme, isCollapsed, onToggleCollapse, onUpdateField, onTogglePublish,
+    busConfig, route, idx, settings, stations, theme, isCollapsed, onToggleCollapse, onUpdateField, onTogglePublish,
     onUpdateRouteItem, onUpdateRouteItemMultiple, onDeleteRouteRow, onAddRouteRow, onMoveRouteRow,
     onReverseRoute, onExport, onImport, onTimeChange
 }) => {
@@ -49,39 +50,39 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                             <Bus size={20} />
                         </div>
                         <h3 className={`font-bold text-xs md:text-sm lg:text-base ${theme.text}`}>
-                            {busName}-行程規劃
+                            {busName}行程
                         </h3>
                     </div>
                     <div className={theme.text}>
                         {isCollapsed ? <ChevronDown size={20}/> : <ChevronUp size={20}/>}
                     </div>
                 </div>
-
-                {/* Info and buttons moved below title row and right-aligned */}
-                <div className="w-full flex flex-wrap justify-end items-center gap-3 mt-3">
-                    {busConfig.company && (
-                        <div className="flex flex-col items-end">
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>遊覽車公司</span>
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.company}</span>
-                        </div>
-                    )}
-                    {busConfig.licensePlate && (
-                        <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>車牌</span>
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.licensePlate}</span>
-                        </div>
-                    )}
-                    {busConfig.driverName1 && (
-                        <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>司機</span>
-                            <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.driverName1}</span>
-                        </div>
-                    )}
-                </div>
             </div>
             
             {!isCollapsed && (
                 <div className="p-1 flex flex-col gap-1 bg-white/40 backdrop-blur-sm">
+                    {/* Info items moved out of header row */}
+                    <div className="w-full flex flex-wrap justify-end items-center gap-3 p-3 border-b border-dashed border-gray-200">
+                        {busConfig.company && (
+                            <div className="flex flex-col items-end">
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>遊覽車公司</span>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.company}</span>
+                            </div>
+                        )}
+                        {busConfig.licensePlate && (
+                            <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>車牌</span>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.licensePlate}</span>
+                            </div>
+                        )}
+                        {busConfig.driverName1 && (
+                            <div className={`flex flex-col items-end border-l pl-3 ${theme.border}`}>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>司機</span>
+                                <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.driverName1}</span>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Outbound & Return Grid - Vertically Stacked */}
                     <div className="flex flex-col gap-4">
                         {/* Outbound Column */}
@@ -112,7 +113,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
 
                             <BusRouteTable 
                                 items={route.outbound || []} 
-                                stations={settings?.stations} 
+                                stations={(stations && stations.length > 0) ? stations : settings?.stations} 
                                 busPrefix="A"
                                 onUpdate={(idx, f, v) => onUpdateRouteItem('outbound', idx, f, v)}
                                 onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('outbound', idx, u)}
@@ -134,7 +135,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
 
                             {/* Action Row for Return */}
                             <div className="flex items-center justify-end gap-2 px-2 pb-1 border-b border-dashed border-gray-100">
-                                <button onClick={onReverseRoute} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="回程反向">
+                                <button onClick={onReverseRoute} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="反向">
                                     <RefreshCw size={12}/> 反向
                                 </button>
                                 <button onClick={() => onExport('return')} className={`px-2 py-1 flex items-center gap-1 rounded bg-white/60 border border-gray-100 text-[10px] md:text-xs font-bold transition-all ${theme.text} opacity-80 hover:opacity-100`} title="匯出">
@@ -154,7 +155,7 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
 
                             <BusRouteTable 
                                 items={route.returnTrip || []} 
-                                stations={settings?.stations} 
+                                stations={(stations && stations.length > 0) ? stations : settings?.stations} 
                                 busPrefix="B"
                                 onUpdate={(idx, f, v) => onUpdateRouteItem('returnTrip', idx, f, v)}
                                 onUpdateMultiple={(idx, u) => onUpdateRouteItemMultiple('returnTrip', idx, u)}

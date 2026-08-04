@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { RoutePlanItem } from '../../types';
 import { ChevronUp, ChevronDown, Trash2, Plus } from 'lucide-react';
 
@@ -20,6 +20,20 @@ interface BusRouteTableProps {
 }
 
 const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], busPrefix, onUpdate, onUpdateMultiple, onDelete, onAdd, onMove, theme }) => {
+    const effectiveStations = useMemo(() => {
+        if (stations && stations.length > 0) return stations;
+        try {
+            const cached = localStorage.getItem('STAKE_STATIONS_CACHE');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) {
+            console.error("Error loading STAKE_STATIONS_CACHE in BusRouteTable", e);
+        }
+        return [];
+    }, [stations]);
+
     return (
         <div className="w-full">
             <div className="overflow-x-auto custom-scrollbar border-2 border-slate-200 rounded">
@@ -27,11 +41,13 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
                     <thead>
                         <tr className={`font-bold uppercase tracking-wider text-[10px] md:text-xs lg:text-sm border-b-2 bg-white/60 ${theme.text} ${theme.border}`}>
                             <th className={`p-4 w-16 text-center border-r-2 ${theme.border}`}>排序</th>
-                            <th className={`p-4 w-24 text-center border-r-2 ${theme.border}`}>站點代碼</th>
-                            <th className={`p-4 w-20 text-center border-r-2 ${theme.border}`}>停留(分)</th>
-                            <th className={`p-4 w-20 text-center border-r-2 ${theme.border}`}>行車(分)</th>
-                            <th className={`p-4 min-w-[150px] border-r-2 ${theme.border}`}>停留地點</th>
-                            <th className={`p-4 min-w-[200px] border-r-2 ${theme.border}`}>詳細地址</th>
+                            <th className={`p-4 w-24 text-center border-r-2 ${theme.border}`}>站號</th>
+                            <th className={`p-4 w-24 text-center border-r-2 ${theme.border}`}>到達</th>
+                            <th className={`p-4 w-20 text-center border-r-2 ${theme.border}`}>停留</th>
+                            <th className={`p-4 w-24 text-center border-r-2 ${theme.border}`}>離開</th>
+                            <th className={`p-4 w-20 text-center border-r-2 ${theme.border}`}>行車</th>
+                            <th className={`p-4 min-w-[150px] border-r-2 ${theme.border}`}>地點</th>
+                            <th className={`p-4 min-w-[200px] border-r-2 ${theme.border}`}>地址</th>
                             <th className={`p-4 min-w-[200px] border-r-2 ${theme.border}`}>Google Maps</th>
                             <th className="p-4 w-16 text-right">操作</th>
                         </tr>
@@ -40,6 +56,19 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
                         {(Array.isArray(items) ? items : []).map((item, idx) => {
                             const autoStopCode = `${busPrefix}${idx + 1}`;
                             
+                            const matchedStation = effectiveStations.find(s => 
+                                (item.stationId && s.id === item.stationId) ||
+                                (item.location && (
+                                    s.id === item.location || 
+                                    s.place === item.location || 
+                                    s.area === item.location || 
+                                    `${s.area} - ${s.place}` === item.location ||
+                                    `${s.area} ${s.place}` === item.location
+                                ))
+                            );
+
+                            const selectValue = matchedStation ? matchedStation.id : (item.location ? `custom:${item.location}` : '');
+
                             return (
                             <tr key={idx} className={`bg-transparent hover:bg-white/40 transition-colors group border-b ${theme.border}`}>
                                 <td className={`p-2 text-center border-r-2 bg-white/20 ${theme.border}`}>
@@ -57,34 +86,96 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
                                     />
                                 </td>
                                 <td className={`p-1 border-r-2 ${theme.border}`}>
-                                    <input className={`w-full bg-white/40 border-2 rounded px-1 py-1.5 text-center font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm ${theme.text} ${theme.border}`} value={item.stay || ''} onChange={e => onUpdate(idx, 'stay', e.target.value)} />
+                                    <input 
+                                        type="text"
+                                        className={`w-full bg-white/40 border-2 rounded px-1 py-1.5 text-center font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm ${theme.text} ${theme.border}`} 
+                                        value={item.arrivalTime || ''} 
+                                        placeholder="HH:mm"
+                                        onChange={e => onUpdate(idx, 'arrivalTime', e.target.value)} 
+                                    />
                                 </td>
                                 <td className={`p-1 border-r-2 ${theme.border}`}>
-                                    <input className={`w-full bg-white/40 border-2 rounded px-1 py-1.5 text-center font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm ${theme.text} ${theme.border}`} placeholder="分" value={item.duration} onChange={e => onUpdate(idx, 'duration', e.target.value)} />
+                                    <input 
+                                        type="text"
+                                        className={`w-full bg-white/40 border-2 rounded px-1 py-1.5 text-center font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm ${theme.text} ${theme.border}`} 
+                                        placeholder="分"
+                                        value={item.stay || ''} 
+                                        onChange={e => onUpdate(idx, 'stay', e.target.value)} 
+                                    />
+                                </td>
+                                <td className={`p-1 border-r-2 ${theme.border}`}>
+                                    <input 
+                                        type="text"
+                                        className={`w-full bg-slate-50/50 border-2 rounded px-1 py-1.5 text-center font-black outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm text-slate-500 ${theme.border}`} 
+                                        value={item.departureTime || ''} 
+                                        placeholder="HH:mm"
+                                        readOnly
+                                    />
+                                </td>
+                                <td className={`p-1 border-r-2 ${theme.border}`}>
+                                    <input 
+                                        type="text"
+                                        className={`w-full bg-white/40 border-2 rounded px-1 py-1.5 text-center font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm ${theme.text} ${theme.border}`} 
+                                        placeholder="分" 
+                                        value={item.duration || ''} 
+                                        onChange={e => onUpdate(idx, 'duration', e.target.value)} 
+                                    />
                                 </td>
                                 <td className={`p-2 border-r-2 ${theme.border}`}>
                                     <select 
                                         className={`w-full bg-white/80 border-2 rounded px-1 py-1.5 font-black focus:bg-white outline-none transition-all shadow-sm text-[10px] md:text-xs lg:text-sm cursor-pointer ${theme.text} ${theme.border}`}
-                                        value={item.location || ''}
+                                        value={selectValue}
                                         onChange={e => {
-                                            const selected = stations.find(s => s.area === e.target.value);
-                                            if (selected && onUpdateMultiple) {
-                                                onUpdateMultiple(idx, {
-                                                    location: selected.area,
-                                                    address: selected.address,
-                                                    mapUrl: selected.mapUrl || ''
-                                                });
-                                            } else if (selected) {
-                                                onUpdate(idx, 'location', selected.area);
-                                                onUpdate(idx, 'address', selected.address);
-                                                if (selected.mapUrl) onUpdate(idx, 'mapUrl', selected.mapUrl);
+                                            const val = e.target.value;
+                                            if (!val) {
+                                                if (onUpdateMultiple) {
+                                                    onUpdateMultiple(idx, { location: '', area: '', address: '', mapUrl: '', stationId: '' });
+                                                } else {
+                                                    onUpdate(idx, 'location', '');
+                                                }
+                                                return;
+                                            }
+                                            if (val.startsWith('custom:')) return;
+                                            
+                                            const selected = effectiveStations.find(s => s.id === val);
+                                            if (selected) {
+                                                const areaName = selected.area || selected.place || '';
+                                                const placeName = selected.place || selected.area || '';
+                                                if (onUpdateMultiple) {
+                                                    onUpdateMultiple(idx, {
+                                                        area: areaName,
+                                                        location: placeName,
+                                                        address: selected.address || '',
+                                                        mapUrl: selected.mapUrl || '',
+                                                        stationId: selected.id
+                                                    });
+                                                } else {
+                                                    onUpdate(idx, 'area', areaName);
+                                                    onUpdate(idx, 'location', placeName);
+                                                    onUpdate(idx, 'address', selected.address || '');
+                                                    if (selected.mapUrl) onUpdate(idx, 'mapUrl', selected.mapUrl);
+                                                    onUpdate(idx, 'stationId', selected.id);
+                                                }
                                             }
                                         }}
                                     >
                                         <option value="">選擇地點</option>
-                                        {stations.map((s, si) => (
-                                            <option key={si} value={s.area}>{s.area}</option>
-                                        ))}
+                                        {!matchedStation && item.location && (
+                                            <option value={`custom:${item.location}`}>
+                                                {item.location}
+                                            </option>
+                                        )}
+                                        {[...effectiveStations]
+                                            .sort((a, b) => (a.area || a.place || '').localeCompare(b.area || b.place || '', 'zh-Hant'))
+                                            .map((s, si) => {
+                                                const label = s.area ? (s.place && s.place !== s.area ? `${s.area} (${s.place})` : s.area) : (s.place || `站點 ${si + 1}`);
+                                                return (
+                                                    <option key={s.id || si} value={s.id}>
+                                                        {label}
+                                                    </option>
+                                                );
+                                            })
+                                        }
                                     </select>
                                 </td>
                                 <td className={`p-2 border-r-2 ${theme.border}`}>
@@ -106,9 +197,9 @@ const BusRouteTable: React.FC<BusRouteTableProps> = ({ items, stations = [], bus
             </div>
             <button 
                 onClick={onAdd}
-                className={`w-full h-8 md:h-10 lg:h-12 text-[10px] md:text-xs lg:text-sm font-bold border-t flex justify-center items-center transition-all gap-2 bg-white/60 backdrop-blur-sm ${theme.text} ${theme.border} hover:bg-white/80`}
+                className={`w-auto h-8 px-4 text-[10px] md:text-xs lg:text-sm font-bold border flex justify-center items-center transition-all gap-2 bg-white shadow-sm ${theme.text} ${theme.border} hover:bg-white/80 mx-auto mt-2 rounded`}
             >
-                <Plus size={18} /> 新增行程節點
+                <Plus size={18} /> 新增時間節點
             </button>
         </div>
     );

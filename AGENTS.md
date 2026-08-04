@@ -211,12 +211,54 @@
 7. 核心修復與優化項目 (Core Fixes)
 - 根層級滾動鎖定解除：確保 `overflow-x: visible` 傳導至組件，解除根部對水平捲動的阻斷。
 - 溢出預防 (Overflow Fix)：移除子組件在手機端的冗餘負邊距與 Padding。由最外層容器統一管理 `p-1 (0.25em (4px))`，組件內部僅在需要水平捲動（如表格）時才使用 `-mx-1 (0.25em (4px)) px-1 (0.25em (4px))`。
-- 佈局傳導修正：確保 `min-w-0` 完整傳導至分頁內所有 Flex 與 Grid 容器，防止內容撐開導致 100vw 溢出。
+- 佈局傳導修正：確保 `min-w-0`完整傳導至分頁內所有 Flex 與 Grid 容器，防止內容撐開導致 100vw 溢出。
 - 側邊欄回到頂端修正：側邊欄內的「回到頂端」按鈕僅控制「側邊欄選單區域」的滾動，不應影響主內容區。
 - 側邊欄常駐收摺：側邊欄在所有解析度下預設皆為展開。
 - 負邊距對齊技術：確保表格「視覺貼邊」。
 - Sticky 欄位背景穿透修復：Sticky 欄位必須有明確背景色與 `z-index`，並在手機端加入 `shadow-md`。
 - 麵包屑完整性：確保路徑顯示包含分類名稱（首頁 > 分類 > 分頁）。
+
+
+8. 網站架構圖 (Site Map)
+全系統架構分為「前台報名」、「資管/主辦後台」與「系統工程後台」。
+
+8.1 前台 (Public)
+- 聖殿旅行報名頁 (RegistrationPage)
+
+8.2 聖殿旅行管理系統 (Stake Admin)
+- 報名管理 (Registration) - 報名清單、名冊導出
+- 活動設定 (Events) - 建立/編輯活動
+- 保險資料 (Insurance) - 保險名單處理
+- 訂房作業 (Booking) - 住宿分配
+- 行程安排 (Route) - 乘車路線與時間
+- 站點資料 (BusStops/Stations) - 停靠點管理
+- 車輛管理 (BusManagement) - 車次/司機設定
+- 分車作業 (Assign) - 人員上車分配
+- 滿意度 (Rating) - 問卷結果
+- 公告 (Announcement) - 前台公告
+- 須知 (Notice) - 行前通知
+- 文本編輯 (TextEditor) - 系統文字自訂
+- 備份 (Backup) - 資料導出/導入
+- 歷史 (History) - 往期活動記錄
+- 工作人員 (Staff) - 隨車/工作人員分配
+- 報名設定 (RegSettings) - 開放時間/名額
+- 費用配置 (FeeConfig) - 項目單價設定
+- 繳費狀況 (Fee) - 財務核銷
+- 交通補助 (Subsidy) - 補助計算
+- 黑名單 (Restrictions) - 報名限制人員
+- 負責人 (Representatives) - 各單位聯絡人
+- 個資 (PersonalInfo) - 進階個資查詢
+- 溝通 (Comm) - 訊息通知
+- 進度 (Progress) - 籌備進度追蹤
+- 聖殿 (Temple) - 聖殿儀式時段管理
+
+8.3 系統工程後台 (Engineer Admin)
+- 程式管理 (System) - 系統核心參數
+- 單位帳密 (Users) - 帳號權限管理
+- 資料保護 (Data) - 加密與備份
+- 登入記錄 (Logs) - 操作日誌
+- 公告設定 (Announcements) - 全域系統公告
+- 多國語言 (Translations) - 詞庫管理
 
 
 

@@ -72,23 +72,52 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
         
         // Use a Map with stopCode as key to ensure all unique stops are included
         const map = new Map<string, RoutePlanItem>();
-        
+        const effectiveStations = (currentEvent.busStops && currentEvent.busStops.length > 0) ? currentEvent.busStops : (settings?.stations || []);
+
+        const getStopDisplayLocation = (item: RoutePlanItem) => {
+            if (item.area && item.area.trim()) return item.area.trim();
+            if (effectiveStations && effectiveStations.length > 0) {
+                const st = effectiveStations.find(s => 
+                    (item.stationId && s.id === item.stationId) ||
+                    s.id === item.location ||
+                    s.place === item.location ||
+                    s.area === item.location
+                );
+                if (st && st.area && st.area.trim()) return st.area.trim();
+            }
+            return item.location || '';
+        };
+
         // Process outbound stops
         outboundItems.forEach(item => {
             if (item.stopCode) {
-                map.set(item.stopCode, { ...item, arrivalTime: item.arrivalTime || item.departureTime });
+                const loc = getStopDisplayLocation(item);
+                map.set(item.stopCode, { 
+                    ...item, 
+                    location: loc,
+                    area: item.area || loc,
+                    arrivalTime: item.arrivalTime || item.departureTime 
+                });
             }
         });
         
         // Process return stops
         returnItems.forEach(item => {
             if (item.stopCode) {
-                map.set(item.stopCode, { ...item, arrivalTime: item.arrivalTime || item.departureTime });
+                if (!map.has(item.stopCode)) {
+                    const loc = getStopDisplayLocation(item);
+                    map.set(item.stopCode, { 
+                        ...item, 
+                        location: loc,
+                        area: item.area || loc,
+                        arrivalTime: item.arrivalTime || item.departureTime 
+                    });
+                }
             }
         });
         
-        return Array.from(map.values()).sort((a, b) => (a.stopCode || '').localeCompare(b.stopCode || ''));
-    }, [currentEvent.busRoutes]);
+        return Array.from(map.values()).sort((a, b) => (a.stopCode || '').localeCompare(b.stopCode || '', undefined, { numeric: true }));
+    }, [currentEvent.busRoutes, currentEvent.busStops, settings?.stations]);
 
     const filteredRegistrations = useMemo(() => {
         if (!searchQuery) return registrations;
@@ -228,7 +257,10 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                             {(currentEvent?.busConfigs || []).map(b => (
                                                 <optgroup key={b.name} label={b.name} className="font-bold text-indigo-900 bg-indigo-50">
                                                     <option value={b.name}>{b.name} (全車分配)</option>
-                                                    {(b.stops || []).map(s => <option key={s.code} value={s.code}>{s.code} - {s.location}</option>)}
+                                                    {(b.stops || []).map(s => {
+                                                        const cleanLoc = s.location || '';
+                                                        return <option key={s.code} value={s.code}>{s.code} - {cleanLoc}</option>;
+                                                    })}
                                                 </optgroup>
                                             ))}
                                         </select>
@@ -286,8 +318,10 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                             <div key={reg.reg_id} className="bg-white p-4 rounded shadow-sm border border-slate-100 hover:border-blue-400 transition-all group">
                                 <div className="flex justify-between items-start mb-3">
                                     <div className="flex items-center gap-2 w-full">
-                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 shrink-0">{reg.unit}</span>
-                                        <span className="font-bold text-slate-900 text-sm truncate">{reg.name}</span>
+                                        <span className="font-bold text-slate-900 text-sm truncate">
+                                            <span className="text-blue-600 mr-2">[{reg.unit}]</span>
+                                            {reg.name}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-2 mt-2">
@@ -303,7 +337,7 @@ const AssignmentTab: React.FC<AssignmentTabProps> = ({ currentEvent, registratio
                                                         handleAssignToBus(reg.reg_id, bus.name);
                                                     }
                                                 }} 
-                                                className={`h-7 px-3 text-[10px] font-black rounded transition-all shadow-sm ${selectingBusFor[reg.reg_id] === bus.name ? 'bg-indigo-900 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                                className={`h-6 px-3 text-[10px] font-black rounded transition-all shadow-sm ${selectingBusFor[reg.reg_id] === bus.name ? 'bg-indigo-900 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                                             >
                                                 {bus.name}
                                             </button>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { GlobalSettings, EventData, BusRoute, RoadSignItem } from '../../types';
+import React, { useState, useMemo } from 'react';
+import { GlobalSettings, EventData, BusRoute, RoadSignItem, RoutePlanItem } from '../../types';
 import { updateEvent } from '../../services/sheetService';
 import { Bus, Map as MapIcon, Save, ChevronDown, ChevronUp, ArrowRightLeft, FileText, Upload, Download } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
@@ -17,14 +17,25 @@ interface RouteTabProps {
 }
 
 // Helper to add minutes to HH:mm time string
-const addMinutes = (timeStr: string, minutes: number | string): string => {
-    if (!timeStr) return '';
-    const [h, m] = timeStr.split(':').map(Number);
+const addMinutes = (timeStr: string, minutes: number | string | undefined | null): string => {
+    if (!timeStr || typeof timeStr !== 'string') return '';
+    const trimmed = timeStr.trim();
+    if (!trimmed) return '';
+    const parts = trimmed.split(':');
+    if (parts.length < 2) return timeStr;
+    const h = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
     if (isNaN(h) || isNaN(m)) return timeStr;
-    const date = new Date();
-    date.setHours(h);
-    date.setMinutes(m + (parseInt(String(minutes)) || 0));
-    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    
+    const parsedMins = typeof minutes === 'number' ? minutes : parseInt(String(minutes || '0'), 10);
+    const minsToAdd = isNaN(parsedMins) ? 0 : parsedMins;
+    
+    let totalMins = h * 60 + m + minsToAdd;
+    totalMins = ((totalMins % 1440) + 1440) % 1440;
+    
+    const resH = Math.floor(totalMins / 60);
+    const resM = totalMins % 60;
+    return `${String(resH).padStart(2, '0')}:${String(resM).padStart(2, '0')}`;
 };
 
 // Standard rainbow styles following strict system instructions (Light bg + Dark text & borders)
@@ -57,12 +68,46 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
     const toggleSignCollapse = (busName: string) => setCollapsedSigns(prev => ({ ...prev, [busName]: !prev[busName] }));
     const closeDialog = () => setConfirmConfig(prev => ({ ...prev, isOpen: false }));
 
+    const effectiveStations = useMemo(() => {
+        if (currentEvent?.busStops && currentEvent.busStops.length > 0) {
+            return currentEvent.busStops;
+        }
+        if (settings?.stations && settings.stations.length > 0) {
+            return settings.stations;
+        }
+        try {
+            const cached = localStorage.getItem('STAKE_STATIONS_CACHE');
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) {
+            console.error("Error reading STAKE_STATIONS_CACHE", e);
+        }
+        return [];
+    }, [currentEvent?.busStops, settings?.stations]);
+
     const syncAndSave = (event: EventData) => {
         if (!event.busRoutes || !event.busConfigs) {
             updateEvent(event);
             onUpdateEvent(event);
             return;
         }
+
+        const getStopDisplayLocation = (item: RoutePlanItem) => {
+            if (item.area && item.area.trim()) return item.area.trim();
+            if (effectiveStations && effectiveStations.length > 0) {
+                const st = effectiveStations.find(s => 
+                    (item.stationId && s.id === item.stationId) ||
+                    s.id === item.location ||
+                    s.place === item.location ||
+                    s.area === item.location
+                );
+                if (st && st.area && st.area.trim()) return st.area.trim();
+            }
+            return item.location || '';
+        };
+
         const newBusConfigs = event.busConfigs.map(config => {
             const route = event.busRoutes![config.name];
             if (!route) return config;
@@ -71,22 +116,22 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                 .filter(item => item.stopCode)
                 .map(item => ({
                     code: item.stopCode!,
-                    location: item.location,
-                    time: item.arrivalTime
+                    location: getStopDisplayLocation(item),
+                    time: item.arrivalTime || ''
                 }));
                 
             const returnStops: { code: string, location: string, time: string }[] = (route.returnTrip || [])
                 .filter(item => item.stopCode)
                 .map(item => ({
                     code: item.stopCode!,
-                    location: item.location,
-                    time: item.arrivalTime
+                    location: getStopDisplayLocation(item),
+                    time: item.arrivalTime || ''
                 }));
             
             // Combine both, avoiding duplicates based on code
             const stopMap = new Map<string, { code: string, location: string, time: string }>();
             [...outboundStops, ...returnStops].forEach(s => stopMap.set(s.code, s));
-            const stops = Array.from(stopMap.values()).sort((a, b) => a.code.localeCompare(b.code));
+            const stops = Array.from(stopMap.values()).sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
             
             return { ...config, stops };
         });
@@ -95,19 +140,32 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         onUpdateEvent(syncedEvent);
     };
 
-    const recalculateTimes = (items: any[], startTime: string): any[] => {
+    const recalculateTimes = (items: any[]): any[] => {
         const safeItems = Array.isArray(items) ? items : [];
-        if (!startTime || safeItems.length === 0) return safeItems;
-        let currentTime = startTime;
-        return safeItems.map((item, idx) => {
-            const newItem = { ...item };
-            newItem.arrivalTime = idx === 0 ? startTime : currentTime;
-            const stayMins = parseInt(item.stay || '0');
-            newItem.departureTime = addMinutes(newItem.arrivalTime, stayMins);
-            const durationMins = parseInt(item.duration || '0');
-            currentTime = addMinutes(newItem.departureTime, durationMins);
-            return newItem;
-        });
+        if (safeItems.length === 0) return safeItems;
+        
+        const newItems = [...safeItems];
+        for (let i = 0; i < newItems.length; i++) {
+            const item = { ...newItems[i] };
+            
+            // 1. If not first row, arrivalTime = prev departureTime + prev duration (time from prev stop to current stop)
+            if (i > 0) {
+                const prev = newItems[i - 1];
+                if (prev.departureTime && String(prev.departureTime).trim() !== '') {
+                    item.arrivalTime = addMinutes(prev.departureTime, prev.duration);
+                }
+            }
+            
+            // 2. departureTime = arrivalTime + stay
+            if (item.arrivalTime && String(item.arrivalTime).trim() !== '') {
+                item.departureTime = addMinutes(item.arrivalTime, item.stay);
+            } else {
+                item.departureTime = '';
+            }
+            
+            newItems[i] = item;
+        }
+        return newItems;
     };
 
     const handleUpdateRouteItem = (busName: string, type: 'outbound' | 'returnTrip', idx: number, field: string, value: string) => {
@@ -115,13 +173,21 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
         let newList = [...(Array.isArray(currentRoute[type]) ? currentRoute[type] : [])];
         newList[idx] = { ...newList[idx], [field]: value };
-        if (['stay', 'duration', 'arrivalTime'].includes(field) || idx === 0) {
-             const startTime = type === 'outbound' 
-                ? (currentRoute.outboundStartTime || (newList[0]?.arrivalTime)) 
-                : (currentRoute.returnStartTime || (newList[0]?.arrivalTime));
-             if (startTime) newList = recalculateTimes(newList, startTime);
+        
+        // Recalculate all times if relevant fields changed
+        if (['arrivalTime', 'stay', 'duration'].includes(field)) {
+            newList = recalculateTimes(newList);
         }
-        syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, [type]: newList } } });
+        
+        let updatedRoute = { ...currentRoute, [type]: newList };
+        
+        // Sync start time if first row arrival time changed
+        if (idx === 0 && field === 'arrivalTime') {
+            const key = type === 'outbound' ? 'outboundStartTime' : 'returnStartTime';
+            updatedRoute = { ...updatedRoute, [key]: value };
+        }
+        
+        syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: updatedRoute } });
     };
 
     const handleUpdateRouteItemMultiple = (busName: string, type: 'outbound' | 'returnTrip', idx: number, updates: Record<string, string>) => {
@@ -129,11 +195,17 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
         let newList = [...(Array.isArray(currentRoute[type]) ? currentRoute[type] : [])];
         newList[idx] = { ...newList[idx], ...updates };
-        const startTime = type === 'outbound' 
-            ? (currentRoute.outboundStartTime || (newList[0]?.arrivalTime)) 
-            : (currentRoute.returnStartTime || (newList[0]?.arrivalTime));
-        if (startTime) newList = recalculateTimes(newList, startTime);
-        syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, [type]: newList } } });
+        
+        newList = recalculateTimes(newList);
+        
+        let updatedRoute = { ...currentRoute, [type]: newList };
+        
+        if (idx === 0 && updates.arrivalTime) {
+            const key = type === 'outbound' ? 'outboundStartTime' : 'returnStartTime';
+            updatedRoute = { ...updatedRoute, [key]: updates.arrivalTime };
+        }
+            
+        syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: updatedRoute } });
     };
 
     const handleAddRouteRow = (busName: string, type: 'outbound' | 'returnTrip') => {
@@ -141,10 +213,13 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
         const prefix = type === 'outbound' ? 'A' : 'B';
         const newListBase = Array.isArray(currentRoute[type]) ? currentRoute[type] : [];
-        const newItem = { arrivalTime: '', stay: '0', departureTime: '', stopCode: `${prefix}${newListBase.length + 1}`, duration: '0', location: '', address: '', mapUrl: '' };
+        const newItem = { 
+            arrivalTime: '', stay: '0', departureTime: '', 
+            stopCode: `${prefix}${newListBase.length + 1}`, 
+            duration: '0', location: '', area: '', address: '', mapUrl: '', stationId: '' 
+        };
         let newList = [...newListBase, newItem];
-        const startTime = type === 'outbound' ? currentRoute.outboundStartTime : currentRoute.returnStartTime;
-        if (startTime) newList = recalculateTimes(newList, startTime);
+        newList = recalculateTimes(newList);
         syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, [type]: newList } } });
     };
 
@@ -157,8 +232,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                 const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
                 let newList = [...(Array.isArray(currentRoute[type]) ? currentRoute[type] : [])];
                 newList.splice(idx, 1);
-                const startTime = type === 'outbound' ? currentRoute.outboundStartTime : currentRoute.returnStartTime;
-                if (startTime) newList = recalculateTimes(newList, startTime);
+                newList = recalculateTimes(newList);
                 syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, [type]: newList } } });
             }
         });
@@ -170,34 +244,37 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         let newList = [...(Array.isArray(currentRoute[type]) ? currentRoute[type] : [])];
         if (direction === 'up' && idx > 0) [newList[idx - 1], newList[idx]] = [newList[idx], newList[idx - 1]];
         else if (direction === 'down' && idx < newList.length - 1) [newList[idx], newList[idx + 1]] = [newList[idx + 1], newList[idx]];
-        const startTime = type === 'outbound' ? currentRoute.outboundStartTime : currentRoute.returnStartTime;
-        if (startTime) newList = recalculateTimes(newList, startTime);
+        newList = recalculateTimes(newList);
         syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, [type]: newList } } });
     };
 
     const handleReverseRoute = (busName: string) => {
         const routes = currentEvent.busRoutes || {};
         const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
+        const performReverse = () => {
+            const outbound = Array.isArray(currentRoute.outbound) ? currentRoute.outbound : [];
+            let reversed = [...outbound].reverse().map((item, idx) => ({
+                ...item,
+                stopCode: `B${idx + 1}`,
+                stay: idx === 0 || idx === outbound.length - 1 ? '0' : item.stay,
+                duration: idx === outbound.length - 1 ? '0' : outbound[outbound.length - idx - 2]?.duration || '0'
+            }));
+            reversed = recalculateTimes(reversed);
+            syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, returnTrip: reversed } } });
+        };
+
         if (currentRoute.returnTrip?.length > 0) {
             setConfirmConfig({
-                isOpen: true, title: '回程反向', message: '回程已有資料。確定要覆蓋並執行「回程反向」嗎？',
+                isOpen: true,
+                title: '反向',
+                message: '回程已有資料。確定要覆蓋並執行「反向」嗎？',
                 onConfirm: () => {
                     closeDialog();
-                    const outbound = Array.isArray(currentRoute.outbound) ? currentRoute.outbound : [];
-                    const reversed = [...outbound].reverse().map((item, idx) => ({
-                        ...item, stopCode: `B${idx + 1}`, stay: idx === 0 || idx === outbound.length - 1 ? '0' : item.stay,
-                        duration: idx === outbound.length - 1 ? '0' : outbound[outbound.length - idx - 2]?.duration || '0'
-                    }));
-                    syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, returnTrip: reversed } } });
+                    performReverse();
                 }
             });
         } else {
-            const outbound = Array.isArray(currentRoute.outbound) ? currentRoute.outbound : [];
-            const reversed = [...outbound].reverse().map((item, idx) => ({
-                ...item, stopCode: `B${idx + 1}`, stay: idx === 0 || idx === outbound.length - 1 ? '0' : item.stay,
-                duration: idx === outbound.length - 1 ? '0' : outbound[outbound.length - idx - 2]?.duration || '0'
-            }));
-            syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: { ...currentRoute, returnTrip: reversed } } });
+            performReverse();
         }
     };
 
@@ -221,9 +298,15 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         const currentRoute = routes[busName] || { outbound: [], returnTrip: [] };
         const key = `${type}${field}Time` as keyof BusRoute;
         const updatedRoute = { ...currentRoute, [key]: value };
+        
         if (field === 'Start') {
             const listKey = type === 'outbound' ? 'outbound' : 'returnTrip';
-            updatedRoute[listKey] = recalculateTimes(updatedRoute[listKey] as any[], value);
+            let list = [...(Array.isArray(updatedRoute[listKey]) ? updatedRoute[listKey] : [])];
+            if (list.length > 0) {
+                list[0] = { ...list[0], arrivalTime: value };
+                list = recalculateTimes(list);
+            }
+            updatedRoute[listKey] = list;
         }
         syncAndSave({ ...currentEvent, busRoutes: { ...routes, [busName]: updatedRoute } });
     };
@@ -327,78 +410,38 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
             </div>
 
             {/* Action Row */}
-            <div className="flex flex-wrap items-center justify-between gap-2 p-1 bg-white/60 backdrop-blur-sm rounded border border-slate-200 shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                    <button 
-                        onClick={handleSave} disabled={isSaving}
-                        className={`h-9 px-4 rounded text-xs font-black transition-all shadow-sm active:scale-95 flex items-center gap-2 ${isSaving ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-                    >
-                        <Save size={14} className={isSaving ? 'animate-spin' : ''} /> 
-                        {isSaving ? t('common.saving', '同步雲端中...') : '保存路線設定'}
-                    </button>
-                    <button
-                        onClick={() => {
-                            const stakeName = settings?.stake_name || '嘉義支聯會';
-                            const eventDate = currentEvent.event_date || '';
-                            const fileName = `行程規劃_${eventDate}.txt`;
-                            let fullText = `【行程規劃 - ${eventDate}】\n\n`;
-                            
-                            (currentEvent.busConfigs || []).forEach(bus => {
-                                const busName = bus.name;
-                                const route = currentEvent.busRoutes?.[busName];
-                                if (route) {
-                                    fullText += `--- ${busName} 號車 ---\n`;
-                                    fullText += `[去程]\n`;
-                                    fullText += (Array.isArray(route.outbound) ? route.outbound : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
-                                    fullText += `\n\n[回程]\n`;
-                                    fullText += (Array.isArray(route.returnTrip) ? route.returnTrip : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
-                                    fullText += `\n\n`;
-                                }
-                            });
-                            
-                            const blob = new Blob([fullText], { type: 'text/plain' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = fileName;
-                            a.click();
-                        }}
-                        className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2"
-                    >
-                        <FileText size={14} /> 印詢價單
-                    </button>
-                </div>
-                <div className="flex items-center gap-2">
-                    <label className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2 cursor-pointer">
-                        <Upload size={14} /> 匯入
-                        <input type="file" className="hidden" accept=".json" onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = (evt) => {
-                                try {
-                                    const data = JSON.parse(evt.target?.result as string);
-                                    syncAndSave({ ...currentEvent, ...data });
-                                    setMsg('匯入完成');
-                                } catch (err) { setMsg('匯入失敗'); setMsgType('error'); }
-                            };
-                            reader.readAsText(file);
-                        }} />
-                    </label>
-                    <button
-                        onClick={() => {
-                            const blob = new Blob([JSON.stringify(currentEvent.busRoutes || {}, null, 2)], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `routes_backup_${currentEvent.event_date}.json`;
-                            a.click();
-                        }}
-                        className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2"
-                    >
-                        <Download size={14} /> 匯出
-                    </button>
-                </div>
+            <div className="flex flex-wrap items-center justify-end gap-2 p-1 bg-white/60 backdrop-blur-sm rounded border border-slate-200 shadow-sm">
+                <button
+                    onClick={() => {
+                        const stakeName = settings?.stake_name || '嘉義支聯會';
+                        const eventDate = currentEvent.event_date || '';
+                        const fileName = `行程規劃_${eventDate}.txt`;
+                        let fullText = `【行程規劃 - ${eventDate}】\n\n`;
+                        
+                        (currentEvent.busConfigs || []).forEach(bus => {
+                            const busName = bus.name;
+                            const route = currentEvent.busRoutes?.[busName];
+                            if (route) {
+                                fullText += `--- ${busName} 號車 ---\n`;
+                                fullText += `[去程]\n`;
+                                fullText += (Array.isArray(route.outbound) ? route.outbound : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
+                                fullText += `\n\n[回程]\n`;
+                                fullText += (Array.isArray(route.returnTrip) ? route.returnTrip : []).map((i: any) => `${i.departureTime || i.arrivalTime} ${i.location}`).join('\n');
+                                fullText += `\n\n`;
+                            }
+                        });
+                        
+                        const blob = new Blob([fullText], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.click();
+                    }}
+                    className="h-9 px-4 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2"
+                >
+                    <FileText size={14} /> 印詢價單
+                </button>
             </div>
 
             <TempleScheduleSection currentEvent={currentEvent} onUpdateEvent={onUpdateEvent} />
@@ -417,6 +460,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                         {/* 行程安排 */}
                         <BusRouteSection 
                             busConfig={busConfig} route={route} idx={idx} settings={settings}
+                            stations={effectiveStations}
                             theme={theme}
                             isCollapsed={isBusCollapsed} onToggleCollapse={() => toggleBusCollapse(busName)}
                             onUpdateField={(f, v) => syncAndSave({ ...currentEvent, busRoutes: { ...currentEvent.busRoutes, [busName]: { ...route, [f]: v } } })}
@@ -453,7 +497,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                                             <MapIcon size={20} />
                                         </div>
                                         <h3 className={`font-bold text-xs md:text-sm lg:text-base ${theme.text}`}>
-                                            {busName} - 路標指示
+                                            {busName}路標
                                         </h3>
                                     </div>
                                     <div className={theme.text}>
@@ -464,27 +508,6 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
 
                             {!isSignCollapsed && (
                                 <div className="p-1 flex flex-col gap-2 bg-white/40 backdrop-blur-sm">
-                                    {/* Action Row for Road Signs */}
-                                    <div className="flex justify-start p-1">
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setConfirmConfig({
-                                                    isOpen: true, title: '回程反向', message: `確定要將「${busName}去程」的指示內容，反向複製到「回程」嗎？這將覆蓋現有的回程資料。`,
-                                                    onConfirm: () => {
-                                                        closeDialog();
-                                                        const outbound = route.outboundRoadSigns || [];
-                                                        const reversed = outbound.map((i: any) => i.instruction).reverse().map((inst: string) => ({ label: '', instruction: inst, checked: false }));
-                                                        syncAndSave({ ...currentEvent, busRoutes: { ...currentEvent.busRoutes, [busName]: { ...route, returnRoadSigns: reversed } } });
-                                                    }
-                                                });
-                                            }} 
-                                            className={`h-8 px-3 rounded text-[10px] font-black transition-all flex items-center gap-2 border bg-white/60 shadow-sm ${theme.text} ${theme.border} ${theme.hover}`}
-                                        >
-                                            <ArrowRightLeft size={12} /> 回程反向
-                                        </button>
-                                    </div>
-                                    
                                     <div className="p-1 grid lg:grid-cols-2 gap-4">
                                         <BusRoadSignSection busName={busName} type="outbound" items={route.outboundRoadSigns || []}
                                             theme={theme}
@@ -517,6 +540,17 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                                                 a.href = url; a.download = `${busName}_signs_return.json`; a.click();
                                             }}
                                             onImport={(e) => handleImportBusSigns(busName, 'return', e)}
+                                            onReverse={() => {
+                                                setConfirmConfig({
+                                                    isOpen: true, title: '反向', message: `確定要將「${busName}去程」的指示內容，反向複製到「回程」嗎？這將覆蓋現有的回程資料。`,
+                                                    onConfirm: () => {
+                                                        closeDialog();
+                                                        const outbound = route.outboundRoadSigns || [];
+                                                        const reversed = outbound.map((i: any) => i.instruction).reverse().map((inst: string) => ({ label: '', instruction: inst, checked: false }));
+                                                        syncAndSave({ ...currentEvent, busRoutes: { ...currentEvent.busRoutes, [busName]: { ...route, returnRoadSigns: reversed } } });
+                                                    }
+                                                });
+                                            }}
                                         />
                                     </div>
                                 </div>

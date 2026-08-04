@@ -232,9 +232,36 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
         if (!code || !busConfigs) return undefined;
         for (const bus of busConfigs) {
             const stop = (bus.stops || []).find(s => s.code === code);
-            if (stop) return { code: stop.code, location: stop.location, time: stop.time };
+            if (stop) {
+                let cleanLoc = stop.location || '';
+                const stations = (activeEvent?.busStops && activeEvent.busStops.length > 0) ? activeEvent.busStops : (settings?.stations || []);
+                const matchedSt = stations.find(st => 
+                    st.id === stop.code || 
+                    st.place === cleanLoc || 
+                    st.area === cleanLoc ||
+                    `${st.area}-${st.place}` === cleanLoc ||
+                    `${st.place}-${st.area}` === cleanLoc
+                );
+                if (matchedSt && matchedSt.area && matchedSt.area.trim()) {
+                    cleanLoc = matchedSt.area.trim();
+                } else if (cleanLoc.includes('-')) {
+                    cleanLoc = cleanLoc.split('-')[0].trim();
+                }
+                return { code: stop.code, location: cleanLoc, time: stop.time };
+            }
         }
         return undefined;
+    };
+
+    const getDisplayStopText = (reg: Registration) => {
+        const tripTypeStr = String(reg.trip_type || '');
+        if (reg.trip_type === TripType.SELF_MANAGED || tripTypeStr === '自理' || tripTypeStr === '自行' || tripTypeStr === '自行前往') {
+            return translateTripType(TripType.SELF_MANAGED);
+        }
+        const info = getStopInfo(reg.bus_assigned);
+        if (!info) return reg.bus_assigned || '-';
+        const formattedTime = info.time ? (info.time.startsWith('(') ? info.time : ` (${info.time})`) : '';
+        return `${info.code} ${info.location}${formattedTime}`;
     };
 
     const getMethodBadge = (reg: Registration) => {
@@ -632,11 +659,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                             {displayMode === 'normal' && (
                                                                                 <>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
-                                                                                        {(() => {
-                                                                                            const info = getStopInfo(reg.bus_assigned);
-                                                                                            if (!info) return '-';
-                                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
-                                                                                        })()}
+                                                                                        {getDisplayStopText(reg)}
                                                                                     </td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-indigo-700 truncate`}>{translateOrdinance(reg.ordinance_item)}</td>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>{translateIdentityType(reg.identity_type)}</td>
@@ -656,11 +679,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                             {displayMode === 'checkin' && (
                                                                                 <>
                                                                                     <td className={`px-3 py-2 border-r-2 border-b-[1px] ${theme.border} text-slate-700 truncate`}>
-                                                                                        {(() => {
-                                                                                            const info = getStopInfo(reg.bus_assigned);
-                                                                                            if (!info) return '-';
-                                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
-                                                                                        })()}
+                                                                                        {getDisplayStopText(reg)}
                                                                                     </td>
                                                                                     <td className={`px-3 py-2 text-center border-r-2 border-b-[1px] ${theme.border}`}>
                                                                                         <button onClick={() => handleToggleCheckIn(reg, 'to')} className={`p-1.5 rounded-full transition-all ${reg.is_checked_in_to ? 'bg-emerald-500 text-white shadow-sm' : 'bg-white/50 text-slate-300'} hover:scale-110`}>
@@ -693,11 +712,7 @@ const PublicRegistrationTab: React.FC<PublicRegistrationTabProps> = ({ registrat
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-2 min-w-0">
                                                                     <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">站別</div><div className="text-[11px] font-bold text-slate-700 truncate">
-                                                                        {(() => {
-                                                                            const info = getStopInfo(reg.bus_assigned);
-                                                                            if (!info) return '-';
-                                                                            return `${info.code}${info.location}${info.time ? info.time : ''}`;
-                                                                        })()}
+                                                                        {getDisplayStopText(reg)}
                                                                     </div></div>
                                                                     <div className={`${theme.content} p-2 rounded border-2 ${theme.border} min-w-0`}><div className="text-[10px] text-slate-400 font-black mb-1 uppercase truncate">教儀</div><div className="text-[11px] font-bold text-slate-700 truncate">{translateOrdinance(reg.ordinance_item)}</div></div>
                                                                 </div>
