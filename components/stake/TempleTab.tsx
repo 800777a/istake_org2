@@ -81,10 +81,35 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
     const [baptismSort, setBaptismSort] = useState<{ key: string, dir: 'asc' | 'desc' }>({ key: 'unit', dir: 'asc' });
     const [sealingSort, setSealingSort] = useState<{ key: string, dir: 'asc' | 'desc' }>({ key: 'unit', dir: 'asc' });
 
-    // Config slots (Strictly 24H strings)
-    const endowmentSlots = currentEvent.endowmentSettingsV2?.map(s => s.time).filter(t => !!t) || [];
-    const baptismSlots = currentEvent.baptismSettingsV2?.map(s => s.time).filter(t => !!t) || [];
-    const sealingSlots = currentEvent.sealingSettingsV2?.map(s => s.time).filter(t => !!t) || [];
+    // V301: 引用自 主辦 行程安排 教儀時間 區塊 開始時間
+    const timeOptions = useMemo(() => {
+        const items = currentEvent.templeConfig?.items || [];
+        const times = items
+            .map(item => item.arrivalTime)
+            .filter(t => t && String(t).trim() !== '');
+        
+        // Return unique sorted times
+        return Array.from(new Set(times)).sort();
+    }, [currentEvent.templeConfig?.items]);
+
+    // Config slots (derived from ordinance settings and linked to templeConfig.items arrivalTimes)
+    const endowmentSlots = useMemo(() => {
+        const configured = currentEvent.endowmentSettingsV2?.map(s => s.time).filter(t => !!t) || [];
+        const combined = Array.from(new Set([...timeOptions, ...configured])).filter(Boolean);
+        return combined.sort();
+    }, [currentEvent.endowmentSettingsV2, timeOptions]);
+
+    const baptismSlots = useMemo(() => {
+        const configured = currentEvent.baptismSettingsV2?.map(s => s.time).filter(t => !!t) || [];
+        const combined = Array.from(new Set([...timeOptions, ...configured])).filter(Boolean);
+        return combined.sort();
+    }, [currentEvent.baptismSettingsV2, timeOptions]);
+
+    const sealingSlots = useMemo(() => {
+        const configured = currentEvent.sealingSettingsV2?.map(s => s.time).filter(t => !!t) || [];
+        const combined = Array.from(new Set([...timeOptions, ...configured])).filter(Boolean);
+        return combined.sort();
+    }, [currentEvent.sealingSettingsV2, timeOptions]);
 
     const handleAssignSerials = async () => {
         if (!currentEvent.event_id) return;
@@ -98,16 +123,6 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
             setMsg(t('stake.temple.alerts.assignSerialFailed', '分配編號失敗: {{error}}', { error: res.message }));
         }
     };
-
-    // Generate 24h options for select (00:00 to 23:55)
-    const timeOptions: string[] = [];
-    for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 5) { // 5-minute intervals
-            const hour = h.toString().padStart(2, '0');
-            const min = m.toString().padStart(2, '0');
-            timeOptions.push(`${hour}:${min}`);
-        }
-    }
 
     useEffect(() => {
         // Init state from event data if needed, or keep local defaults
@@ -331,7 +346,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                             className="w-full border border-slate-200 rounded p-1 text-xs text-slate-700 bg-white"
                                         >
                                             <option value="">{tString('common.status.unassigned', '未指定')}</option>
-                                            {slots.map(s => <option key={s} value={s}>{s}</option>)}
+                                            {(() => {
+                                                const opts = [...slots];
+                                                if (r.ceremony_session && !opts.includes(r.ceremony_session)) {
+                                                    opts.push(r.ceremony_session);
+                                                }
+                                                return opts.map(s => <option key={s} value={s}>{s}</option>);
+                                            })()}
                                         </select>
                                     </td>
                                 </tr>
@@ -424,7 +445,13 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
                                             onChange={e => handleRowChange(idx, 'time', e.target.value)}
                                         >
                                             <option value="">-</option>
-                                            {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                                            {(() => {
+                                                const opts = [...timeOptions];
+                                                if (row.time && !opts.includes(row.time)) {
+                                                    opts.push(row.time);
+                                                }
+                                                return opts.map(t => <option key={t} value={t}>{t}</option>);
+                                            })()}
                                         </select>
                                     </td>
                                     <td className="p-2 border-r border-slate-200 text-center">
@@ -889,6 +916,14 @@ const TempleTab: React.FC<TempleTabProps> = ({ currentEvent, registrations, sett
 // Helper component for time select
 const TimeSelect = ({ value, onChange, options, placeholder }: { value: string, onChange: (v: string) => void, options: string[], placeholder?: string }) => {
     const { tString } = useI18n();
+    const displayOptions = useMemo(() => {
+        const list = [...options];
+        if (value && !list.includes(value)) {
+            list.push(value);
+        }
+        return list;
+    }, [options, value]);
+
     return (
         <select 
             className="border border-slate-200 rounded p-1.5 text-xs w-full bg-slate-50 text-slate-700 focus:ring-2 focus:ring-sky-100 focus:border-sky-500 outline-none transition-all"
@@ -896,7 +931,7 @@ const TimeSelect = ({ value, onChange, options, placeholder }: { value: string, 
             onChange={e => onChange(e.target.value)}
         >
             <option value="">{placeholder || tString('common.placeholder.select_time', '選擇時間')}</option>
-            {options.map(t => <option key={t} value={t}>{t}</option>)}
+            {displayOptions.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
     );
 };

@@ -461,11 +461,11 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                     {activeTab === 'eventRules' && (
                         <div className="animate-fade-in">
                             <div 
-                                className="flex items-center justify-between cursor-pointer select-none py-4 border-b-2 border-orange-100 mb-6"
+                                className="flex items-center justify-between cursor-pointer select-none py-1 border-b-2 border-orange-200 mb-6 bg-orange-50/50 rounded p-1"
                                 onClick={() => toggleSection('rules')}
                             >
                                 <SectionHeader icon={FileText} title={tString('stake.instructions.eventRules.header', '辦法內容')} />
-                                <div className="text-orange-400">
+                                <div className="text-orange-500 pr-2">
                                     {collapsedSections['rules'] ? <DownOutlined className="text-lg" /> : <UpOutlined className="text-lg" />}
                                 </div>
                             </div>
@@ -480,26 +480,33 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                         className="overflow-hidden"
                                     >
                                         <div className="mb-12">
-                                            <div className="text-center mb-8">
-                                                <h1 className="text-2xl md:text-3xl font-extrabold text-orange-900 mb-2">2026 嘉義支聯會 聖殿旅行團 活動辦法</h1>
-                                                <p className="text-orange-700 font-bold">實施日期：2026年7月1日起</p>
+                                            <div className="text-center mb-10 py-8 bg-gradient-to-b from-orange-50 to-white rounded-t border-t-4 border-orange-200">
+                                                <h1 className="text-2xl md:text-3xl font-black text-orange-900 mb-3 tracking-tight">2026 嘉義支聯會 聖殿旅行團 活動辦法</h1>
+                                                <div className="inline-block px-4 py-1 bg-orange-100 text-orange-800 rounded font-bold text-sm md:text-base border border-orange-200">
+                                                    實施日期：2026年7月1日起
+                                                </div>
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {ruleSections.map((section, index) => {
                                                     const color = rainbowColors[index % rainbowColors.length];
+                                                    // Mapping to Layer 1 styles from AGENTS.md
+                                                    const bg200 = color.accent.replace('100', '200');
+                                                    const text800 = color.text.replace('900', '800');
+                                                    
                                                     return (
                                                         <div 
                                                             key={index} 
-                                                            className={`${color.bg} ${color.border} ${color.text} p-5 md:p-6 rounded border-2 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col`}
+                                                            className={`${color.bg} border-2 ${color.border} rounded shadow-sm hover:shadow-md transition-all duration-300 flex flex-col min-w-0 w-full`}
                                                         >
-                                                            <div className="flex items-center mb-4 border-b border-current/10 pb-3">
-                                                                <div className={`${color.accent} p-2 rounded mr-3`}>
-                                                                    <section.icon className="w-5 h-5 md:w-6 md:h-6" />
+                                                            {/* Layer 1 Title Block */}
+                                                            <div className={`${bg200} p-3 border-b-4 ${color.border} flex items-center`}>
+                                                                <div className="bg-white/60 p-1.5 rounded mr-3 shadow-sm">
+                                                                    <section.icon className={`w-5 h-5 ${text800}`} />
                                                                 </div>
-                                                                <h3 className="font-bold text-lg md:text-xl">{section.title}</h3>
+                                                                <h3 className={`font-black text-base md:text-lg ${text800}`}>{section.title}</h3>
                                                             </div>
-                                                            <div className="flex-1 text-sm md:text-base leading-relaxed opacity-90">
+                                                            <div className="p-5 flex-1 text-sm md:text-base leading-relaxed text-slate-700">
                                                                 {section.content}
                                                             </div>
                                                         </div>
@@ -508,18 +515,18 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
                                             </div>
 
                                             {settings?.rules_content && settings.rules_content.length > 50 && (
-                                                <div className="mt-8 bg-gray-50 p-6 rounded border border-gray-200">
-                                                    <p className="text-gray-500 text-xs mb-4 uppercase tracking-widest font-bold">其他補充說明</p>
+                                                <div className="mt-8 bg-[#FFFFFF] p-6 rounded border-2 border-slate-200 shadow-sm">
+                                                    <p className="text-slate-500 text-[10px] md:text-xs mb-4 uppercase tracking-widest font-black border-b border-slate-100 pb-2">其他補充說明 (ADDITIONAL INFO)</p>
                                                     <div 
-                                                        className="markdown-body text-gray-700"
+                                                        className="markdown-body text-slate-700 text-sm md:text-base leading-loose"
                                                         dangerouslySetInnerHTML={{ __html: settings.rules_content }} 
                                                     />
                                                 </div>
                                             )}
 
-                                            <div className="mt-12 text-center space-y-2 border-t border-orange-100 pt-8">
-                                                <p className="text-orange-900 font-bold text-lg md:text-xl">祝福大家在聖殿旅行團中獲得豐盛的祝福！</p>
-                                                <p className="text-orange-600 text-sm">如有任何問題，請洽主辦人或督導人。</p>
+                                            <div className="mt-12 text-center space-y-3 border-t-2 border-orange-100 pt-10">
+                                                <p className="text-orange-900 font-black text-lg md:text-xl tracking-tight">祝福大家在聖殿旅行團中獲得豐盛的祝福！</p>
+                                                <p className="text-orange-600 text-xs md:text-sm font-bold bg-orange-50 inline-block px-4 py-1 rounded border border-orange-100">如有任何問題，請洽主辦人或督導人</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -941,21 +948,7 @@ const Instructions: React.FC<InstructionsProps> = ({ onBack, onGoRegister, onGoF
 
                 </div>
 
-                {/* Footer Actions */}
-                {/* Subtle Call to Action - Modern Style */}
-                <div className="mt-8 flex flex-col md:flex-row gap-6 items-center justify-center border-t border-slate-100 pt-12 pb-8">
-                    <div className="text-center md:text-left">
-                        <p className="text-slate-900 font-bold text-lg">準備好出發了嗎？</p>
-                        <p className="text-slate-500 text-sm">點擊按鈕開始報名本次聖殿旅行團</p>
-                    </div>
-                    <button 
-                        onClick={onGoRegister}
-                        className="w-full md:w-auto h-12 px-10 bg-indigo-600 text-white font-bold rounded shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 group active:scale-95"
-                    >
-                        <span>立即前往報名</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                </div>
+                {/* Footer Actions Removed as requested */}
 
                 <Modal
                     title={

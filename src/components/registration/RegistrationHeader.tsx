@@ -10,7 +10,7 @@ interface RegistrationHeaderProps {
     setMode: (mode: 'register' | 'lookup') => void;
     lang?: 'zh' | 'en';
     setLang?: (lang: 'zh' | 'en') => void;
-    activeEvent: EventData;
+    activeEvent?: EventData | null;
     lockCountdown: number;
     handleResetAndRegister: () => void;
     isFormDirty: () => boolean;
@@ -48,10 +48,17 @@ const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({
     return (
         <div className="space-y-2 mb-4 min-w-0">
             {/* Level 1: Page Header */}
-            <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-amber-950 px-3 py-2 md:px-6 md:py-3 shadow-lg flex items-center justify-between rounded border-2 border-amber-500/50 min-w-0">
+            <div 
+                className="px-3 py-2 md:px-6 md:py-3 shadow-lg flex items-center justify-between rounded border-2 min-w-0 transition-colors"
+                style={{ 
+                    backgroundColor: 'var(--primary-color)', 
+                    color: 'var(--text-on-primary)',
+                    borderColor: 'var(--primary-hover)'
+                }}
+            >
                 <div className="flex items-center gap-2 md:gap-3 min-w-0">
-                    <div className="p-1 md:p-1.5 bg-black/5 rounded border-2 border-black/10 shrink-0">
-                        <User className="text-amber-900 w-4 h-4 md:w-5 md:h-5" />
+                    <div className="p-1 md:p-1.5 bg-black/10 rounded border-2 border-black/10 shrink-0">
+                        <User className="w-4 h-4 md:w-5 md:h-5" style={{ color: 'var(--text-on-primary)' }} />
                     </div>
                     <div className="flex flex-col min-w-0">
                         <h2 className="text-xs md:text-lg font-black tracking-tight leading-tight uppercase truncate">

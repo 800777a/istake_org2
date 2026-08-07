@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { GlobalSettings, EventData, BusRoute, RoadSignItem, RoutePlanItem } from '../../types';
+import { GlobalSettings, EventData, BusRoute, RoadSignItem, RoutePlanItem, BusConfig } from '../../types';
 import { updateEvent } from '../../services/sheetService';
 import { Bus, Map as MapIcon, Save, ChevronDown, ChevronUp, ArrowRightLeft, FileText, Upload, Download } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
 import Toast, { ToastType } from '../Toast';
 import { useI18n } from '../../src/contexts/LanguageContext';
-import TempleScheduleSection from './TempleScheduleSection';
 import BusRouteSection from './BusRouteSection';
 import BusRoadSignSection from './BusRoadSignSection';
 
@@ -387,6 +386,106 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
         reader.readAsText(file);
     };
 
+    const handlePrintBusInquiry = (busConfig: BusConfig, route: any) => {
+        const busName = busConfig.name || '車輛';
+
+        const getStopInfo = (item: any) => {
+            const matchedStation = effectiveStations.find(s => 
+                (item.stationId && s.id === item.stationId) ||
+                (item.location && (
+                    s.id === item.location || 
+                    s.place === item.location || 
+                    s.area === item.location || 
+                    `${s.area} - ${s.place}` === item.location ||
+                    `${s.area} ${s.place}` === item.location
+                ))
+            );
+
+            const area = item.area || matchedStation?.area || '';
+            const place = item.location || matchedStation?.place || '';
+            let displayName = '';
+            if (area && place && area !== place) {
+                if (place.includes(area)) {
+                    displayName = place;
+                } else if (area.includes(place)) {
+                    displayName = area;
+                } else {
+                    displayName = `${area}-${place}`;
+                }
+            } else {
+                displayName = area || place || item.location || '';
+            }
+
+            const address = item.address || matchedStation?.address || '';
+            const mapUrl = item.mapUrl || matchedStation?.mapUrl || '';
+            const arrivalTime = item.arrivalTime || item.departureTime || '';
+
+            return {
+                arrivalTime,
+                displayName,
+                address,
+                mapUrl
+            };
+        };
+
+        const outboundItems = (Array.isArray(route?.outbound) ? route.outbound : []).map(getStopInfo);
+        const returnItems = (Array.isArray(route?.returnTrip) ? route.returnTrip : []).map(getStopInfo);
+
+        let text = `${busName} 詢價單\n\n`;
+
+        text += `發票抬頭：${currentEvent.invoice_title || ''}\n`;
+        text += `統一編號：${currentEvent.invoice_vat || ''}\n`;
+        text += `主辦姓名：${currentEvent.invoice_organizer || ''}\n`;
+        text += `連絡電話：${currentEvent.invoice_phone || ''}\n`;
+        text += `預訂車輛：${currentEvent.invoice_vehicles || ''}\n`;
+        text += `付款條件：${currentEvent.invoice_payment_terms || ''}\n\n`;
+
+        const actDate = currentEvent.invoice_date || currentEvent.event_date || '';
+        const actName = currentEvent.invoice_name || currentEvent.event_title || '';
+        text += `活動日期：${actDate}\n`;
+        text += `活動名稱：${actName}\n\n`;
+
+        text += `去程\n`;
+        outboundItems.forEach((item: { arrivalTime: string; displayName: string; address: string; mapUrl: string }) => {
+            if (item.displayName) {
+                text += `${item.arrivalTime ? item.arrivalTime + ' ' : ''}${item.displayName}\n`;
+            }
+        });
+        text += `\n`;
+
+        text += `回程\n`;
+        returnItems.forEach((item: { arrivalTime: string; displayName: string; address: string; mapUrl: string }) => {
+            if (item.displayName) {
+                text += `${item.arrivalTime ? item.arrivalTime + ' ' : ''}${item.displayName}\n`;
+            }
+        });
+        text += `\n`;
+
+        text += `地名, 地址, 地圖\n`;
+        const seenNames = new Set<string>();
+        const allStops = [...outboundItems, ...returnItems];
+
+        allStops.forEach((item: { arrivalTime: string; displayName: string; address: string; mapUrl: string }) => {
+            if (!item.displayName) return;
+            if (seenNames.has(item.displayName)) return;
+            seenNames.add(item.displayName);
+
+            text += `${item.displayName}\n`;
+            if (item.address) text += `${item.address}\n`;
+            if (item.mapUrl) text += `${item.mapUrl}\n`;
+            text += `\n`;
+        });
+
+        const fileName = `${busName}_詢價單.txt`;
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-24 animate-fade-in relative text-sm">
             {msg && <Toast message={msg} type={msgType} onClose={() => setMsg(null)} />}
@@ -444,8 +543,6 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                 </button>
             </div>
 
-            <TempleScheduleSection currentEvent={currentEvent} onUpdateEvent={onUpdateEvent} />
-
             {(currentEvent.busConfigs || []).map((busConfig, idx) => {
                 const busName = busConfig.name;
                 const isBusCollapsed = collapsedBuses[busName];
@@ -483,6 +580,7 @@ const RouteTab: React.FC<RouteTabProps> = ({ currentEvent, settings, onUpdateEve
                             }}
                             onImport={(t, e) => handleImportRoute(busName, t, e)}
                             onTimeChange={(t, f, v) => handleTimeChange(busName, t, f, v)}
+                            onPrintInquiry={() => handlePrintBusInquiry(busConfig, route)}
                         />
 
                         {/* 行車指示/路標 - Collapsible Card Standard */}

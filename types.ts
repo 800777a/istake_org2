@@ -585,6 +585,16 @@ export interface EventData {
 
   // V600: Registration Engine
   engineConfig?: RegistrationEngineConfig;
+  
+  // VXXX: Invoice Info for Booking Tab
+  invoice_title?: string;
+  invoice_vat?: string;
+  invoice_organizer?: string;
+  invoice_phone?: string;
+  invoice_vehicles?: string;
+  invoice_payment_terms?: string;
+  invoice_date?: string;
+  invoice_name?: string;
 
   // V088: Session Config (Deprecated field, replaced by below)
   sessionConfig?: {
@@ -749,6 +759,8 @@ export interface Registration {
   
   // V021: 是否已填寫回饋
   has_feedback?: boolean;
+
+  service_qualification?: string; // V220: Added service_qualification
 
   // V023: 職務指派細節
   duty_description?: string;

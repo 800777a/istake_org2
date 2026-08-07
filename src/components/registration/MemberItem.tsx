@@ -227,15 +227,17 @@ const MemberItem: React.FC<MemberItemProps> = ({
     const serviceOptions = getServiceOptions();
 
     return (
-        <div className="bg-white overflow-visible border-2 border-orange-200 rounded shadow-sm relative transition-all hover:shadow-md animate-fade-in min-w-0">
-            {/* Level 2: Member Header */}
-            <div className="bg-orange-100 px-3 py-3 md:px-6 md:py-4 flex items-center justify-between border-b-2 border-orange-200/50 gap-2 min-w-0">
+        <div className="bg-[#FFFFFF] overflow-visible border-2 border-orange-200 rounded shadow-sm relative transition-all hover:shadow-md animate-fade-in min-w-0">
+            {/* Level 2: Member Header - Rainbow Depth Level 2 (Orange) */}
+            <div className="bg-orange-100 px-3 py-2 md:px-4 md:py-2.5 flex items-center justify-between border-b-2 border-orange-200 gap-2 min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-[10px] md:text-sm font-black border-2 border-white shadow-sm shrink-0">
+                    <div className="w-6 h-6 md:w-8 md:h-8 rounded bg-orange-600 text-white flex items-center justify-center text-[10px] md:text-sm font-black border-2 border-white shadow-sm shrink-0">
                         {index + 1}
                     </div>
                     <div className="flex flex-col min-w-0">
-                        {/* 姓名已在下方姓名欄顯示，此處移除 */}
+                        <span className="text-[10px] md:text-xs font-black text-orange-800 uppercase tracking-widest opacity-80">
+                            {t('MEMBER', 'MEMBER')}
+                        </span>
                     </div>
                 </div>
                 
@@ -243,17 +245,18 @@ const MemberItem: React.FC<MemberItemProps> = ({
                     type="button" 
                     onClick={() => onDelete(member)} 
                     disabled={stopCancellation}
-                    className={`transition-all p-2 rounded border-2 shrink-0 ${stopCancellation ? 'text-slate-200 border-transparent cursor-not-allowed' : 'text-slate-400 border-transparent hover:text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-90'}`}
+                    className={`transition-all p-1.5 md:p-2 rounded border-2 shrink-0 ${stopCancellation ? 'text-slate-200 border-transparent cursor-not-allowed' : 'text-slate-400 border-transparent hover:text-red-600 hover:bg-red-50 hover:border-red-200 active:scale-90'}`}
                     title={stopCancellation ? t('stake.registration.form.insured_cannot_cancel') : t('stake.registration.form.delete_member_tooltip')}
                 >
                     <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
             </div>
             
-            <div className="p-3 md:p-6 space-y-4 md:space-y-6 min-w-0">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 min-w-0">
+            <div className="p-3 md:p-5 space-y-4 md:space-y-5 min-w-0">
+                {/* Row 1: Basic Info & Guardian */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-end min-w-0">
                     <div className="min-w-0">
-                        <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
                             {t('stake.registration.form.name_label')}
                         </label>
                         <input 
@@ -271,18 +274,18 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                 setIsNameFinished(true);
                                 handleCheckGuardian();
                             }}
-                            className={`w-full border-2 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 outline-none transition-all font-black ${isNameError ? 'border-red-500 ring-4 ring-red-200 animate-pulse' : 'border-orange-200 focus:ring-orange-500'}`}
+                            className={`w-full border-2 rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] outline-none transition-all font-black leading-none ${isNameError ? 'border-red-500 ring-2 ring-red-100 animate-pulse' : 'border-[#D1D5DB] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB]'}`}
                             placeholder={tAttr('stake.registration.form.real_name_placeholder')}
                         />
                     </div>
                     {!!member.name.trim() && (isNameFinished || forceShowPersonalInfo || isEnglishName) && (!isMatched || isEnglishName) && (
                         <>
                             <div className="min-w-0">
-                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.birth_date_label')}</label>
-                                <div className={`flex gap-1 p-1 rounded border-2 transition-all min-w-0 ${isBirthError ? 'border-red-500 ring-4 ring-red-200 animate-pulse bg-red-50' : 'border-orange-200 bg-white'}`}>
+                                <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.birth_date_label')}</label>
+                                <div className={`flex rounded border-2 transition-all min-w-0 h-10 md:h-12 overflow-hidden ${isBirthError ? 'border-red-500 ring-2 ring-red-100 animate-pulse bg-red-50' : 'border-[#D1D5DB] bg-white'}`}>
                                     <select 
                                         id={`member-${index}-birth`}
-                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-[1.5] min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        className="border-r border-slate-100 h-full px-1 text-[11px] flex-[1.5] min-w-0 bg-transparent text-[#111827] focus:bg-[#FFFBEB] outline-none font-black appearance-none cursor-pointer leading-none"
                                         value={birthYear}
                                         onChange={e => onUpdateBirthday(member.temp_id, 'year', parseInt(e.target.value))}
                                         onBlur={handleCheckGuardian}
@@ -291,7 +294,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                         {years.map(y => <option key={y} value={y}>{y}{tString('stake.registration.form.year_label', { forceString: true })}</option>)}
                                     </select>
                                     <select 
-                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-1 min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        className="border-r border-slate-100 h-full px-1 text-[11px] flex-1 min-w-0 bg-transparent text-[#111827] focus:bg-[#FFFBEB] outline-none font-black appearance-none cursor-pointer leading-none"
                                         value={birthMonth}
                                         onChange={e => onUpdateBirthday(member.temp_id, 'month', parseInt(e.target.value))}
                                         onBlur={handleCheckGuardian}
@@ -300,7 +303,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                         {months.map(m => <option key={m} value={m}>{m}{tString('stake.registration.form.month_label', { forceString: true })}</option>)}
                                     </select>
                                     <select 
-                                        className="border-2 border-orange-100 rounded h-11 px-1 text-[11px] flex-1 min-w-0 bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none font-black"
+                                        className="h-full px-1 text-[11px] flex-1 min-w-0 bg-transparent text-[#111827] focus:bg-[#FFFBEB] outline-none font-black appearance-none cursor-pointer leading-none"
                                         value={birthDay}
                                         onChange={e => onUpdateBirthday(member.temp_id, 'day', parseInt(e.target.value))}
                                         onBlur={handleCheckGuardian}
@@ -311,7 +314,7 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                 </div>
                             </div>
                             <div className="min-w-0">
-                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
+                                <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
                                     {t('stake.registration.form.id_label')}
                                 </label>
                                 <input 
@@ -319,125 +322,128 @@ const MemberItem: React.FC<MemberItemProps> = ({
                                     type="text" 
                                     value={member.identity_id} 
                                     onChange={e => onUpdate(member.temp_id, 'identity_id', e.target.value.toUpperCase())} 
-                                    className={`w-full border-2 rounded h-11 md:h-12 px-3 text-sm uppercase bg-white text-black focus:ring-4 outline-none transition-all font-black font-mono ${isIdError ? 'border-red-500 ring-4 ring-red-200 animate-pulse' : 'border-orange-200 focus:ring-orange-500'}`}
+                                    className={`w-full border-2 rounded h-10 md:h-12 px-3 text-sm uppercase bg-white text-[#111827] outline-none transition-all font-black font-mono leading-none ${isIdError ? 'border-red-500 ring-2 ring-red-100 animate-pulse' : 'border-[#D1D5DB] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB]'}`}
                                     placeholder={tAttr('stake.registration.form.id_placeholder')}
                                     maxLength={15}
                                 />
                             </div>
+
+                            {isGuardianVisible && (
+                                <div className="min-w-0 animate-fade-in">
+                                    <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
+                                        {t('stake.registration.form.guardian_label')}
+                                    </label>
+                                    <input 
+                                        type="text"
+                                        value={member.guardian || ''}
+                                        onChange={e => onUpdate(member.temp_id, 'guardian', e.target.value)}
+                                        onBlur={() => {
+                                            if (member.guardian && member.guardian === member.name.trim()) {
+                                                onUpdate(member.temp_id, 'guardian', '');
+                                                setMsg(t('stake.registration.form.guardian_error'));
+                                            }
+                                        }}
+                                        className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black leading-none"
+                                        placeholder={tAttr('stake.registration.form.guardian_placeholder')}
+                                    />
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
 
-                {isGuardianVisible && (
-                    <div className="animate-fade-in pt-1">
-                        <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
-                            {t('stake.registration.form.guardian_label')}
-                            {isEditMode && <span className="ml-1 opacity-30 hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-mono" onClick={() => setActiveKey('stake.registration.form.guardian_placeholder')} title="Click to edit placeholder key">[P]</span>}
-                        </label>
-                        <input 
-                            type="text"
-                            value={member.guardian || ''}
-                            onChange={e => onUpdate(member.temp_id, 'guardian', e.target.value)}
-                            onBlur={() => {
-                                if (member.guardian && member.guardian === member.name.trim()) {
-                                    onUpdate(member.temp_id, 'guardian', '');
-                                    setMsg(t('stake.registration.form.guardian_error'));
-                                }
+                {/* Row 2: Ordinance Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-end min-w-0 border-t border-slate-100 pt-4">
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.ordinance_participation')}</label>
+                        <select 
+                            value={member.ordinance_type} 
+                            onChange={e => {
+                                onUpdate(member.temp_id, 'ordinance_type', e.target.value as OrdinanceType);
                             }}
-                            className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
-                            placeholder={tAttr('stake.registration.form.guardian_placeholder')}
-                        />
+                            className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
+                        >
+                            {[OrdinanceType.PROXY, OrdinanceType.LIVING, OrdinanceType.CHILD, OrdinanceType.NONE].map(tOrdinance => (
+                                <option key={tOrdinance} value={tOrdinance}>
+                                    {translateOrdinance(tOrdinance)}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 min-w-0">
-                    <div className="space-y-4 min-w-0">
-                        <div className="min-w-0">
-                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.ordinance_participation')}</label>
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">
+                            {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) 
+                                ? t('stake.registration.form.participating_activity') 
+                                : t('stake.registration.form.ordinance_item')}
+                        </label>
+                        {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) ? (
                             <select 
-                                value={member.ordinance_type} 
-                                onChange={e => {
-                                    onUpdate(member.temp_id, 'ordinance_type', e.target.value as OrdinanceType);
-                                }}
-                                className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                                value={member.ordinance_item} 
+                                onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value)} 
+                                className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
                             >
-                                {[OrdinanceType.PROXY, OrdinanceType.LIVING, OrdinanceType.CHILD, OrdinanceType.NONE].map(tOrdinance => (
-                                    <option key={tOrdinance} value={tOrdinance}>
-                                        {translateOrdinance(tOrdinance)}
-                                    </option>
+                                {['不會參加', '聖殿廣場導覽', '家譜中心導覽', '其他活動'].map(opt => (
+                                    <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div className="min-w-0">
-                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">
-                                {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) 
-                                    ? t('stake.registration.form.participating_activity') 
-                                    : t('stake.registration.form.ordinance_item')}
-                            </label>
-                            {(member.ordinance_type === OrdinanceType.CHILD || member.ordinance_type === OrdinanceType.NONE) ? (
-                                <select 
-                                    value={member.ordinance_item} 
-                                    onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value)} 
-                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
-                                >
-                                    {['不會參加', '聖殿廣場導覽', '家譜中心導覽', '其他活動'].map(opt => (
-                                        <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <select 
-                                    value={member.ordinance_item} 
-                                    onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value as OrdinanceItem)} 
-                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
-                                >
-                                    {(member.ordinance_type === OrdinanceType.PROXY ? proxyOptions : livingOptions).map(opt => (
-                                        <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
-                                    ))}
-                                </select>
-                            )}
-                        </div>
-                        
-                        {serviceOptions.length > 0 && (
-                            <div className="min-w-0">
-                                <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.qualification_label')}</label>
-                                <select 
-                                    value={member.service_qualification || ''} 
-                                    onChange={e => onUpdate(member.temp_id, 'service_qualification', e.target.value)} 
-                                    className="w-full border-2 border-orange-200 rounded h-11 md:h-12 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
-                                >
-                                    <option value="">{tString('stake.registration.form.select_hint')}</option>
-                                    {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                                </select>
-                            </div>
+                        ) : (
+                            <select 
+                                value={member.ordinance_item} 
+                                onChange={e => onUpdate(member.temp_id, 'ordinance_item', e.target.value as OrdinanceItem)} 
+                                className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
+                            >
+                                {(member.ordinance_type === OrdinanceType.PROXY ? proxyOptions : livingOptions).map(opt => (
+                                    <option key={opt} value={opt}>{translateOrdinance(opt)}</option>
+                                ))}
+                            </select>
                         )}
                     </div>
-
-                    <div className="space-y-4 min-w-0">
+                    
+                    {serviceOptions.length > 0 && (
                         <div className="min-w-0">
-                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.trip_label')}</label>
+                            <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.qualification_label')}</label>
                             <select 
-                                value={member.trip_type}
-                                onChange={e => onUpdate(member.temp_id, 'trip_type', e.target.value as TripType)}
-                                className="w-full border-2 border-orange-200 rounded h-11 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black"
+                                value={member.service_qualification || ''} 
+                                onChange={e => onUpdate(member.temp_id, 'service_qualification', e.target.value)} 
+                                className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
                             >
-                                {enabledTripTypes.map(tTrip => <option key={tTrip} value={tTrip}>{translateTripType(tTrip)}</option>)}
+                                <option value="">{tString('stake.registration.form.select_hint')}</option>
+                                {serviceOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                             </select>
                         </div>
+                    )}
+                </div>
 
-                        <div className="min-w-0">
-                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.identity_label')}</label>
-                            <select value={member.identity_type} onChange={e => onUpdate(member.temp_id, 'identity_type', e.target.value)} className="w-full border-2 border-orange-200 rounded h-11 px-3 text-sm bg-white text-black focus:ring-4 focus:ring-orange-500 outline-none transition-all font-black">
-                                {enabledIdentities.map(tIden => <option key={tIden} value={tIden}>{translateIdentityType(tIden)}</option>)}
-                            </select>
-                        </div>
+                {/* Row 3: Trip and Identity Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-end min-w-0 border-t border-slate-100 pt-4">
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.identity_label')}</label>
+                        <select 
+                            value={member.identity_type} 
+                            onChange={e => onUpdate(member.temp_id, 'identity_type', e.target.value)} 
+                            className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
+                        >
+                            {enabledIdentities.map(tIden => <option key={tIden} value={tIden}>{translateIdentityType(tIden)}</option>)}
+                        </select>
+                    </div>
 
-                        <div className="min-w-0">
-                            <label className="block text-[10px] md:text-[11px] font-black text-orange-900 mb-1.5 uppercase tracking-wider">{t('stake.registration.form.fee_label')}</label>
-                            <div className="bg-orange-50 h-11 md:h-12 rounded border-2 border-orange-200 flex items-center justify-center shadow-inner">
-                                <div className="text-lg md:text-xl font-black text-red-600 font-mono tracking-tighter">
-                                    ${calculatePrice(member)}
-                                </div>
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.trip_label')}</label>
+                        <select 
+                            value={member.trip_type}
+                            onChange={e => onUpdate(member.temp_id, 'trip_type', e.target.value as TripType)}
+                            className="w-full border-2 border-[#D1D5DB] rounded h-10 md:h-12 px-3 text-sm bg-white text-[#111827] focus:border-[#EAC100] focus:ring-2 focus:ring-[#FFFBEB] outline-none transition-all font-black appearance-none cursor-pointer leading-none"
+                        >
+                            {enabledTripTypes.map(tTrip => <option key={tTrip} value={tTrip}>{translateTripType(tTrip)}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="min-w-0">
+                        <label className="block text-[10px] md:text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">{t('stake.registration.form.fee_label')}</label>
+                        <div className="bg-orange-50 h-10 md:h-12 rounded border-2 border-orange-100 flex items-center justify-center shadow-inner">
+                            <div className="text-lg md:text-xl font-black text-red-600 font-mono tracking-tighter">
+                                ${calculatePrice(member)}
                             </div>
                         </div>
                     </div>

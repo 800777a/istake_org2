@@ -13,7 +13,7 @@ i18n
           "common": {
             "save": "儲存",
             "cancel": "取消",
-            "edit": "編輯",
+            "edit": "修改",
             "delete": "刪除",
             "hours": "小時",
             "confirm_logout": "確定要登出系統嗎？",
@@ -138,11 +138,11 @@ i18n
             },
             "permissions": {
               "readOnly": "唯讀 (Read-only)",
-              "edit": "編輯 (Edit)"
+              "edit": "修改 (Edit)"
             },
             "modal": {
               "addTitle": "新增帳號 / Add Account",
-              "editTitle": "編輯帳號 / Edit Account",
+              "editTitle": "修改帳號 / Edit Account",
               "orderLabel": "支聯會編號 / ID",
               "unitLabel": "支聯會名稱 / Stake",
               "unitPlaceholder": "請手動輸入單位名稱",
@@ -173,7 +173,7 @@ i18n
               "default_user": "系統管理",
               "developing": "功能開發中，請稍候...",
               "switch_event_msg": "已切換活動 (資料同步中...)",
-              "pushed_to_editor": "內容已傳送到文字編輯1",
+              "pushed_to_editor": "內容已傳送到文字修改1",
               "read_only_mode": "唯讀模式 (Read-only Mode)：您目前僅有檢視權限，無法修改資料。",
               "no_event_selected": "尚未選擇活動",
               "please_select_event_hint": "請先到「活動設定」選擇一個進行中的活動。",

@@ -18,10 +18,10 @@ const LanguageSelector: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/10"
       >
-        <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white">
+        <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
           <Globe size={14} />
         </div>
-        <div className="bg-white text-indigo-950 flex-1 flex items-center justify-between px-3 text-[10px] font-black whitespace-nowrap">
+        <div className="bg-white text-indigo-950 flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-normal whitespace-nowrap border border-white rounded-r-[4px]">
           <span>{langNames[currentLang] || currentLang}</span>
           <ChevronDown size={10} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </div>

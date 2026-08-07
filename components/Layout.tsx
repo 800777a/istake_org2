@@ -8,7 +8,7 @@ import {
   List, ChevronUp, FileText, MapPin, Train, Book, ShieldCheck, 
   PlusCircle, Edit, Trash2, Download, Upload, Layers,
   Users2, Activity, ClipboardCheck, Truck, Wallet, FileEdit, 
-  UserCheck, Contact, Users, Badge, Calendar, Settings, BookOpen, 
+  UserCheck, Contact, Users, Badge, Calendar, Settings, BookOpen, Clock,
   Star, Landmark, Coins, FileSearch, RefreshCw, Bell, Languages, History, Database, Search
 } from 'lucide-react';
 import AnnouncementDisplay from './AnnouncementDisplay';
@@ -16,6 +16,7 @@ import EmergencyOverlay from './EmergencyOverlay';
 import { getSettings, subscribeToSettings, subscribeToEvents } from '../services/sheetService';
 import LoginModal from './LoginModal';
 import LanguageSelector from '../src/components/i18n/LanguageSelector';
+import ThemeSelector from '../src/components/ThemeSelector';
 import ConfirmationModal from '../src/components/ConfirmationModal';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -51,9 +52,9 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
   const [isQueryExpanded, setIsQueryExpanded] = useState(true);
   const [isInstructionsExpanded, setIsInstructionsExpanded] = useState(true);
   const [isRegistrationExpanded, setIsRegistrationExpanded] = useState(true);
-  const [expandedAdminGroups, setExpandedAdminGroups] = useState<string[]>(['admin', 'hr', 'activity', 'registration', 'transport', 'finance']);
+  const [expandedAdminGroups, setExpandedAdminGroups] = useState<string[]>(['admin', 'hr', 'activity', 'registration', 'transport', 'ordinance', 'finance']);
     const [isEngineerExpanded, setIsEngineerExpanded] = useState(true);
-    const [isManagementRolesExpanded, setIsManagementRolesExpanded] = useState(false);
+    const [isManagementRolesExpanded, setIsManagementRolesExpanded] = useState(true);
     const [settings, setSettings] = useState<GlobalSettings>(getSettings());
     const [activeEvent, setActiveEvent] = useState<EventData | null>(null);
     const [showHeader, setShowHeader] = useState(true);
@@ -222,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                   icon: subIcons[activeInstructionsTab] || Info
               });
           } else if ((viewMode === 'guest' || viewMode === 'member') && activeRegistrationTab) {
-              const subLabels: any = { register: '登記', edit: '編輯', delete: '刪除', save: '存檔', load: '讀檔' };
+              const subLabels: any = { register: '登記', edit: '修改', delete: '刪除', save: '存檔', load: '讀檔' };
               const subIcons: any = { register: PlusCircle, edit: Edit, delete: Trash2, save: Download, load: Upload };
               items.push({
                   label: subLabels[activeRegistrationTab] || activeRegistrationTab,
@@ -232,7 +233,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
           } else if (viewMode === 'stake_admin' && activeAdminTab) {
               const subLabels: any = {
                   events: '活動設定', progress: '執行進度', registration: '報名名單', regSettings: '報名設定',
-                  booking: '訂車作業', temple: '教儀座位', fee: '對帳作業', assignment: '服務委派',
+                  booking: '訂車作業', temple: '教儀座位', templeDate: '聖殿日期', templeSchedule: '教儀安排', fee: '對帳作業', assignment: '服務委派',
                   staff: '同工名單', route: '行程安排', announcement: '活動辦法', notice: '須知設定',
                   feeConfig: '收費設定', subsidy: '補助設定', comm: '通訊錄', personalInfo: '成員名單',
                   representatives: '代表名單', restrictions: '限制名單', insurance: '保險名單',
@@ -272,7 +273,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
         isCategory: true,
         subItems: [
             { id: 'register', label: '登記', icon: PlusCircle },
-            { id: 'edit', label: '編輯', icon: Edit },
+            { id: 'edit', label: '修改', icon: Edit },
             { id: 'delete', label: '刪除', icon: Trash2 },
             { id: 'save', label: '存檔', icon: Download },
             { id: 'load', label: '讀檔', icon: Upload },
@@ -354,24 +355,30 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
         </AnimatePresence>
 
         {/* Unified Sidebar */}
-        <aside className={`
-            w-64 ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} flex flex-col shrink-0 z-[1001] shadow-2xl border-r ${isManagement ? (user?.role === 'engineer' ? 'border-green-800' : 'border-blue-800') : 'border-amber-700/50'}
-            fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
-            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}>
+        <aside 
+            className={`
+                w-64 flex flex-col shrink-0 z-[1001] shadow-2xl border-r border-black/10
+                fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
+                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}
+            style={{
+                backgroundColor: 'var(--primary-color)',
+                color: 'var(--text-on-primary)'
+            }}
+        >
             {/* Sidebar Branding */}
-            <div className={`p-6 border-b ${isManagement ? 'border-indigo-800' : 'border-amber-900/10'} flex items-center justify-between`}>
+            <div className="p-6 border-b border-black/10 flex items-center justify-between">
                 <div onClick={handleGoHomeAction} className="flex items-center gap-3 cursor-pointer group">
                     <div className="bg-white/10 p-2 rounded group-hover:bg-white/20 border border-white/10 transition-colors">
-                        <Bus className={`h-5 w-5 ${isManagement ? 'text-white' : 'text-amber-950'}`} />
+                        <Bus className="h-5 w-5" style={{ color: 'inherit' }} />
                     </div>
                     <div>
-                        <h2 className={`${isManagement ? 'text-white' : 'text-amber-950'} font-bold text-base md:text-lg lg:text-xl tracking-tight leading-none`}>
+                        <h2 className="font-bold text-base md:text-lg lg:text-xl tracking-tight leading-none" style={{ color: 'inherit' }}>
                             聖殿旅行
                         </h2>
                     </div>
                 </div>
-                <button onClick={() => setIsSidebarOpen(false)} className={`p-2 ${isManagement ? 'text-indigo-100' : 'text-amber-950'} hover:scale-110 transition-transform`}>
+                <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:scale-110 transition-transform" style={{ color: 'inherit' }}>
                     <X size={24} />
                 </button>
             </div>
@@ -382,10 +389,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 <div className="space-y-1 mb-6">
                     {user && (
                         <div className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all shadow-md brightness-105 border border-white/10">
-                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
+                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                 <UserCircle size={14} />
                             </div>
-                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold overflow-hidden`}>
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold overflow-hidden border border-white rounded-r-[4px]`}>
                                 <span className="font-bold truncate">{user.name}</span>
                                 <span className="text-[8px] opacity-70 ml-2 whitespace-nowrap">{getRoleName(user.role)}</span>
                             </div>
@@ -397,30 +404,31 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             onClick={() => handleNavAction('back_to_admin')}
                             className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/10"
                         >
-                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white`}>
+                            <div className={`${isManagement ? 'bg-indigo-600' : 'bg-amber-900'} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                 <Shield size={14} />
                             </div>
-                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
+                            <div className={`bg-white ${isManagement ? 'text-indigo-950' : 'text-amber-950'} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                 <span>切換到後台</span>
                             </div>
                         </button>
                     )}
 
+                    <ThemeSelector />
                     <LanguageSelector />
                 </div>
 
                 {/* Section: Role Switch (Management only) */}
                 {isManagement ? (
-                    <div className="px-4 mb-6 space-y-4">
+                    <div className="mb-6 space-y-4">
                         {/* Front-end Switch */}
                         <button 
                             onClick={() => { handleNavAction('member'); setIsSidebarOpen(false); }}
-                            className="w-full h-7 flex items-stretch overflow-hidden rounded transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            <div className="bg-indigo-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                            <div className="bg-indigo-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                 <Home size={14} />
                             </div>
-                            <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold">
+                            <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]">
                                 <span>切換至前台</span>
                             </div>
                         </button>
@@ -429,7 +437,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         <div className="space-y-1">
                             <button 
                                 onClick={() => setIsManagementRolesExpanded(!isManagementRolesExpanded)}
-                                className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-white/10 rounded transition-colors group"
+                                className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-white/10 rounded-r-[4px] transition-colors group"
                             >
                                 <div className="flex items-center gap-2">
                                     <Shield size={12} className="text-emerald-400" />
@@ -451,24 +459,24 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                     >
                                         <button 
                                             onClick={() => { handleNavAction('engineer'); setIsSidebarOpen(false); }}
-                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded transition-all group ${user?.role === 'engineer' ? 'shadow-md brightness-105' : 'opacity-90'}`}
+                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group ${user?.role === 'engineer' ? 'shadow-md brightness-105' : 'opacity-90'}`}
                                         >
-                                            <div className="bg-emerald-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                                            <div className="bg-emerald-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                                 <ShieldCheck size={14} />
                                             </div>
-                                            <div className={`${user?.role === 'engineer' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
+                                            <div className={`${user?.role === 'engineer' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                 <span>資管</span>
                                                 {user?.role === 'engineer' && <Check size={12} />}
                                             </div>
                                         </button>
                                         <button 
                                             onClick={() => { handleNavAction('stake_admin'); setIsSidebarOpen(false); }}
-                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded transition-all group ${user?.role === 'stake_admin' ? 'shadow-md brightness-105' : 'opacity-90'}`}
+                                            className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group ${user?.role === 'stake_admin' ? 'shadow-md brightness-105' : 'opacity-90'}`}
                                         >
-                                            <div className="bg-blue-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                                            <div className="bg-blue-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                                 <Shield size={14} />
                                             </div>
-                                            <div className={`${user?.role === 'stake_admin' ? 'bg-blue-600 text-white' : 'bg-white text-blue-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-bold`}>
+                                            <div className={`${user?.role === 'stake_admin' ? 'bg-blue-600 text-white' : 'bg-white text-blue-950'} flex-1 flex items-center justify-between px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                 <span>主辦</span>
                                                 {user?.role === 'stake_admin' && <Check size={12} />}
                                             </div>
@@ -479,19 +487,19 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         </div>
                     </div>
                 ) : (['engineer', 'stake_admin'].includes(user?.role || '') && (
-                            <div className="px-4 mb-6">
+                            <div className="mb-6">
                                 <button 
                                     onClick={() => { 
                                         const targetRole = user?.role === 'engineer' ? 'engineer' : 'stake_admin';
                                         onRoleChange(targetRole as any); 
                                         setIsSidebarOpen(false); 
                                     }}
-                                    className="w-full h-7 flex items-stretch overflow-hidden rounded transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] transition-all group shadow-md brightness-105 border border-white/20 hover:scale-[1.02] active:scale-[0.98]"
                                 >
-                                    <div className="bg-amber-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                                    <div className="bg-amber-500 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                         <Shield size={14} />
                                     </div>
-                                    <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-bold">
+                                    <div className="bg-white text-indigo-950 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]">
                                         <span>切換至後台</span>
                                     </div>
                                 </button>
@@ -537,24 +545,27 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             { id: 'admin', label: '行政管理', icon: LayoutDashboard, tabs: ['announcement', 'notice', 'textEditor', 'backup', 'history'] },
                                             { id: 'hr', label: '人資管理', icon: Users2, tabs: ['representatives', 'personalInfo', 'comm', 'staff'] },
                                             { id: 'activity', label: '活動管理', icon: Activity, tabs: ['events', 'progress'] },
-                                            { id: 'registration', label: '報名管理', icon: ClipboardCheck, tabs: ['regSettings', 'registration', 'insurance', 'restrictions', 'deleted', 'temple'] },
+                                            { id: 'registration', label: '報名管理', icon: ClipboardCheck, tabs: ['regSettings', 'registration', 'insurance', 'restrictions', 'deleted'] },
                                             { id: 'transport', label: '交通管理', icon: Truck, tabs: ['busManagement', 'busStops', 'booking', 'route', 'assign', 'rating'] },
+                                            { id: 'ordinance', label: '教儀管理', icon: BookOpen, tabs: ['templeDate', 'templeSchedule', 'temple'] },
                                             { id: 'finance', label: '財務管理', icon: Wallet, tabs: ['feeConfig', 'fee', 'subsidy', 'retention', 'refunds'] }
                                         ];
                                         const tabLabels: any = {
                                             announcement: '活動辦法', notice: '須知設定', textEditor: '文書處理', backup: '資料保護', history: '歷史記錄',
                                             representatives: '代表名單', personalInfo: '成員名單', comm: '同工名單', staff: '服務委派',
                                             events: '活動設定', progress: '執行進度',
-                                            regSettings: '報名設定', registration: '報名名單', insurance: '保險名單', restrictions: '限制名單', deleted: '刪除名單', temple: '教儀座位',
+                                            regSettings: '報名設定', registration: '報名名單', insurance: '保險名單', restrictions: '限制名單', deleted: '刪除名單',
                                             busManagement: '車行司機', busStops: '停靠站點', booking: '訂車作業', route: '行程安排', assign: '車輛座位', rating: '評分設定',
+                                            templeDate: '聖殿日期', templeSchedule: '教儀安排', temple: '教儀座位',
                                             feeConfig: '收費設定', fee: '收款對帳', subsidy: '補助作業', retention: '留用名單', refunds: '退款名單'
                                         };
                                         const tabIcons: any = {
                                             announcement: FileText, notice: Info, textEditor: FileEdit, backup: History, history: History,
                                             representatives: UserCheck, personalInfo: Contact, comm: Users, staff: Badge,
                                             events: Calendar, progress: ClipboardList,
-                                            regSettings: Settings, registration: List, insurance: ShieldCheck, restrictions: Shield, deleted: Trash2, temple: BookOpen,
+                                            regSettings: Settings, registration: List, insurance: ShieldCheck, restrictions: Shield, deleted: Trash2,
                                             busManagement: Bus, busStops: MapPin, booking: Bus, route: MapPin, assign: Users, rating: Star,
+                                            templeDate: Calendar, templeSchedule: Clock, temple: BookOpen,
                                             feeConfig: Landmark, fee: Coins, subsidy: FileText, retention: FileSearch, refunds: RefreshCw
                                         };
 
@@ -603,10 +614,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                             onClick={() => { handleNavAction('stake_admin', tabId); setIsSidebarOpen(false); }}
                                                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                                         >
-                                                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
+                                                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                                                                 <Icon size={14} />
                                                                             </div>
-                                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
+                                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                                                 <span>{tabLabels[tabId]}</span>
                                                                             </div>
                                                                         </button>
@@ -625,11 +636,11 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                 <div className="space-y-1">
                                     <button 
                                         onClick={() => setIsEngineerExpanded(!isEngineerExpanded)}
-                                        className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-white/10 rounded transition-colors group"
+                                        className="flex items-center justify-between w-full px-3 py-1 mb-1 hover:bg-white/10 rounded-r-[4px] transition-colors group"
                                     >
                                         <div className="flex items-center gap-2">
                                             <Shield size={12} className="text-white" />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white opacity-90">行政管理</span>
+                                            <span className="text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-widest text-white opacity-90">行政管理</span>
                                         </div>
                                         <ChevronDown 
                                             size={12} 
@@ -662,10 +673,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                             onClick={() => { handleNavAction('engineer', item.id); setIsSidebarOpen(false); }}
                                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                         >
-                                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
+                                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                                                 <item.icon size={14} />
                                                             </div>
-                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] font-normal`}>
+                                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                                 <span>{item.label}</span>
                                                             </div>
                                                         </button>
@@ -729,10 +740,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                                                         onClick={() => { handleNavAction(item.id as any, sub.id); setIsSidebarOpen(false); }}
                                                                         className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-0.5 transition-all group ${isSubActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                                                     >
-                                                                        <div className={`${subColor.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isSubActive ? 'border border-white' : ''}`}>
+                                                                        <div className={`${subColor.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                                                             <sub.icon size={14} />
                                                                         </div>
-                                                                        <div className={`${isSubActive ? subColor.bg + ' text-white' : 'bg-white ' + subColor.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
+                                                                        <div className={`${isSubActive ? subColor.bg + ' text-white' : 'bg-white ' + subColor.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                                             <span>{sub.label}</span>
                                                                         </div>
                                                                     </button>
@@ -751,10 +762,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                                             onClick={() => { item.action ? item.action() : handleNavAction(item.id as any); setIsSidebarOpen(false); }}
                                             className={`w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mb-1 transition-all group ${isActive ? 'shadow-md brightness-105' : 'opacity-90 hover:opacity-100'}`}
                                         >
-                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 ${isActive ? 'border border-white' : ''}`}>
+                                            <div className={`${color.bg} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                                                 <item.icon size={14} />
                                             </div>
-                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
+                                            <div className={`${isActive ? color.bg + ' text-white' : 'bg-white ' + color.text} flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                                                 <span>{item.label}</span>
                                             </div>
                                         </button>
@@ -768,10 +779,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         onClick={() => navRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
                         className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mt-4 transition-all group opacity-90 hover:opacity-100 shadow-md brightness-105 border border-white/10"
                     >
-                        <div className={`${isManagement ? 'bg-indigo-500' : 'bg-amber-600'} text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20`}>
+                        <div className={`${isManagement ? 'bg-indigo-500' : 'bg-amber-600'} text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white`}>
                             <ArrowUp size={14} />
                         </div>
-                        <div className={`bg-white ${isManagement ? 'text-indigo-900' : 'text-amber-900'} flex-1 flex-row flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal`}>
+                        <div className={`bg-white ${isManagement ? 'text-indigo-900' : 'text-amber-900'} flex-1 flex-row flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]`}>
                             <span>回到頂端</span>
                         </div>
                     </button>
@@ -781,10 +792,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             onClick={() => setShowLogoutConfirm(true)}
                             className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mt-1 transition-all group shadow-md brightness-105 border border-rose-600/20"
                         >
-                            <div className="bg-rose-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                            <div className="bg-rose-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                 <LogOut size={14} />
                             </div>
-                            <div className="bg-white text-rose-900 flex-1 flex items-center px-3 text-[10px] font-bold">
+                            <div className="bg-white text-rose-900 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]">
                                 <span>登出系統</span>
                             </div>
                         </button>
@@ -793,10 +804,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                             onClick={() => { setShowLoginModal(true); setIsSidebarOpen(false); }}
                             className="w-full h-7 flex items-stretch overflow-hidden rounded-r-[4px] mt-1 transition-all group shadow-md brightness-105 border border-indigo-600/20"
                         >
-                            <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border-r border-white/20">
+                            <div className="bg-indigo-600 text-white w-7 h-7 flex items-center justify-center shrink-0 border border-white">
                                 <LogIn size={14} />
                             </div>
-                            <div className="bg-white text-indigo-900 flex-1 flex items-center px-3 text-[10px] font-bold">
+                            <div className="bg-white text-indigo-900 flex-1 flex items-center px-3 text-[10px] md:text-xs lg:text-sm font-normal border border-white rounded-r-[4px]">
                                 <span>同工登入入口</span>
                             </div>
                         </button>
@@ -824,26 +835,32 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                 initial={{ y: 0 }}
                 animate={{ y: showHeader ? 0 : -64 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className={`h-16 ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-b border-white/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-[40] shadow-xl ${isManagement ? 'text-white' : 'text-amber-950'} fixed top-0 left-0 right-0`}
+                className="h-16 border-b border-black/10 flex items-center justify-between px-4 lg:px-8 shrink-0 z-[40] shadow-xl fixed top-0 left-0 right-0 transition-colors"
+                style={{
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'var(--text-on-primary)'
+                }}
             >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                     <button 
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className={`p-2 -ml-2 ${isManagement ? 'text-white' : 'text-amber-950'} hover:bg-white/10 rounded transition-colors shrink-0`}
+                        className="p-2 -ml-2 hover:bg-black/10 rounded transition-colors shrink-0"
+                        style={{ color: 'inherit' }}
                     >
                         <Menu className="w-6 h-6" />
                     </button>
                     
-                    <div className={`h-8 w-px ${isManagement ? 'bg-white/10' : 'bg-amber-900/10'} mx-2 hidden sm:block shrink-0`}></div>
+                    <div className="h-8 w-px bg-current/20 mx-2 hidden sm:block shrink-0"></div>
                     
                     {/* Dynamic Breadcrumbs - Full Path per Rule 3.1 */}
                     <nav className="flex items-center space-x-1 md:space-x-1.5 text-[10px] md:text-[12px] overflow-x-auto scrollbar-none flex-nowrap min-w-0 flex-1 pr-8 [mask-image:linear-gradient(to_right,rgba(0,0,0,1)_85%,rgba(0,0,0,0)_100%)]">
                         {breadcrumbs.map((crumb, idx) => (
                             <React.Fragment key={idx}>
-                                {idx > 0 && <ChevronRight size={10} className={`${isManagement ? 'text-white/40' : 'text-amber-950/40'} shrink-0`} />}
+                                {idx > 0 && <ChevronRight size={10} className="opacity-60 shrink-0" style={{ color: 'inherit' }} />}
                                 <button 
                                     onClick={crumb.action}
-                                    className={`flex items-center gap-1 px-1.5 py-1 rounded transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? (isManagement ? 'text-white bg-white/10' : 'text-amber-950 font-bold bg-black/5') : (isManagement ? 'text-indigo-100 hover:text-white hover:bg-white/10 underline decoration-white/20 underline-offset-4' : 'text-amber-900 hover:text-amber-950 hover:bg-black/5 underline decoration-amber-900/20 underline-offset-4')}`}
+                                    className={`flex items-center gap-1 px-1.5 py-1 rounded transition-all whitespace-nowrap shrink-0 ${idx === breadcrumbs.length - 1 ? 'font-black bg-black/10' : 'opacity-80 hover:opacity-100 hover:bg-black/10 underline decoration-current/20 underline-offset-4'}`}
+                                    style={{ color: 'inherit' }}
                                 >
                                     {idx === 0 && <crumb.icon size={12} className="shrink-0" />}
                                     <span>{crumb.label}</span>
@@ -866,17 +883,24 @@ const Layout: React.FC<LayoutProps> = ({ children, user, viewMode, activeStatsTa
                         <div className="flex flex-col min-h-full">
                             {/* Static Header Spacer - Reclaimed naturally as page scrolls */}
                             <div className="h-16 shrink-0 w-full bg-transparent" />
-                            <div className={`mx-auto w-full flex-1 max-w-full p-1`}>
-                                <div className={`min-h-full w-full max-w-full ${isFullWidthView ? '' : 'bg-white border shadow-sm rounded'}`}>
+                            <div className={`mx-auto w-full flex-1 max-w-5xl lg:max-w-7xl p-1`}>
+                                <div className={`min-h-full w-full max-w-5xl lg:max-w-7xl mx-auto ${isFullWidthView ? '' : 'bg-white border shadow-sm rounded'}`}>
                                     {children}
                                 </div>
                             </div>
 
                             {/* Footer Bar - Scrolling with content - Rule 3.1 Background Color */}
-                            <footer className={`w-full ${isManagement ? (user?.role === 'engineer' ? 'bg-[#009100]' : 'bg-[#004B97]') : 'bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500'} border-t border-white/10 px-4 py-6 flex items-center justify-center ${isManagement ? 'text-white' : 'text-amber-950'} text-[8px] md:text-[8px] lg:text-[9px] opacity-90 mt-auto relative`}>
+                            <footer 
+                                className="w-full border-t border-black/10 px-4 py-6 flex items-center justify-center text-[8px] md:text-[8px] lg:text-[9px] opacity-90 mt-auto relative transition-colors"
+                                style={{
+                                    backgroundColor: 'var(--primary-color)',
+                                    color: 'var(--text-on-primary)'
+                                }}
+                            >
                                 <button 
                                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                                    className={`absolute left-4 p-2 ${isManagement ? 'text-white' : 'text-amber-950'} hover:bg-white/10 rounded transition-colors shrink-0`}
+                                    className="absolute left-4 p-2 hover:bg-black/10 rounded transition-colors shrink-0"
+                                    style={{ color: 'inherit' }}
                                 >
                                     <Menu className="w-5 h-5" />
                                 </button>

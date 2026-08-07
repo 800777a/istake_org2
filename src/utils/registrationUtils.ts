@@ -1,6 +1,6 @@
 import { EventData, RegStatus } from '../../types';
 
-export const isRegistrationClosed = (activeEvent: EventData | null, eventStats?: { occupied: number; capacity: number }) => {
+export const isRegistrationClosed = (activeEvent: EventData | null | undefined, eventStats?: { occupied: number; capacity: number }) => {
     if (!activeEvent) return true;
     if (activeEvent.engineConfig?.enabled) {
         const now = new Date();
@@ -19,7 +19,7 @@ export const isRegistrationClosed = (activeEvent: EventData | null, eventStats?:
     return false;
 };
 
-export const isCancellationDisabled = (activeEvent: EventData | null) => {
+export const isCancellationDisabled = (activeEvent: EventData | null | undefined) => {
     if (!activeEvent) return true;
     if (activeEvent.engineConfig?.enabled) {
         const { cancellationDeadline } = activeEvent.engineConfig.timeNodes;
@@ -31,7 +31,7 @@ export const isCancellationDisabled = (activeEvent: EventData | null) => {
     return activeEvent.stop_cancellation || false;
 };
 
-export const isPaymentOverdue = (reg: { is_paid: boolean; created_at: string; status: RegStatus }, activeEvent: EventData | null) => {
+export const isPaymentOverdue = (reg: { is_paid: boolean; created_at: string; status: RegStatus }, activeEvent: EventData | null | undefined) => {
     if (reg.is_paid) return false;
     if (!activeEvent) return false;
     

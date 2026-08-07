@@ -67,11 +67,16 @@ export const deletePersonalInfo = async (id: string) => {
 
 export const checkAndAddPersonalInfo = async (unit: string, name: string, birthDate: string, identityId: string) => {
     if (!identityId) return;
+    const cleanUnit = (unit || '').trim();
+    const cleanName = (name || '').trim();
+    const cleanBirth = (birthDate || '').trim();
+    const cleanId = identityId.trim().toUpperCase();
+
     await setPersonalInfo({
-        identity_id: identityId,
-        name: name,
-        birth_date: birthDate,
-        unit: unit,
+        identity_id: cleanId,
+        name: cleanName,
+        birth_date: cleanBirth,
+        unit: cleanUnit,
         updated_at: new Date().toISOString()
     });
 };
@@ -100,11 +105,16 @@ export const deleteRepresentative = async (name: string) => {
 
 export const checkAndAddRepresentative = async (unit: string, name: string, phone: string, password?: string) => {
     if (!name) return;
+    const cleanUnit = (unit || '').trim();
+    const cleanName = name.trim();
+    const cleanPhone = (phone || '').trim();
+    const cleanPassword = (password || '').trim();
+
     await setRepresentative({
-        name: name,
-        phone: phone || '',
-        password: password || '',
-        unit: unit,
+        name: cleanName,
+        phone: cleanPhone,
+        password: cleanPassword,
+        unit: cleanUnit,
         updated_at: new Date().toISOString()
     });
 };

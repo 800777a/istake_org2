@@ -210,23 +210,32 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
       e.target.value = '';
   };
 
-  const refreshLookup = async () => { 
-      if (lookupLockCountdown > 0 || !activeEvent || !lookupPassword || !lookupUnit || !lookupName) return; 
+  const refreshLookup = async (uParam?: string, nParam?: string, pParam?: string) => { 
+      const u = uParam || lookupUnit;
+      const n = nParam || lookupName;
+      const p = pParam || lookupPassword;
+
+      if (lookupLockCountdown > 0 || !activeEvent || !p || !u || !n) return; 
       let results: Registration[] = [];
       try {
-          results = await sheetService.lookupRegistration(lookupUnit, lookupName, lookupPassword.trim(), activeEvent.event_id);
+          results = await sheetService.lookupRegistration(u, n, p.trim(), activeEvent.event_id);
       } catch (e: any) {
           setMsg({ type: 'error', text: t('stake.registration.form.lookup_fail_prefix') + (e.message || t('stake.registration.form.unknown_error')) });
           return;
       }
-      const match = results.find(r => (r.primary_contact_name?.trim() === lookupName.trim() || r.name.trim() === lookupName.trim()) && r.unit === lookupUnit);
+      const cleanN = n.trim().toLowerCase();
+      const cleanU = u.trim().toLowerCase();
+      const match = results.find(r => 
+          (r.primary_contact_name?.trim().toLowerCase() === cleanN || r.name?.trim().toLowerCase() === cleanN) && 
+          r.unit?.trim().toLowerCase() === cleanU
+      ) || results[0];
       if (match) {
           setLookupAttempts(0);
           const familyId = match.family_group_id;
           setEditingFamilyGroupId(familyId);
           setPrimaryName(match.primary_contact_name || match.name); 
           setPrimaryContactPhone(match.contact_phone || ''); 
-          setPrimaryPassword(lookupPassword.trim()); 
+          setPrimaryPassword(p.trim()); 
           setPrimaryUnit(match.unit);
           setPaymentMethod(match.payment_method);
           setTransferLast5(match.transfer_last_5 || '');
@@ -331,11 +340,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
     }).map(u => ({ value: u, label: u }));
   }, [settings]);
 
-  if (!activeEvent) return <div className="p-8 text-center text-gray-500">{t('stake.registration.form.no_active_event')}</div>;
-
   return (
-    <div key={remountKey} className="min-h-screen bg-[#F8F9FA] pb-12 animate-fade-in font-['微軟正黑體',_sans-serif] w-full min-w-0 overflow-x-visible">
-      <div className="max-w-6xl mx-auto px-1 md:px-4 lg:px-8 pt-2 md:pt-6 space-y-2 min-w-0 flex flex-col">
+    <div key={remountKey} className="min-h-screen bg-[#F9FAFB] pb-12 animate-fade-in font-['微軟正黑體',_sans-serif] w-full min-w-0 overflow-x-visible">
+      <div className="max-w-5xl lg:max-w-7xl mx-auto p-1 pt-2 md:pt-4 space-y-1 min-w-0 flex flex-col">
         {/* Hidden input for loading config from sidebar/tab */}
         <input 
           ref={sidebarFileInputRef}
@@ -346,10 +353,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
         />
 
         {msg && (
-            <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded shadow-2xl z-[100] transition-opacity animate-fade-in flex items-center border ${msg.type === 'error' ? 'bg-red-100 text-red-800 border-red-200' : 'bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-300 text-black border-transparent'}`}>
-                {msg.type === 'error' ? <XCircle className="w-6 h-6 mr-3" /> : <CheckCircle className="w-5 h-5 mr-3 text-black" />}
-                <span className="font-bold">{msg.text}</span>
-                <button onClick={() => setMsg(null)} className="ml-4 p-1 hover:bg-white/20 rounded-full"><X className="w-4 h-4" /></button>
+            <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded shadow-2xl z-[150] transition-opacity animate-fade-in flex items-center border-2 backdrop-blur-md ${msg.type === 'error' ? 'bg-white/90 text-red-800 border-red-200' : 'bg-white/90 text-amber-900 border-[#EAC100]'}`}>
+                {msg.type === 'error' ? <XCircle className="w-6 h-6 mr-3 text-red-500" /> : <CheckCircle className="w-5 h-5 mr-3 text-[#EAC100]" />}
+                <span className="font-black">{msg.text}</span>
+                <button onClick={() => setMsg(null)} className="ml-4 p-1 hover:bg-black/5 rounded-full"><X className="w-4 h-4" /></button>
             </div>
         )}
 
@@ -361,34 +368,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
             executeCancelMember={executeCancelMember} executeCancelFamily={executeCancelFamily} lockCountdown={lockCountdown} showLockModal={showLockModal} setShowLockModal={setShowLockModal}
         />
         
-        {/* Sidebar Save Confirmation */}
-        <ConfirmationModal
-            isOpen={showSidebarSaveConfirm}
-            onClose={() => setShowSidebarSaveConfirm(false)}
-            onConfirm={() => {
-                handleDownloadConfig();
-                setShowSidebarSaveConfirm(false);
-            }}
-            title={t('common.notice', '通知')}
-            message={t('common.confirm_save', '確定要儲存目前的變動嗎？')}
-            confirmText={t('common.confirm', '確定')}
-            type="info"
-        />
-
-        {/* Sidebar Load Confirmation */}
-        <ConfirmationModal
-            isOpen={showSidebarLoadConfirm}
-            onClose={() => setShowSidebarLoadConfirm(false)}
-            onConfirm={() => {
-                sidebarFileInputRef.current?.click();
-                setShowSidebarLoadConfirm(false);
-            }}
-            title={t('common.notice', '通知')}
-            message={t('common.confirm_load', '確定要讀取存檔嗎？這將會覆蓋目前正在填寫的資料。')}
-            confirmText={t('common.confirm', '確定')}
-            type="warning"
-        />
-        
         <RegistrationHeader 
             mode={mode} setMode={(m) => { setMode(m); onTabChange?.(m === 'register' ? 'register' : 'edit'); }} lang={lang} setLang={setLang} activeEvent={activeEvent}
             lockCountdown={lockCountdown} handleResetAndRegister={() => { setMode('register'); handleReset(); onTabChange?.('register'); }}
@@ -398,13 +377,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
         />
 
         {/* Dashboard Statistics - Perfectly Matched to Admin Style (Unwrapped) - Rule 3.2 Compliance */}
-        <div className="w-full max-w-full px-1 pt-1 shrink-0 space-y-1">
+        <div className="w-full max-w-full px-0 pt-0 shrink-0 space-y-1">
             {/* 1. 車輛座位預約 (Bus Seats) - 複製自後台結構 */}
             <div className="flex flex-col min-w-0">
-                <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                <div className="bg-gradient-to-r from-[#EAC100] via-[#FDE68A] to-[#EAC100] p-1 rounded-t flex items-center justify-between border-b-2 border-[#C6A300]">
                     <div className="flex items-center gap-2">
                         <Bus className="w-4 h-4 text-amber-950" />
-                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">車輛座位預約</h2>
+                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">車輛座位預約 (BUS)</h2>
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
@@ -412,11 +391,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
                         <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1 truncate">總座位數</div>
                         <div className="text-xl font-black text-slate-900">{eventStats.capacity} <span className="text-[10px] text-slate-400">人</span></div>
                     </div>
-                    <div className="bg-emerald-50 p-2 rounded border border-emerald-100">
+                    <div className="bg-[#E6F4EA] p-2 rounded border border-emerald-100">
                         <div className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 truncate">預約位數</div>
                         <div className="text-xl font-black text-emerald-900">{(eventStats.occupied + eventStats.waiting)} <span className="text-[10px] text-slate-400">人</span></div>
                     </div>
-                    <div className="bg-amber-50 p-2 rounded border border-amber-100">
+                    <div className="bg-[#FFFBEB] p-2 rounded border border-amber-100">
                         <div className="text-[10px] text-amber-600 font-black uppercase tracking-widest mb-1 truncate">剩餘位數</div>
                         <div className="text-xl font-black text-amber-900">{eventStats.remaining} <span className="text-[10px] text-slate-400">人</span></div>
                     </div>
@@ -425,14 +404,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
 
             {/* 2. 教儀座位預約 (Ordinance Seats) - 複製自後台結構 */}
             <div className="flex flex-col min-w-0">
-                <div className="bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 p-1 rounded-t flex items-center justify-between">
+                <div className="bg-gradient-to-r from-[#EAC100] via-[#FDE68A] to-[#EAC100] p-1 rounded-t flex items-center justify-between border-b-2 border-[#C6A300]">
                     <div className="flex items-center gap-2">
                         <LayoutGrid className="w-4 h-4 text-amber-950" />
-                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">教儀座位預約</h2>
+                        <h2 className="text-sm font-black text-amber-950 uppercase tracking-widest">教儀預約 (TEMPLE)</h2>
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-1 p-1 bg-white border-x border-b border-amber-200 rounded-b">
-                    <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                    <div className="bg-[#F0F7FF] p-2 rounded border border-blue-100">
                         <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1 truncate">洗禮</div>
                         <div className="flex items-baseline gap-1">
                             <span className="text-xl font-black text-blue-900">{ordinanceStats.baptism.occupied + ordinanceStats.baptism.waiting}</span>
@@ -466,27 +445,27 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
             </div>
         </div>
 
-        <div className="space-y-4 min-w-0 w-full">
+        <div className="space-y-1 min-w-0 w-full">
           <LookupSection 
               mode={mode} lookupIntent={lookupIntent} lookupLockCountdown={lookupLockCountdown} lookupUnit={lookupUnit} setLookupUnit={setLookupUnit} lookupName={lookupName} setLookupName={setLookupName}
-              lookupPassword={lookupPassword} setLookupPassword={setLookupPassword} handleLookup={(e) => { e.preventDefault(); refreshLookup(); }} handleBackToRegister={() => setMode('register')} settings={settings}
+              lookupPassword={lookupPassword} setLookupPassword={setLookupPassword} handleLookup={(e, u, n, p) => { e.preventDefault(); refreshLookup(u, n, p); }} handleBackToRegister={() => setMode('register')} settings={settings}
               units={unitsOptions}
           />
 
           {mode === 'lookup' && lookupIntent !== 'edit' && lookupIntent !== 'delete' && (
-            <div className="mt-4 min-w-0 w-full space-y-4">
+            <div className="mt-1 min-w-0 w-full space-y-1">
               <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
             </div>
           )}
 
           {mode === 'register' && (
-            <form onSubmit={handleSubmitTrigger} className="space-y-4 min-w-0 w-full">
+            <form onSubmit={handleSubmitTrigger} className="space-y-1 min-w-0 w-full">
               <TimeNodesDisplay activeEvent={activeEvent} isPublic={true} />
 
               {activeEvent?.stop_cancellation && (
-                  <div className="bg-amber-50 border-2 border-amber-200 text-amber-800 p-3 md:p-4 rounded shadow-sm mb-4 flex items-center animate-fade-in ring-1 ring-amber-100 min-w-0 mx-1 md:mx-0">
-                      <Shield className="w-5 h-5 mr-3 text-amber-600 shrink-0" />
-                      <span className="font-bold text-xs md:text-sm">{t('stake.registration.form.insured_not_cancel_hint')}</span>
+                  <div className="bg-amber-50 border-2 border-amber-200 text-amber-800 p-3 md:p-4 rounded shadow-sm mb-1 flex items-center animate-fade-in ring-1 ring-amber-100 min-w-0 mx-0">
+                      <Shield className="w-5 h-5 mr-3 text-[#C6A300] shrink-0" />
+                      <span className="font-black text-xs md:text-sm">{t('stake.registration.form.insured_not_cancel_hint')}</span>
                   </div>
               )}
 
@@ -525,21 +504,21 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onGoHome, onGoToSta
             />
         )}
         
-        <div className="pt-8 border-t border-slate-200 flex flex-row gap-4 w-full">
+        <div className="pt-8 border-t-2 border-slate-200 flex flex-row gap-2 w-full mt-4">
              <button 
                 type="button" 
                 onClick={() => isFormDirty() ? setConfirmAction({ type: 'abandon' }) : executeAbandon()} 
                 disabled={loading} 
-                className="flex-1 py-4 bg-red-100 text-red-800 border-2 border-red-200 font-black rounded shadow-lg hover:bg-red-200 focus:outline-none transition-all text-base flex items-center justify-center active:scale-[0.98]"
+                className="flex-1 h-12 md:h-14 bg-white text-red-700 border-2 border-red-200 font-black rounded shadow-sm hover:bg-red-50 focus:outline-none transition-all text-sm md:text-base flex items-center justify-center active:scale-95 group"
              >
-                 <LogOut className="w-5 h-5 mr-2" /> {t('stake.registration.form.discard_btn')}
+                 <LogOut className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" /> {t('stake.registration.form.discard_btn')}
              </button>
              <button 
                 type="submit" 
                 disabled={loading || settings.maintenance_mode || isClosed || lockCountdown > 0} 
-                className={`flex-1 py-4 bg-emerald-100 text-emerald-900 border-2 border-emerald-200 font-black rounded shadow-xl hover:bg-emerald-200 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition-all text-lg flex items-center justify-center active:scale-[0.98] ${loading || settings.maintenance_mode || isClosed || lockCountdown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex-1 h-12 md:h-14 bg-[#EAC100] text-amber-950 border-2 border-[#C6A300] font-black rounded shadow-md hover:brightness-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-[#EAC100]/20 transition-all text-base md:text-xl flex items-center justify-center active:scale-95 ${loading || settings.maintenance_mode || isClosed || lockCountdown > 0 ? 'opacity-50 cursor-not-allowed grayscale-[0.5]' : 'animate-pulse-subtle'}`}
              >
-                 {settings.maintenance_mode ? <Shield className="w-5 h-5 mr-2" /> : isClosed ? <XCircle className="w-5 h-5 mr-2" /> : lockCountdown > 0 ? <Clock className="w-5 h-5 mr-2" /> : <CheckCircle className="w-6 h-6 mr-2" />}
+                 {settings.maintenance_mode ? <Shield className="w-5 h-5 mr-2 text-slate-400" /> : isClosed ? <XCircle className="w-5 h-5 mr-2 text-red-400" /> : lockCountdown > 0 ? <Clock className="w-5 h-5 mr-2 text-amber-600" /> : <CheckCircle className="w-6 h-6 mr-2 text-amber-900" />}
                  {settings.maintenance_mode ? t('stake.registration.form.maintenance_label') : isClosed ? t('stake.registration.form.reg_closed_label') : lockCountdown > 0 ? `${lockCountdown}s` : (loading ? t('stake.registration.form.processing_label') : (editingFamilyGroupId ? t('stake.registration.form.confirm_edit_btn', '確認修改') : t('stake.registration.form.submit_btn', '提交報名')))}
              </button>
         </div>

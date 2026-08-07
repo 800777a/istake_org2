@@ -77,27 +77,27 @@ html, body, #root {
   /* 修正滾動軸顯示：確保垂直捲動軸足夠明顯 - Rule 4.3 Compliance */
   ::-webkit-scrollbar {
     -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   ::-webkit-scrollbar:horizontal {
-    height: 10px;
+    height: 8px;
   }
   ::-webkit-scrollbar:vertical {
-    width: 10px;
+    width: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(to right, #f59e0b, #fde047, #f59e0b) !important;
-    border-radius: 5px !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
-    box-shadow: 0 0 3px rgba(0,0,0,0.3) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 4px !important;
+    border: 2px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 0 3px rgba(0,0,0,0.2) !important;
   }
   ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05) !important;
-    border-radius: 5px !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 4px !important;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(to right, #fbbf24, #fef08a, #fbbf24) !important;
+    background: rgba(0, 0, 0, 0.7) !important;
   }
 
   /* 字體類別 */

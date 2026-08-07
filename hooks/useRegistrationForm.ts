@@ -366,14 +366,18 @@ export function useRegistrationForm(setIsDirty?: (dirty: boolean) => void) {
         if (!activeEvent || !paymentMethod) return;
         setLoading(true); 
         const input: FamilyGroupInput = { 
-            primary_name: primaryName, 
-            primary_phone: primaryPassword, 
-            primary_real_phone: primaryContactPhone, 
-            primary_unit: primaryUnit, 
+            primary_name: primaryName.trim(), 
+            primary_phone: primaryPassword.trim(), 
+            primary_real_phone: primaryContactPhone.trim(), 
+            primary_unit: primaryUnit.trim(), 
             payment_method: paymentMethod as PaymentMethod, 
-            transfer_last_5: paymentMethod === PaymentMethod.TRANSFER ? transferLast5 : '', 
+            transfer_last_5: paymentMethod === PaymentMethod.TRANSFER ? transferLast5.trim() : '', 
             needs_self_paid_insurance: needsSelfPaidInsurance,
-            members, 
+            members: members.map(m => ({
+                ...m,
+                name: m.name.trim(),
+                identity_id: m.identity_id.trim().toUpperCase()
+            })), 
         }; 
         let result;
         try {

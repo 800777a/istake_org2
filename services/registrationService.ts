@@ -149,6 +149,7 @@ export const saveFamilyRegistration = async (input: FamilyGroupInput, eventId: s
             ordinance_type: m.ordinance_type,
             ordinance_item: m.ordinance_item,
             ceremony_session: m.ceremony_session || '',
+            service_qualification: m.service_qualification || '',
             is_staff: m.is_staff,
             staff_role: m.staff_role || '', 
             is_new_member: m.is_new_member,
@@ -249,6 +250,7 @@ export const updateRegistration = async (reg: Registration) => {
         seat_no: reg.seat_no,
         created_at: reg.created_at,
         has_feedback: reg.has_feedback,
+        service_qualification: reg.service_qualification,
         duty_description: reg.duty_description,
         personal_goal: reg.personal_goal,
         safety_status: reg.safety_status,
@@ -323,46 +325,115 @@ export const cancelFamilyRegistration = async (familyId: string) => {
 };
 
 export const lookupRegistration = async (unit: string, name: string, password: string, eventId: string): Promise<Registration[]> => {
-    // Attempt to find by family group primary contact or name+phone matching
-    const qFamily = query(collection(db, COLL_FAMILIES), 
-        where('event_id', '==', eventId), 
-        where('primary_phone', '==', password),
-        where('primary_name', '==', name),
-        where('primary_unit', '==', unit)
-    );
-    const snapFamily = await getDocs(qFamily);
-    
-    if (!snapFamily.empty && snapFamily.docs[0]) {
-        const familyId = snapFamily.docs[0].id;
-        return getFamilyMembers(familyId, eventId);
-    }
+    const cleanUnit = (unit || '').trim();
+    const cleanName = (name || '').trim();
+    const cleanPassword = (password || '').trim();
 
-    // Fallback: search in registrations directly for primary contacts matching
-    const qRegs = query(collection(db, COLL_REGS), 
-        where('event_id', '==', eventId), 
-        where('phone', '==', password),
-        where('name', '==', name),
-        where('unit', '==', unit),
-        where('is_primary_contact', '==', true)
-    );
-    const snapRegs = await getDocs(qRegs);
-    if (!snapRegs.empty && snapRegs.docs[0]) {
-        const familyId = snapRegs.docs[0].data().family_group_id;
-        return getFamilyMembers(familyId, eventId);
+    const lowerUnit = cleanUnit.toLowerCase();
+    const lowerName = cleanName.toLowerCase();
+    const lowerPassword = cleanPassword.toLowerCase();
+
+    const matchesPassword = (val1?: string, val2?: string) => {
+        if (!val1 && !val2) return false;
+        const v1 = (val1 || '').trim().toLowerCase();
+        const v2 = (val2 || '').trim().toLowerCase();
+        return (v1 && v1 === lowerPassword) || (v2 && v2 === lowerPassword);
+    };
+
+    const matchesName = (primaryName?: string, memberName?: string) => {
+        const pName = (primaryName || '').trim().toLowerCase();
+        const mName = (memberName || '').trim().toLowerCase();
+        return pName === lowerName || mName === lowerName;
+    };
+
+    const matchesUnit = (u?: string) => {
+        if (!cleanUnit) return true;
+        return (u || '').trim().toLowerCase() === lowerUnit;
+    };
+
+    try {
+        // Stage 1: Query COLL_FAMILIES for eventId
+        const qFam = query(collection(db, COLL_FAMILIES), where('event_id', '==', eventId));
+        const snapFam = await getDocs(qFam);
+        let foundFamilyId: string | null = null;
+
+        snapFam.forEach(docSnap => {
+            const data = docSnap.data() as FamilyGroup;
+            if (matchesUnit(data.primary_unit) && 
+                matchesName(data.primary_name) && 
+                matchesPassword(data.primary_phone, data.contact_phone)) {
+                foundFamilyId = data.id;
+            }
+        });
+
+        if (foundFamilyId) {
+            return await getFamilyMembers(foundFamilyId, eventId);
+        }
+
+        // Stage 2: Query COLL_REGS for eventId
+        const qRegs = query(collection(db, COLL_REGS), where('event_id', '==', eventId));
+        const snapRegs = await getDocs(qRegs);
+        const allRegs: Registration[] = [];
+        snapRegs.forEach(docSnap => allRegs.push(docSnap.data() as Registration));
+
+        const matchingReg = allRegs.find(r => 
+            matchesUnit(r.unit) &&
+            matchesName(r.primary_contact_name, r.name) &&
+            (matchesPassword(r.phone, r.contact_phone) || (r.identity_id && r.identity_id.trim().toLowerCase() === lowerPassword))
+        );
+
+        if (matchingReg && matchingReg.family_group_id) {
+            const familyId = matchingReg.family_group_id;
+            return allRegs.filter(r => r.family_group_id === familyId);
+        }
+
+        // Stage 3: Fallback search in local storage / cached registrations
+        const localRegs = getRegistrations(eventId);
+        if (localRegs && localRegs.length > 0) {
+            const localMatch = localRegs.find(r => 
+                matchesUnit(r.unit) &&
+                matchesName(r.primary_contact_name, r.name) &&
+                (matchesPassword(r.phone, r.contact_phone) || (r.identity_id && r.identity_id.trim().toLowerCase() === lowerPassword))
+            );
+            if (localMatch && localMatch.family_group_id) {
+                const familyId = localMatch.family_group_id;
+                return localRegs.filter(r => r.family_group_id === familyId);
+            }
+        }
+    } catch (e) {
+        console.error('lookupRegistration error:', e);
+        const localRegs = getRegistrations(eventId);
+        if (localRegs && localRegs.length > 0) {
+            const localMatch = localRegs.find(r => 
+                matchesUnit(r.unit) &&
+                matchesName(r.primary_contact_name, r.name) &&
+                (matchesPassword(r.phone, r.contact_phone) || (r.identity_id && r.identity_id.trim().toLowerCase() === lowerPassword))
+            );
+            if (localMatch && localMatch.family_group_id) {
+                const familyId = localMatch.family_group_id;
+                return localRegs.filter(r => r.family_group_id === familyId);
+            }
+        }
     }
 
     return [];
 };
 
 export const getFamilyMembers = async (familyId: string, eventId: string): Promise<Registration[]> => {
-    const q = query(collection(db, COLL_REGS), 
-        where('event_id', '==', eventId), 
-        where('family_group_id', '==', familyId)
-    );
-    const snap = await getDocs(q);
-    const members: Registration[] = [];
-    snap.forEach(d => members.push(d.data() as Registration));
-    return members;
+    try {
+        const q = query(collection(db, COLL_REGS), 
+            where('event_id', '==', eventId), 
+            where('family_group_id', '==', familyId)
+        );
+        const snap = await getDocs(q);
+        const members: Registration[] = [];
+        snap.forEach(d => members.push(d.data() as Registration));
+        if (members.length > 0) return members;
+    } catch (e) {
+        console.error('getFamilyMembers error:', e);
+    }
+    const local = getRegistrations(eventId);
+    return local.filter(r => r.family_group_id === familyId);
 };
 
 export const assignSeat = async (regId: string, seat: string) => {

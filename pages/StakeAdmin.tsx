@@ -8,7 +8,7 @@ import {
     FileText, Landmark, ChevronDown, ChevronUp, UserCheck, 
     History, HelpCircle, FileSearch, Star, CreditCard, RefreshCw, Trash2, X, Menu,
     LayoutDashboard, Users2, Activity, ClipboardCheck, Truck, Wallet, Info,
-    FileEdit
+    FileEdit, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useI18n } from '../src/contexts/LanguageContext';
@@ -21,6 +21,7 @@ import RegistrationTab from '../components/stake/RegistrationTab';
 import RegistrationSettingsTab from '../components/stake/RegistrationSettingsTab';
 import BookingTab from '../components/stake/BookingTab';
 import TempleTab from '../components/stake/TempleTab';
+import TempleScheduleSection from '../components/stake/TempleScheduleSection';
 import FeeTab from '../components/stake/FeeTab';
 import AssignmentTab from '../components/stake/AssignmentTab';
 import StaffTab from '../components/stake/StaffTab';
@@ -100,7 +101,6 @@ const TAB_GROUPS = [
             { id: 'insurance', label: '保險名單', labelKey: 'insurance_list', icon: ShieldCheck },
             { id: 'restrictions', label: '限制名單', labelKey: 'restriction_list', icon: Shield },
             { id: 'deleted', label: '刪除名單', labelKey: 'deleted_list', icon: Trash2 },
-            { id: 'temple', label: '教儀座位', labelKey: 'ordinance_seat', icon: BookOpen },
         ]
     },
     {
@@ -115,6 +115,17 @@ const TAB_GROUPS = [
             { id: 'route', label: '行程安排', labelKey: 'route_plan', icon: MapPin },
             { id: 'assign', label: '車輛座位', labelKey: 'bus_seat', icon: Users },
             { id: 'rating', label: '評分設定', labelKey: 'rating_setup', icon: Star },
+        ]
+    },
+    {
+        id: 'ordinance',
+        label: '教儀管理',
+        labelKey: 'ordinance_mgmt',
+        icon: BookOpen,
+        tabs: [
+            { id: 'templeDate', label: '聖殿日期', labelKey: 'temple_date', icon: Calendar },
+            { id: 'templeSchedule', label: '教儀安排', labelKey: 'ordinance_schedule', icon: Clock },
+            { id: 'temple', label: '教儀座位', labelKey: 'ordinance_seat', icon: BookOpen },
         ]
     },
     {
@@ -328,6 +339,8 @@ const StakeAdmin: React.FC<StakeAdminProps> = ({ initialTab, currentUser, onRole
                                 {activeTab === 'personalInfo' && <PersonalInfoTab units={unitOptions} registrations={registrations} currentEvent={currentEvent} settings={settings} />}
                                 {activeTab === 'comm' && currentEvent && <CommTab currentEvent={currentEvent} settings={settings} onUpdateEvent={handleUpdateEvent} />}
                                 {activeTab === 'progress' && currentEvent && <ProgressTab currentEvent={currentEvent} onUpdateEvent={handleUpdateEvent} />}
+                                {activeTab === 'templeDate' && <Placeholder name={t('stake.admin.tabs.temple_date', "聖殿日期")} icon={Calendar} />}
+                                {activeTab === 'templeSchedule' && currentEvent && <TempleScheduleSection currentEvent={currentEvent} onUpdateEvent={handleUpdateEvent} />}
                                 {activeTab === 'temple' && currentEvent && <TempleTab currentEvent={currentEvent} registrations={registrations} settings={settings} onRefresh={() => {}} onUpdateEvent={handleUpdateEvent} />}
 
                                 {activeTab === 'deleted' && (

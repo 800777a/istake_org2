@@ -5,7 +5,7 @@ import { EventData, BusConfig, Registration, TripType, RegStatus, PaymentMethod 
 import { updateEvent } from '../../services/eventService';
 import { getSettings } from '../../services/settingsService';
 import { assignMissingSerialNumbers } from '../../services/registrationService';
-import { Download, Upload, Plus, Trash2, Bus, DollarSign, Save, Power, CheckCircle, Users, Settings } from 'lucide-react';
+import { Download, Upload, Plus, Trash2, Bus, DollarSign, Save, Power, CheckCircle, Users, Settings, CreditCard } from 'lucide-react';
 import ConfirmDialog from '../ConfirmDialog';
 import Toast, { ToastType } from '../Toast';
 import RegistrationDashboard from '../../src/components/registration/RegistrationDashboard';
@@ -176,6 +176,86 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
         }
     };
 
+    // Helper function to format a raw date string (e.g. YYYY-MM-DD) with Chinese weekday if available
+    const formatDateWithWeekday = (dateStr: string) => {
+        if (!dateStr) return '';
+        if (dateStr.includes('星期') || dateStr.includes('週') || dateStr.includes('周')) {
+            return dateStr;
+        }
+        const match = dateStr.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (match) {
+            const year = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1;
+            const day = parseInt(match[3], 10);
+            const d = new Date(year, month, day);
+            if (!isNaN(d.getTime())) {
+                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const formattedDate = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
+                return `${formattedDate} ${weekdays[d.getDay()]}`;
+            }
+        }
+        return dateStr;
+    };
+
+    // Vxxx: Local state for invoice fields to fix IME issues
+    const [invoiceForm, setInvoiceForm] = useState<{ [key: string]: string }>({
+        invoice_title: currentEvent.invoice_title || '',
+        invoice_vat: currentEvent.invoice_vat || '',
+        invoice_organizer: currentEvent.invoice_organizer || '',
+        invoice_phone: currentEvent.invoice_phone || '',
+        invoice_vehicles: currentEvent.invoice_vehicles || '',
+        invoice_payment_terms: currentEvent.invoice_payment_terms || '',
+        invoice_date: formatDateWithWeekday(currentEvent.invoice_date || currentEvent.event_date || ''),
+        invoice_name: currentEvent.invoice_name || currentEvent.event_title || '',
+    });
+
+    // Sync local form when currentEvent changes (e.g. after save or from server)
+    React.useEffect(() => {
+        setInvoiceForm({
+            invoice_title: currentEvent.invoice_title || '',
+            invoice_vat: currentEvent.invoice_vat || '',
+            invoice_organizer: currentEvent.invoice_organizer || '',
+            invoice_phone: currentEvent.invoice_phone || '',
+            invoice_vehicles: currentEvent.invoice_vehicles || '',
+            invoice_payment_terms: currentEvent.invoice_payment_terms || '',
+            invoice_date: formatDateWithWeekday(currentEvent.invoice_date || currentEvent.event_date || ''),
+            invoice_name: currentEvent.invoice_name || currentEvent.event_title || '',
+        });
+    }, [
+        currentEvent.invoice_title, 
+        currentEvent.invoice_vat, 
+        currentEvent.invoice_organizer, 
+        currentEvent.invoice_phone,
+        currentEvent.invoice_vehicles,
+        currentEvent.invoice_payment_terms,
+        currentEvent.invoice_date,
+        currentEvent.invoice_name,
+        currentEvent.event_date,
+        currentEvent.event_title
+    ]);
+
+    const handleLocalInvoiceChange = (field: string, value: string) => {
+        setInvoiceForm(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSyncInvoiceField = async (field: keyof EventData) => {
+        let val = invoiceForm[field as string];
+        if (field === 'invoice_date' && val) {
+            val = formatDateWithWeekday(val);
+            setInvoiceForm(prev => ({ ...prev, invoice_date: val }));
+        }
+        if (val !== currentEvent[field]) {
+            await handleUpdateInvoiceField(field, val);
+        }
+    };
+
+    // Dashboard block
+    const handleUpdateInvoiceField = async (field: keyof EventData, value: any) => {
+        const updated = { ...currentEvent, [field]: value };
+        await updateEvent(updated);
+        onUpdateEvent(updated);
+    };
+
     return (
         <div className="space-y-6 animate-fade-in pb-24 text-sm">
             <Toast 
@@ -201,36 +281,33 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                     </div>
                     <div>
                         <h2 className="text-lg md:text-xl lg:text-2xl font-bold tracking-tight">
-                            {t('stake.booking.title.bookingSettings', '車位調度管理')}
+                            {t('stake.booking.title.bookingSettings', '訂車作業')}
                         </h2>
-                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-[0.2em] opacity-80 mt-1">
-                            Fleet Logistics & Seat Allocation Engine
-                        </p>
                     </div>
                 </div>
-                
-                {/* Row 2: Actions Aligned Right beneath title row */}
-                <div className="flex flex-wrap justify-end gap-3">
-                    <button 
-                        onClick={handleExport}
-                        className="h-10 px-4 bg-white/10 text-white rounded text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 shadow-sm"
-                    >
-                        <Download className="w-4 h-4 mr-2" />
-                        {t('common.export', '導出')}
-                    </button>
-                    <label className="h-10 px-4 bg-white/10 text-white rounded text-sm font-bold border border-white/10 hover:bg-white/20 transition-all flex items-center active:scale-95 cursor-pointer shadow-sm">
-                        <Upload className="w-4 h-4 mr-2" />
-                        {t('common.load_file', '導入')}
-                        <input type="file" className="hidden" accept=".json" onChange={handleImport}/>
-                    </label>
-                    <button 
-                        onClick={handleAddBus}
-                        className="h-10 px-6 bg-blue-600 text-white rounded text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center active:scale-95"
-                    >
-                        <Plus className="w-5 h-5 mr-2" />
-                        {t('stake.booking.button.addBus', '新增車輛')}
-                    </button>
-                </div>
+            </div>
+            
+            {/* Row 2: Actions Aligned Right beneath title row - moved out of block */}
+            <div className="flex flex-wrap justify-end gap-3 mt-[-1rem]">
+                <button 
+                    onClick={handleExport}
+                    className="h-10 px-4 bg-slate-100 text-slate-700 rounded text-sm font-bold border border-slate-200 hover:bg-slate-200 transition-all flex items-center active:scale-95 shadow-sm"
+                >
+                    <Download className="w-4 h-4 mr-2" />
+                    {t('common.export', '導出')}
+                </button>
+                <label className="h-10 px-4 bg-slate-100 text-slate-700 rounded text-sm font-bold border border-slate-200 hover:bg-slate-200 transition-all flex items-center active:scale-95 cursor-pointer shadow-sm">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {t('common.load_file', '導入')}
+                    <input type="file" className="hidden" accept=".json" onChange={handleImport}/>
+                </label>
+                <button 
+                    onClick={handleAddBus}
+                    className="h-10 px-6 bg-blue-600 text-white rounded text-sm font-bold shadow-md hover:bg-blue-700 transition-all flex items-center active:scale-95"
+                >
+                    <Plus className="w-5 h-5 mr-2" />
+                    {t('stake.booking.button.addBus', '新增車輛')}
+                </button>
             </div>
 
             {/* Dashboard Stats Grid */}
@@ -340,6 +417,105 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                     </div>
                 </div>
             </div>
+            
+            {/* Invoice Info Block */}
+            <div className="bg-white rounded shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-50 rounded text-emerald-600 shadow-inner">
+                        <CreditCard size={20} />
+                    </div>
+                    <h3 className="text-base font-black text-slate-900 tracking-widest uppercase">
+                        發票資訊
+                    </h3>
+                </div>
+                <div className="p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">發票抬頭</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_title} 
+                                onChange={e => handleLocalInvoiceChange('invoice_title', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_title')}
+                                placeholder="請輸入公司名稱"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">統一編號</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_vat} 
+                                onChange={e => handleLocalInvoiceChange('invoice_vat', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_vat')}
+                                placeholder="8位數字"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">主辦姓名</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_organizer} 
+                                onChange={e => handleLocalInvoiceChange('invoice_organizer', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_organizer')}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">連絡電話</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_phone} 
+                                onChange={e => handleLocalInvoiceChange('invoice_phone', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_phone')}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">預訂車輛</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_vehicles} 
+                                onChange={e => handleLocalInvoiceChange('invoice_vehicles', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_vehicles')}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">付款條件</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_payment_terms} 
+                                onChange={e => handleLocalInvoiceChange('invoice_payment_terms', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_payment_terms')}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">活動日期</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_date} 
+                                onChange={e => handleLocalInvoiceChange('invoice_date', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_date')}
+                                placeholder="例如: 2026-08-15 星期六"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">活動名稱</label>
+                            <input 
+                                type="text" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 rounded px-4 text-sm font-bold outline-none transition-all shadow-inner" 
+                                value={invoiceForm.invoice_name} 
+                                onChange={e => handleLocalInvoiceChange('invoice_name', e.target.value)} 
+                                onBlur={() => handleSyncInvoiceField('invoice_name')}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Bus Configuration List */}
             <div className="space-y-8">
@@ -375,7 +551,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                 {/* Basic Info Section */}
                                 <div className="space-y-8">
                                     <div className="flex items-center gap-3 border-l-4 border-blue-600 pl-4 py-1">
-                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">{t('stake.booking.title.bookingInfo', '車行與車輛資訊')}</h4>
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">{t('stake.booking.title.bookingInfo', '訂車資訊')}</h4>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -476,7 +652,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
                                         <DollarSign size={120} className="text-indigo-900" />
                                     </div>
                                     <div className="flex items-center gap-3 border-l-4 border-indigo-600 pl-4 py-1 mb-8 relative z-10">
-                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">{t('stake.booking.title.expenses', '單車費用結算')}</h4>
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">{t('stake.booking.title.expenses', '訂車費用')}</h4>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10">
@@ -504,8 +680,7 @@ const BookingTab: React.FC<BookingTabProps> = ({ currentEvent, registrations, on
 
                                     <div className="mt-10 pt-8 border-t-2 border-indigo-100 flex justify-between items-center relative z-10">
                                         <div className="flex flex-col gap-1">
-                                            <div className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">Estimated Total</div>
-                                            <div className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('stake.booking.label.totalExpenses', '費用合計 (TWD)')}</div>
+                                            <div className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('stake.booking.label.totalExpenses', '費用合計')}</div>
                                         </div>
                                         <div className="text-4xl font-black text-indigo-900 tracking-tighter flex items-baseline">
                                             <span className="text-xl mr-2 text-indigo-400">$</span>

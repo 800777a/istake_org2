@@ -1,6 +1,6 @@
 import React from 'react';
 import { EventData, BusRoute, RoutePlanItem, BusConfig, GlobalSettings } from '../../types';
-import { Bus, Download, Upload, Plus, Trash2, RefreshCw, ChevronUp, ChevronDown, Eye, EyeOff, Map, ArrowRightLeft, Save } from 'lucide-react';
+import { Bus, Download, Upload, Plus, Trash2, RefreshCw, ChevronUp, ChevronDown, Eye, EyeOff, Map, ArrowRightLeft, Save, FileText } from 'lucide-react';
 import BusRouteTable from './BusRouteTable';
 import { useI18n } from '../../src/contexts/LanguageContext';
 
@@ -24,12 +24,13 @@ interface BusRouteSectionProps {
     onExport: (type: 'outbound' | 'return') => void;
     onImport: (type: 'outbound' | 'return', e: React.ChangeEvent<HTMLInputElement>) => void;
     onTimeChange: (type: 'outbound' | 'return', field: 'Start' | 'End', value: string) => void;
+    onPrintInquiry?: () => void;
 }
 
 const BusRouteSection: React.FC<BusRouteSectionProps> = ({
     busConfig, route, idx, settings, stations, theme, isCollapsed, onToggleCollapse, onUpdateField, onTogglePublish,
     onUpdateRouteItem, onUpdateRouteItemMultiple, onDeleteRouteRow, onAddRouteRow, onMoveRouteRow,
-    onReverseRoute, onExport, onImport, onTimeChange
+    onReverseRoute, onExport, onImport, onTimeChange, onPrintInquiry
 }) => {
     const { t } = useI18n();
     const busName = busConfig.name;
@@ -80,6 +81,18 @@ const BusRouteSection: React.FC<BusRouteSectionProps> = ({
                                 <span className={`text-[10px] md:text-xs lg:text-sm font-black uppercase tracking-wider mb-0.5 opacity-60 ${theme.text}`}>司機</span>
                                 <span className={`text-[10px] md:text-xs lg:text-sm font-black ${theme.text}`}>{busConfig.driverName1}</span>
                             </div>
+                        )}
+                        {onPrintInquiry && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onPrintInquiry();
+                                }}
+                                className="h-8 px-3 rounded text-xs font-black transition-all border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-1.5 active:scale-95 ml-2"
+                                title="印詢價單"
+                            >
+                                <FileText size={14} /> 印詢價單
+                            </button>
                         )}
                     </div>
 
